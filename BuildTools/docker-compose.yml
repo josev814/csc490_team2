@@ -32,6 +32,12 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
+    volumes:
+      - type: volume
+        source: redisdata
+        target: /data
+        volume:
+          nocopy: true
     networks:
       - private
   phpmyadmin:
