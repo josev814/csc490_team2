@@ -162,15 +162,16 @@ STATIC_URL = 'static/'
 
 """
 INSTALLED_APPS = INSTALLED_APPS + [
-    'rest_framework',
+#    'rest_framework',
     'analysts',
     'stocks',
-    'corsheaders',
+#    'corsheaders',
 ]
 MIDDLEWARE = MIDDLEWARE + [
-    'django.middleware.common.BrokenLinkEmailsMiddleware',
-    'corsheaders',
+#    'django.middleware.common.BrokenLinkEmailsMiddleware',
+#    'corsheaders',
 ]
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:80',
-]
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:80',
+#     'http://localhost:8889',
+# ]
