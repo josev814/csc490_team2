@@ -112,14 +112,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
-}
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -162,16 +154,47 @@ STATIC_URL = 'static/'
 
 """
 INSTALLED_APPS = INSTALLED_APPS + [
-#    'rest_framework',
+    'oauth2_provider',
+    'rest_framework',
+    'django_filters',
     'analysts',
     'stocks',
-#    'corsheaders',
+    'corsheaders',
 ]
 MIDDLEWARE = MIDDLEWARE + [
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
 #    'django.middleware.common.BrokenLinkEmailsMiddleware',
-#    'corsheaders',
+    'corsheaders.middleware.CorsMiddleware',
 ]
-# CORS_ORIGIN_WHITELIST = [
-#     'http://localhost:80',
-#     'http://localhost:8889',
-# ]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8890',
+]
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:8890',
+]
+
+# Authentication using OAuth 2.0
+AUTHENTICATION_BACKENDS = (
+    'oauth2_provider.backends.OAuth2Backend',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+OAUTH2_PROVIDER = {
+    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
+    'SCOPES': {
+        'read': 'Read scope',
+        'write': 'Write scope',
+        'groups': 'Access to your groups',
+        'packages': 'Access to your packages',
+    },
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}

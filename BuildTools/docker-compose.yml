@@ -91,11 +91,11 @@ services:
       - ../reactjs/public:/react-app/public/
     networks:
       - public
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     # depends_on:
     #   backend:
     #     condition: service_healthy
-    # env_file:
-    #   - ../.envvars
 networks:
   public:
   private:
