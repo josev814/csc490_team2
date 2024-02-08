@@ -1,0 +1,98 @@
+version: '3.8'
+
+name: stockapp
+services:
+  stocksdb:
+    container_name: stocksdb
+    image: mariadb
+    env_file:
+      - ../.envvars
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb -u $$MYSQL_USER -p$$MYSQL_PWD" ]
+      interval: 1s
+      timeout: 2s
+      retries: 200
+    volumes:
+      - type: volume
+        source: dbdata
+        target: /var/lib/mysql
+        volume:
+          nocopy: true
+    networks:
+      - private
+  redis_cache:
+    container_name: redis_cache
+    image: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - private
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOSTS=stocksdb
+    depends_on:
+      stocksdb:
+        condition: service_healthy
+    networks:
+      - public
+      - private
+  backend:
+    container_name: stocks_backend
+    image: stocks_backend
+    build:
+      context: ../
+      dockerfile: ./BuildTools/dockerfile-backend
+    depends_on:
+      stocksdb:
+        condition: service_healthy
+      redis_cache:
+        condition: service_healthy
+    env_file:
+      - ../.envvars
+    ports:
+      - "8889:80"
+    expose:
+      - 8889
+    restart: unless-stopped
+    volumes:
+      - ../django:/app/
+    networks:
+      - private
+  frontend:
+    container_name: stocks_frontend
+    image: stocks_frontend
+    build:
+      context: ../
+      dockerfile: ./reactjs/dockerfile-frontend
+    ports:
+      - "8890:80"
+    expose:
+      - 8890
+    restart: unless-stopped
+    volumes:
+      - ../reactjs/src:/react-app/src/
+      - ../reactjs/public:/react-app/public/
+    networks:
+      - public
+    # depends_on:
+    #   backend:
+    #     condition: service_healthy
+    # env_file:
+    #   - ../.envvars
+networks:
+  public:
+  private:
+volumes:
+  dbdata:
+  redisdata:

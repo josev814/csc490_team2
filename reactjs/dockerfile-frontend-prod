@@ -1,0 +1,19 @@
+FROM node:lts-bookworm AS development
+
+ENV CI=true
+ENV PORT=80
+
+WORKDIR /react-app
+COPY reactjs/package*.json .
+RUN npm ci
+COPY reactjs/. .
+
+RUN npm run build
+
+FROM nginx:bookworm
+
+RUN mkdir -p /etc/nginx/sites-enabled
+
+COPY ./BuildTools/nginx/* /etc/nginx/
+
+COPY --from=development /react-app/build /usr/share/nginx/html

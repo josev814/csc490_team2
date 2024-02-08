@@ -1,0 +1,11 @@
+#Django settings
+DEBUG=1
+DJANGO_SECRET_KEY=''
+# the host needs to match the database service name
+MYSQL_HOST=stocksdb
+MYSQL_HOST=3306
+MYSQL_ROOT_PASSWORD=
+MYSQL_DATABASE=stocksapp
+MYSQL_USER=team2
+MYSQL_PASSWORD=
+MYSQL_PWD=
