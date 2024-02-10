@@ -84,7 +84,9 @@ function get_logs(){
 
 function help(){
     echo "Please pass a parameter to this script"
-    echo "standup, teardown, cleanup or getlogs"
+    echo "teardown, cleanup, standup or getlogs"
+    echo "You can also pass each of the parameters together"
+    echo "They must be in the order of teardown cleanup standup getlogs"
     exit
 }
 

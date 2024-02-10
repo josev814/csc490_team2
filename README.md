@@ -6,6 +6,7 @@
 - Terraform
 - Python 3
 
+
 # Containers
 - Nginx
   - This serves the requests between the client and our React application
@@ -22,12 +23,17 @@
 We use docker compose to build app image and to link the app to mariadb.
 
 ## Configuration
-Under the Build directory copy the dbenvvars.example and name it .dbenvvars
-Edit the .dbenvvars to have the database creds you want for the db
-
-Do the same for the appenvvars.example file.
+Under the Build directory copy the envvars.example and name it .envvars
+Edit the .envvars to have the database creds you want for the db
 
 ## Standing up the application
+**IN WSL**
+```bash
+bash setup_containers.sh teardown cleanup standup
+```
+
+or
+
 ```bash
 docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans
 ```
