@@ -1,0 +1,39 @@
+gzip_http_version 1.0;
+gzip_proxied      any;
+gzip_min_length   500;
+gzip_disable      "MSIE [1-6]\.";
+gzip_types        text/plain text/xml text/css
+                    text/comma-separated-values
+                    application/xml
+                    application/xml+rss
+                    text/javascript
+                    application/javascript
+                    application/x-javascript
+                    application/atom+xml
+                    application/json;
+
+# Configuration containing list of application servers
+#upstream uwsgicluster {
+#    server 127.0.0.1:8080;
+#}
+
+# Configuration for Nginx
+server {
+    # Running port
+    listen 80;
+    client_max_body_size 1G;
+    keepalive_timeout 6;
+
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+    include /etc/nginx/mime.types;
+
+    location = /favico.ico  {
+        alias /usr/share/nginx/html/favico.ico;
+    }
+    
+    # attempts to load a static file, if not found proxy to app
+    location /  {
+        try_files $uri $uri/ /index.html;
+    }
+}

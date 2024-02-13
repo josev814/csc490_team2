@@ -1,0 +1,14 @@
+FROM node:lts-bookworm AS development
+
+ENV CI=true
+ENV PORT=80
+
+WORKDIR /react-app
+COPY reactjs/package.json .
+
+RUN npm set progress=false \
+    && npm install
+
+RUN cp package*.json /
+
+CMD [ "bash", "-c", "npm start && sleep inf" ]

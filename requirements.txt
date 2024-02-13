@@ -1,0 +1,13 @@
+django
+gunicorn
+redis
+flake8
+pytest
+pytest-cov
+coverage
+mysqlclient
+djangorestframework
+markdown
+django-filter
+django-oauth-toolkit
+django-cors-headers
