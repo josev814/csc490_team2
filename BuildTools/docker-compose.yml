@@ -14,6 +14,7 @@ services:
       timeout: 2s
       retries: 200
     volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
       - type: volume
         source: dbdata
         target: /var/lib/mysql
@@ -40,6 +41,8 @@ services:
           nocopy: true
     networks:
       - private
+    depends_on:
+      - stocksdb
   phpmyadmin:
     image: phpmyadmin
     restart: always
@@ -92,7 +95,8 @@ services:
     networks:
       - public
     environment:
-      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      - WDS_SOCKET_PORT=8890
     # depends_on:
     #   backend:
     #     condition: service_healthy
