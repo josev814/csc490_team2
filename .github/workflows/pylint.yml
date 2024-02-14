@@ -1,0 +1,28 @@
+name: Pylint
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pylint
+        python -m pip install -r requirements.txt
+    - name: Analysing the code with pylint
+      run: |
+        pylint --ignore-paths=django/*/tests --disable C0200,C0303,C0413,W0511,W0702,W0718,W0719,R0801,R0902,R0913,R0904 $(git ls-files '*.py')
