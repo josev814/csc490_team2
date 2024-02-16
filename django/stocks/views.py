@@ -66,6 +66,11 @@ def find_ticker(request, search: str='amazon'):
     results = yf.search(search)
     return JsonResponse(results)
 
+def get_ticker_news(request, symbol: str='amazon'):
+    yf = yahooFinance()
+    results = yf.search(symbol, 'news')
+    return JsonResponse(results)
+
 def get_ticker(request, symbol):
     yf = yahooFinance()
     results = yf.get_chart(symbol)
