@@ -1,9 +1,95 @@
 """
 Logic for the stocks app
 """
+import requests
 #from django.shortcuts import render
 from django.http import JsonResponse
 
+class YahooFinance:
+    """
+    This class is for making requests to Yahoo Finance's API
+    """
+
+    base_url = 'https://query1.finance.yahoo.com/v1/finance/'
+    extra_params = {
+        'lang': 'en-Us',
+        'region': 'US'
+    }
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'AppleWebKit/537.36 (KHTML, like Gecko)',
+        'Chrome/121.0.0.0',
+        'Safari/537.36',
+        'Edg/121.0.0.0'
+    ]
+    headers = {
+        'User-Agent': ' '.join(user_agents)
+    }
+
+    def build_params(self, param_dict:dict) -> str:
+        """
+        This builds out the parameters required for the url
+        """
+        params = ''
+        # merge dicts
+        param_dict = param_dict | self.extra_params
+        for item in param_dict.items():
+            params += f'&{item[0]}={item[1]}'
+        return params
+
+    def search(self, search_param:str, retrieve:str='quotes', limit=20) -> dict:
+        """
+        This method allows to search for a string or symbol and return the results
+        
+        params: retrieve str options are quotes, news, lists
+        """
+        params = {
+            'quotesCount': 0,
+            'newsCount': 0,
+            'listsCount': 0,
+        }
+        #override default
+        params[f'{retrieve}Count'] = limit
+        query_params = self.build_params(params)
+        query_uri = f'{self.base_url}search?q={search_param}{query_params}'
+        return self.__make_request(query_uri)
+
+    def get_chart(self, ticker:str, interval:str='1d', 
+                  starttime:int|None=None, endtime:int|None=None) -> dict:
+        """
+        Gets chart metrics for a symbol
+
+        param: interval: str values: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, ytd, max
+        param: starttime int This should be an int based on a timestamp
+        param: endtime int This should be an int based on a timestamp
+        """
+        params = {
+            'includePrePost': True
+        }
+        if starttime:
+            params['starttime'] = starttime
+        if endtime:
+            params['endtime'] = endtime
+        query_params = self.build_params(params)
+        query_uri = f'{self.base_url}chart/{ticker}?interval={interval}{query_params}'
+        return self.__make_request(query_uri)
+
+    def __make_request(self, query_uri) -> dict:
+        """
+        This performs the request to the yahoo api and returns the json result
+        """
+        r = requests.get(
+            query_uri,
+            headers=self.headers,
+            timeout=5
+        )
+        if r.status_code != 200:
+            bad_result = {
+                'error': 'Failed retrieving reponse from Yahoo Finance',
+                'status_code': r.status_code
+            }
+            return bad_result
+        return r.json()        
 
 # Create your views here.
 def index(request):
@@ -19,229 +105,29 @@ def index(request):
     }
     return JsonResponse(resp)
 
-
-def find_ticker(request, search: str):
+def find_ticker(request, search: str='amazon'):
     """
     This endpoint allows us to search for a ticker using the search parameter
     """
     print(request)
-    search_query = f'https://query1.finance.yahoo.com/v1/finance/{search}' \
-        '?q=amazon&lang=en-US&region=US&quotesCount=6&newsCount=0&listsCount=0'
-    print(search_query)
-    results = {
-        "count": 6,
-        "quotes": [
-            {
-                "exchange": "NMS",
-                "shortname": "Amazon.com, Inc.",
-                "quoteType": "EQUITY",
-                "symbol": "AMZN",
-                "index": "quotes",
-                "score": 299173,
-                "typeDisp": "Equity",
-                "longname": "Amazon.com, Inc.",
-                "exchDisp": "NASDAQ",
-                "sector": "Consumer Cyclical",
-                "sectorDisp": "Consumer Cyclical",
-                "industry": "Internet Retail",
-                "industryDisp": "Internet Retail",
-                "dispSecIndFlag": True,
-                "isYahooFinance": True
-            },
-            {
-                "exchange": "NEO",
-                "shortname": "AMAZON.COM CDR (CAD HEDGED)",
-                "quoteType": "EQUITY",
-                "symbol": "AMZN.NE",
-                "index": "quotes",
-                "score": 20387,
-                "typeDisp": "Equity",
-                "longname": "Amazon.com, Inc.",
-                "exchDisp": "NEO",
-                "sector": "Consumer Cyclical",
-                "sectorDisp": "Consumer Cyclical",
-                "industry": "Internet Retail",
-                "industryDisp": "Internet Retail",
-                "isYahooFinance": True
-            },
-            {
-                "exchange": "GER",
-                "shortname": "AMAZON.COM INC.  DL-,01",
-                "quoteType": "EQUITY",
-                "symbol": "AMZ.DE",
-                "index": "quotes",
-                "score": 20250,
-                "typeDisp": "Equity",
-                "longname": "Amazon.com, Inc.",
-                "exchDisp": "XETRA",
-                "sector": "Consumer Cyclical",
-                "sectorDisp": "Consumer Cyclical",
-                "industry": "Internet Retail",
-                "industryDisp": "Internet Retail",
-                "isYahooFinance": True
-            },
-            {
-                "exchange": "SAO",
-                "shortname": "AMAZON      DRN",
-                "quoteType": "EQUITY",
-                "symbol": "AMZO34.SA",
-                "index": "quotes",
-                "score": 20150,
-                "typeDisp": "Equity",
-                "longname": "Amazon.com, Inc.",
-                "exchDisp": "São Paulo",
-                "sector": "Consumer Cyclical",
-                "sectorDisp": "Consumer Cyclical",
-                "industry": "Internet Retail",
-                "industryDisp": "Internet Retail",
-                "isYahooFinance": True
-            },
-            {
-                "exchange": "FRA",
-                "shortname": "AMAZON COM INC",
-                "quoteType": "EQUITY",
-                "symbol": "AMZ.F",
-                "index": "quotes",
-                "score": 20078,
-                "typeDisp": "Equity",
-                "longname": "Amazon.com, Inc.",
-                "exchDisp": "Frankfurt",
-                "sector": "Consumer Cyclical",
-                "sectorDisp": "Consumer Cyclical",
-                "industry": "Internet Retail",
-                "industryDisp": "Internet Retail",
-                "isYahooFinance": True
-            },
-            {
-                "exchange": "DUS",
-                "shortname": "AMAZON COM INC",
-                "quoteType": "EQUITY",
-                "symbol": "AMZ.DU",
-                "index": "quotes",
-                "score": 20071,
-                "typeDisp": "Equity",
-                "longname": "Amazon.com Inc",
-                "exchDisp": "Dusseldorf Stock Exchange",
-                "sector": "Consumer Cyclical",
-                "sectorDisp": "Consumer Cyclical",
-                "industry": "Internet Retail",
-                "industryDisp": "Internet Retail",
-                "isYahooFinance": True
-            }
-        ],
-        "news": [],
-        "nav": [],
-        "lists": [],
-        "researchReports": [],
-        "screenerFieldResults": [],
-        "totalTime": 71,
-        "timeTakenForQuotes": 445,
-        "timeTakenForNews": 0,
-        "timeTakenForAlgowatchlist": 400,
-        "timeTakenForPredefinedScreener": 400,
-        "timeTakenForCrunchbase": 0,
-        "timeTakenForNav": 400,
-        "timeTakenForResearchReports": 0,
-        "timeTakenForScreenerField": 0,
-        "timeTakenForCulturalAssets": 0
-    }
+    yf = YahooFinance()
+    results = yf.search(search)
     return JsonResponse(results)
 
+def get_ticker_news(request, symbol: str='amazon'):
+    """
+    Gets a ticker's chart data
+    """
+    print(request)
+    yf = YahooFinance()
+    results = yf.search(symbol, 'news')
+    return JsonResponse(results)
 
 def get_ticker(request, symbol:str):
     """
     Gets a ticker's chart data
     """
     print(request)
-    query_uri = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}' \
-        '?interval=1d&includePrePost=true&lang=en-US&region=US'
-    print(query_uri)
-    ticker = {
-        "chart": {
-            "result": [
-                {
-                    "meta": {
-                        "currency": "USD",
-                        "symbol": "TSP",
-                        "exchangeName": "NMS",
-                        "instrumentType": "EQUITY",
-                        "firstTradeDate": 1618493400,
-                        "regularMarketTime": 1707166801,
-                        "gmtoffset": -18000,
-                        "timezone": "EST",
-                        "exchangeTimezoneName": "America/New_York",
-                        "regularMarketPrice": 0.265,
-                        "chartPreviousClose": 0.3009,
-                        "priceHint": 4,
-                        "currentTradingPeriod": {
-                            "pre": {
-                                "timezone": "EST",
-                                "start": 1707123600,
-                                "end": 1707143400,
-                                "gmtoffset": -18000
-                            },
-                            "regular": {
-                                "timezone": "EST",
-                                "start": 1707143400,
-                                "end": 1707166800,
-                                "gmtoffset": -18000
-                            },
-                            "post": {
-                                "timezone": "EST",
-                                "start": 1707166800,
-                                "end": 1707181200,
-                                "gmtoffset": -18000
-                            }
-                        },
-                        "dataGranularity": "1d",
-                        "range": "1d",
-                        "validRanges": [
-                            "1d",
-                            "5d",
-                            "1mo",
-                            "3mo",
-                            "6mo",
-                            "1y",
-                            "2y",
-                            "5y",
-                            "ytd",
-                            "max"
-                        ]
-                    },
-                    "timestamp": [
-                        1707166801
-                    ],
-                    "indicators": {
-                        "quote": [
-                            {
-                                "high": [
-                                    0.28630000352859497
-                                ],
-                                "low": [
-                                    0.2574000060558319
-                                ],
-                                "volume": [
-                                    2500306
-                                ],
-                                "close": [
-                                    0.26499998569488525
-                                ],
-                                "open": [
-                                    0.2808000147342682
-                                ]
-                            }
-                        ],
-                        "adjclose": [
-                            {
-                                "adjclose": [
-                                    0.26499998569488525
-                                ]
-                            }
-                        ]
-                    }
-                }
-            ],
-            "error": None
-        }
-    }
-    return JsonResponse(ticker)
+    yf = YahooFinance()
+    results = yf.get_chart(symbol)
+    return JsonResponse(results)
