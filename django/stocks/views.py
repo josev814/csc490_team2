@@ -1,15 +1,33 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+"""
+Logic for the stocks app
+"""
+#from django.shortcuts import render
 from django.http import JsonResponse
 
 
 # Create your views here.
 def index(request):
-    return HttpResponse("Hello, world. The index of pullstocks")
+    """
+    This is the main endpoint that gets hit
+    """
+    print(request)
+    resp = {
+        'error': {
+            'msg': 'Unauthorized Access',
+            'status_code': '403'
+        }
+    }
+    return JsonResponse(resp)
 
 
-def find_ticker(request, search):
-    search_query = f'https://query1.finance.yahoo.com/v1/finance/{search}?q=amazon&lang=en-US&region=US&quotesCount=6&newsCount=0&listsCount=0'
+def find_ticker(request, search: str):
+    """
+    This endpoint allows us to search for a ticker using the search parameter
+    """
+    print(request)
+    search_query = f'https://query1.finance.yahoo.com/v1/finance/{search}' \
+        '?q=amazon&lang=en-US&region=US&quotesCount=6&newsCount=0&listsCount=0'
+    print(search_query)
     results = {
         "count": 6,
         "quotes": [
@@ -130,8 +148,14 @@ def find_ticker(request, search):
     return JsonResponse(results)
 
 
-def get_ticker(request, symbol):
-    query_uri = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&includePrePost=true&lang=en-US&region=US'
+def get_ticker(request, symbol:str):
+    """
+    Gets a ticker's chart data
+    """
+    print(request)
+    query_uri = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}' \
+        '?interval=1d&includePrePost=true&lang=en-US&region=US'
+    print(query_uri)
     ticker = {
         "chart": {
             "result": [
