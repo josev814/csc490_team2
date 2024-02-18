@@ -1,5 +1,7 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+"""
+Logic for the stocks app
+"""
+#from django.shortcuts import render
 from django.http import JsonResponse
 import requests
 
@@ -59,19 +61,41 @@ class yahooFinance:
 
 # Create your views here.
 def index(request):
-    return HttpResponse("Hello, world. The index of pullstocks")
+    """
+    This is the main endpoint that gets hit
+    """
+    print(request)
+    resp = {
+        'error': {
+            'msg': 'Unauthorized Access',
+            'status_code': '403'
+        }
+    }
+    return JsonResponse(resp)
 
 def find_ticker(request, search: str='amazon'):
+    """
+    This endpoint allows us to search for a ticker using the search parameter
+    """
+    print(request)
     yf = yahooFinance()
     results = yf.search(search)
     return JsonResponse(results)
 
 def get_ticker_news(request, symbol: str='amazon'):
+    """
+    Gets a ticker's chart data
+    """
+    print(request)
     yf = yahooFinance()
     results = yf.search(symbol, 'news')
     return JsonResponse(results)
 
-def get_ticker(request, symbol):
+def get_ticker(request, symbol:str):
+    """
+    Gets a ticker's chart data
+    """
+    print(request)
     yf = yahooFinance()
     results = yf.get_chart(symbol)
     return JsonResponse(results)
