@@ -21,5 +21,6 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('ticker/find/<str:search>/', views.find_ticker),
+    path('ticker/<str:symbol>/news/', views.get_ticker_news),
     path('ticker/<str:symbol>/', views.get_ticker),
 ]
