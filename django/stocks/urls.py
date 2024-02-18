@@ -20,10 +20,12 @@ from django.views.decorators.cache import cache_page
 from . import views
 from .management import utils
 
+cache_time = 60 * 5  # time to cache a page for
+
 urlpatterns = [
     path('', views.index, name='index'),
     path('clear_cache', utils.clear_cache),  # clear the cache
-    path('ticker/find/<str:search>/', cache_page(60 * 5)(views.find_ticker)),  # cached for 5 minutes
-    path('ticker/<str:symbol>/news/', cache_page(60 * 5)(views.get_ticker_news)),  # cached for 5 minutes
-    path('ticker/<str:symbol>/', cache_page(60 * 5)(views.get_ticker)),  # cached for 5 minutes
+    path('ticker/find/<str:search>/', cache_page(cache_time)(views.find_ticker)),
+    path('ticker/<str:symbol>/news/', cache_page(cache_time)(views.get_ticker_news)),
+    path('ticker/<str:symbol>/', cache_page(cache_time)(views.get_ticker)),
 ]

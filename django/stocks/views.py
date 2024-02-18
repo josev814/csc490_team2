@@ -1,9 +1,9 @@
 """
 Logic for the stocks app
 """
+import requests
 #from django.shortcuts import render
 from django.http import JsonResponse
-import requests
 
 class YahooFinance:
     """
@@ -80,7 +80,8 @@ class YahooFinance:
         """
         r = requests.get(
             query_uri,
-            headers=self.headers
+            headers=self.headers,
+            timeout=5
         )
         if r.status_code != 200:
             bad_result = {
