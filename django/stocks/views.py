@@ -8,11 +8,23 @@ from django.http import JsonResponse
 
 # Create your views here.
 def index(request):
+    """
+    This is the main endpoint that gets hit
+    """
     print(request)
-    return HttpResponse("Hello, world. The index of pullstocks")
+    resp = {
+        'error': {
+            'msg': 'Unauthorized Access',
+            'status_code': '403'
+        }
+    }
+    return JsonResponse(resp)
 
 
-def find_ticker(request, search):
+def find_ticker(request, search: str):
+    """
+    This endpoint allows us to search for a ticker using the search parameter
+    """
     print(request)
     search_query = f'https://query1.finance.yahoo.com/v1/finance/{search}' \
         '?q=amazon&lang=en-US&region=US&quotesCount=6&newsCount=0&listsCount=0'
@@ -137,7 +149,10 @@ def find_ticker(request, search):
     return JsonResponse(results)
 
 
-def get_ticker(request, symbol):
+def get_ticker(request, symbol:str):
+    """
+    Gets a ticker's chart data
+    """
     print(request)
     query_uri = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}' \
         '?interval=1d&includePrePost=true&lang=en-US&region=US'
