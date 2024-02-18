@@ -5,9 +5,9 @@ Logic for the stocks app
 from django.http import JsonResponse
 import requests
 
-class yahooFinance:
+class YahooFinance:
     """
-    This class is for making requests to yahooFinance's API
+    This class is for making requests to Yahoo Finance's API
     """
 
     base_url = 'https://query1.finance.yahoo.com/v1/finance/'
@@ -31,10 +31,10 @@ class yahooFinance:
         This builds out the parameters required for the url
         """
         params = ''
-        for key in self.extra_params.keys():
-            params += f'&{key}={param_dict.get(key)}'
-        for key in param_dict.keys():
-            params += f'&{key}={param_dict.get(key)}'
+        # merge dicts
+        param_dict = param_dict | self.extra_params
+        for item in param_dict.items():
+            params += f'&{item[0]}={item[1]}'
         return params
 
     def search(self, search_param:str, retrieve:str='quotes', limit=20) -> dict:
@@ -54,7 +54,8 @@ class yahooFinance:
         query_uri = f'{self.base_url}search?q={search_param}{query_params}'
         return self.__make_request(query_uri)
 
-    def get_chart(self, ticker:str, interval:str='1d', starttime:int|None=None, endtime:int|None=None) -> dict:
+    def get_chart(self, ticker:str, interval:str='1d', 
+                  starttime:int|None=None, endtime:int|None=None) -> dict:
         """
         Gets chart metrics for a symbol
 
@@ -108,7 +109,7 @@ def find_ticker(request, search: str='amazon'):
     This endpoint allows us to search for a ticker using the search parameter
     """
     print(request)
-    yf = yahooFinance()
+    yf = YahooFinance()
     results = yf.search(search)
     return JsonResponse(results)
 
@@ -117,7 +118,7 @@ def get_ticker_news(request, symbol: str='amazon'):
     Gets a ticker's chart data
     """
     print(request)
-    yf = yahooFinance()
+    yf = YahooFinance()
     results = yf.search(symbol, 'news')
     return JsonResponse(results)
 
@@ -126,6 +127,6 @@ def get_ticker(request, symbol:str):
     Gets a ticker's chart data
     """
     print(request)
-    yf = yahooFinance()
+    yf = YahooFinance()
     results = yf.get_chart(symbol)
     return JsonResponse(results)
