@@ -1,15 +1,22 @@
-from django.shortcuts import render
+"""
+Logic for the stocks app
+"""
+#from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 
 
 # Create your views here.
 def index(request):
+    print(request)
     return HttpResponse("Hello, world. The index of pullstocks")
 
 
 def find_ticker(request, search):
-    search_query = f'https://query1.finance.yahoo.com/v1/finance/{search}?q=amazon&lang=en-US&region=US&quotesCount=6&newsCount=0&listsCount=0'
+    print(request)
+    search_query = f'https://query1.finance.yahoo.com/v1/finance/{search}' \
+        '?q=amazon&lang=en-US&region=US&quotesCount=6&newsCount=0&listsCount=0'
+    print(search_query)
     results = {
         "count": 6,
         "quotes": [
@@ -131,7 +138,10 @@ def find_ticker(request, search):
 
 
 def get_ticker(request, symbol):
-    query_uri = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&includePrePost=true&lang=en-US&region=US'
+    print(request)
+    query_uri = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}' \
+        '?interval=1d&includePrePost=true&lang=en-US&region=US'
+    print(query_uri)
     ticker = {
         "chart": {
             "result": [
