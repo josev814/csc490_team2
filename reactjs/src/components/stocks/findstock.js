@@ -30,16 +30,20 @@ class FindStock extends React.Component {
 
   search = async val => {
     this.setState({ loading: true});
-    const res = await axios(
-      'http://localhost:8889/stocks/ticker/find/xxxxx'
-    );
-    const stocks = await res.data.results;
-
-    this.setState({ stocks, loading: false });
+    axios.get(
+      'http://localhost:8889/stocks/ticker/find/' + val
+    ).then(res => {
+      //const stocks = res.data['quotes'];
+      this.setState({stocks: res.data['quotes']})
+    }).then(
+      this.setState({ loading: false })
+    )
   };
 
   onChangeHandler = async e => {
-    this.search(e.target.value);
+    if (e.target.value.length > 1) {
+      this.search(e.target.value);
+    }
     this.setState({ value: e.target.value});
   };
 
