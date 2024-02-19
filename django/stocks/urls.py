@@ -15,11 +15,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from django.views.decorators.cache import cache_page
 
 from . import views
+from .management import utils
+
+CACHE_TIME = 60 * 5  # time to cache a page for
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('ticker/find/<str:search>/', views.find_ticker),
-    path('ticker/<str:symbol>/', views.get_ticker),
+    path('clear_cache', utils.clear_cache),  # clear the cache
+    path('ticker/find/<str:search>/', cache_page(CACHE_TIME)(views.find_ticker)),
+    path('ticker/<str:symbol>/news/', cache_page(CACHE_TIME)(views.get_ticker_news)),
+    path('ticker/<str:symbol>/', cache_page(CACHE_TIME)(views.get_ticker)),
 ]
