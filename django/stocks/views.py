@@ -71,7 +71,8 @@ class YahooFinance:
         if endtime:
             params['endtime'] = endtime
         query_params = self.build_params(params)
-        query_uri = f'{self.base_url}chart/{ticker}?interval={interval}{query_params}'
+        base_url = self.base_url.replace("/v1/", "/v8/")
+        query_uri = f'{base_url}chart/{ticker}?interval={interval}{query_params}'
         return self.__make_request(query_uri)
 
     def __make_request(self, query_uri) -> dict:
@@ -85,7 +86,7 @@ class YahooFinance:
         )
         if r.status_code != 200:
             bad_result = {
-                'error': 'Failed retrieving reponse from Yahoo Finance',
+                'error': f'Failed retrieving reponse from Yahoo Finance for {query_uri}',
                 'status_code': r.status_code
             }
             return bad_result
