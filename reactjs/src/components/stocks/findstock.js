@@ -3,7 +3,6 @@ import axios from 'axios';
 //import './searchBar.css';
 
 
-
 class FindStock extends React.Component {
   
   // state = {
