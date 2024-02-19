@@ -4,6 +4,7 @@ import axios from 'axios';
 class ShowTickerNews extends React.Component {
   state = {
     news: [],
+
     loading: false
   };
 
