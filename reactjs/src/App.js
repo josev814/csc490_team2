@@ -15,7 +15,7 @@ class App extends React.Component {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="stocks" element={<Find_stock />} />
-            <Route path="stocks/amzn/news" element={<Show_ticker_news />} />
+            <Route path="stocks/:ticker/news" element={<Show_ticker_news />} />
             {/* <Route path="stocks/:ticker/news" element={<Show_ticker_news />} /> */}
             <Route path="*" element={<NoPage />} />
           </Route>
