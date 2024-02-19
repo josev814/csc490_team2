@@ -51,3 +51,4 @@ class StockTestCases(TestCase):
         self.assertIn('result', json_resp['chart'])
         result = json_resp['chart']['result'][0]
         self.assertEqual(result['meta']['symbol'], self.symbol)
+        self.assertEqual(result['meta']['symbol'], f'{self.symbol}s')
