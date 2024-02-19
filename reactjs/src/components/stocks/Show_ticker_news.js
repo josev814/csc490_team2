@@ -3,14 +3,15 @@ import axios from 'axios';
 
 class ShowTickerNews extends React.Component {
   state = {
-    tickers: [],
+    news: [],
     loading: false
   };
 
   componentDidMount() {
     this.setState({loading: true});
-    console.log('https://query1.finance.yahoo.com/v1/finance/search?q=amazon&lang=en-US&region=US&quotesCount=0&newsCount=10&listsCount=0')
-    axios.get('https://query1.finance.yahoo.com/v1/finance/search?q=amazon&lang=en-US&region=US&quotesCount=0&newsCount=10&listsCount=0')
+    let url = 'http://localhost:8889/stocks/ticker/amzn/news/'
+    console.log(url)
+    axios.get(url)
       .then(res => {
           console.log(res.data); // Log the response data to understand its structure
 
@@ -19,8 +20,8 @@ class ShowTickerNews extends React.Component {
   //     })
   //     .then(this.setState({loading: false}));
   // }
-          const tickers = res.data['news'];
-          this.setState({ tickers, loading: false }); // Set loading to false here
+          const news = res.data['news'];
+          this.setState({ news: news, loading: false }); // Set loading to false here
         })
       .catch(error => {
           console.error('Error fetching data:', error);
@@ -30,11 +31,15 @@ class ShowTickerNews extends React.Component {
 
   render(){  
     return (
-        <>
-        {this.state.tickers.map(ticker => (
-            <p key={ticker.symbol}>{ticker.symbol}: {ticker.longname}</p>
+        <div class="container-fluid">
+        {this.state.news.map(news => (
+          <div class="row py-3">
+            <a href='{news.link}' target="_blank">
+              <h4 key={news.uuid}>{news.title}</h4>
+            </a>
+          </div>
         ))}
-        </>
+        </div>
     );
   }
 }
