@@ -26,7 +26,7 @@ jobs:
             MYSQL_PORT=3306
             MYSQL_ROOT_PASSWORD=unittestrootpw
             MYSQL_DATABASE=stocksapp
-            MYSQL_USER=unittestuser
+            MYSQL_USER=team2
             MYSQL_PASSWORD=unittestMysqlP@ssword
             MYSQL_PWD=unittestMysqlP@ssword
         EOF
