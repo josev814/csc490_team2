@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import './searchBar.css';
+//import './searchBar.css';
 
 
 
@@ -66,13 +66,19 @@ class FindStock extends React.Component {
   render(){  
     return (
         <>
-        <div className="input-wrapper">
-          <input 
-            value={this.state.value}
-            onChange={e => this.onChangeHandler(e)}
-            placeholder="Type to search a stock ..."/>
+        <div className="container-fluid">
+          <div className="row">
+            <input 
+              className="form-control mr-sm-2"
+              type="search"
+              aria-label="Search"
+              value={this.state.value}
+              onChange={e => this.onChangeHandler(e)}
+              placeholder="Type to search a stock ..."
+            />
+          </div>
         </div>
-        <div className='container'>
+        <div className='container-fluid'>
           {this.renderStocks}
         </div>        
         </>
