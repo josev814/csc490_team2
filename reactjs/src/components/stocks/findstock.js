@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import './searchBar.css';
-
+//import './searchBar.css';
 
 
 class FindStock extends React.Component {
@@ -54,8 +53,8 @@ class FindStock extends React.Component {
     let stocks = <h3> There are no stocks with the name {this.state.value}.</h3>
     if (this.state.stocks) {
       stocks = ( this.state.stocks.map(stocks => (
-        <div className='row py-2' key={stocks.symbol}>
-          <a href={'stocks/' + stocks.symbol + '/news'} >{stocks.symbol}: {stocks.longname}</a>
+        <div className='row py-2'>
+          <a href={'stocks/' + stocks.symbol + '/news'} key={stocks.symbol}>{stocks.symbol}: {stocks.longname}</a>
         </div>
       )))
     }
@@ -66,13 +65,19 @@ class FindStock extends React.Component {
   render(){  
     return (
         <>
-        <div className="input-wrapper">
-          <input 
-            value={this.state.value}
-            onChange={e => this.onChangeHandler(e)}
-            placeholder="Type to search a stock ..."/>
+        <div className="container-fluid">
+          <div className="row">
+            <input 
+              className="form-control mr-sm-2"
+              type="search"
+              aria-label="Search"
+              value={this.state.value}
+              onChange={e => this.onChangeHandler(e)}
+              placeholder="Type to search a stock ..."
+            />
+          </div>
         </div>
-        <div className='container'>
+        <div className='container-fluid'>
           {this.renderStocks}
         </div>        
         </>
