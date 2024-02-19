@@ -31,7 +31,7 @@ class FindStock extends React.Component {
   search = async val => {
     this.setState({ loading: true});
     axios.get(
-      'http://localhost:8889/stocks/ticker/find/' + val
+      'http://localhost:8889/stocks/ticker/find/' + val + '/'
     ).then(res => {
       //const stocks = res.data['quotes'];
       this.setState({stocks: res.data['quotes']})
