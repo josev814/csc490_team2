@@ -1,16 +1,22 @@
 import React from 'react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
+function withParams(Component){
+  return props => <Component {...props} params={useParams()} />;
+}
 class ShowTickerNews extends React.Component {
   state = {
+    symbol: null,
     news: [],
-
     loading: false
   };
 
   componentDidMount() {
     this.setState({loading: true});
-    let url = 'http://localhost:8889/stocks/ticker/amzn/news/'
+    let { ticker } = this.props.params
+    this.setState({symbol: ticker})
+    let url = 'http://localhost:8889/stocks/ticker/' + ticker + '/news/'
     console.log(url)
     axios.get(url)
       .then(res => {
@@ -33,9 +39,12 @@ class ShowTickerNews extends React.Component {
   render(){  
     return (
         <div class="container-fluid">
+          <div className="row py-3">
+            <h3>News for {this.state.symbol}</h3>
+          </div>
         {this.state.news.map(news => (
           <div class="row py-3">
-            <a href='{news.link}' target="_blank">
+            <a href={news.link} target="_blank">
               <h4 key={news.uuid}>{news.title}</h4>
             </a>
           </div>
@@ -45,4 +54,4 @@ class ShowTickerNews extends React.Component {
   }
 }
 
-export default ShowTickerNews;
+export default withParams(ShowTickerNews);
