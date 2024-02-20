@@ -1,0 +1,40 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "releases/*" ]
+  pull_request:
+    branches: [ "releases/*" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: Docker Login
+      uses: docker/login-action@v3.0.0
+    - name: Log INTO Docker
+      with:
+        username: ${{ secrets.DOCKERHUBUSER }}
+        password: ${{ secrets.DOCKERHUBAUTHKEY }}
+    - name: Build the Docker React image
+      uses: docker/build-push-action@v5.1.0
+      with:
+        context: .
+        file: ./reactjs/dockerfile-frontend
+        load: true
+        push: true
+        tags: josev814/uncfsu_csc490_react:latest
+        cache-from: josev814/uncfsu_csc490_react:latest
+    - name: Build the Docker Django image
+      uses: docker/build-push-action@v5.1.0
+      with:
+        context: .
+        file: ./BuildTools/dockerfile-backend
+        load: true
+        push: true
+        tags: josev814/uncfsu_csc490_django:latest
+        cache-from: josev814/uncfsu_csc490_django:latest
