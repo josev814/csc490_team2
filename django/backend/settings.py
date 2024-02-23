@@ -159,6 +159,7 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'django_filters',
     'analysts',
     'stocks',
+    'users',
     'corsheaders',
 ]
 MIDDLEWARE = MIDDLEWARE + [
