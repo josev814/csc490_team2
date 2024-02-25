@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ViewSet
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -47,7 +47,7 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
         }, status=status.HTTP_201_CREATED)
 
 
-class RefreshViewSet(ModelViewSet, RefreshToken):
+class RefreshViewSet(ViewSet, RefreshToken):
     permission_classes = (AllowAny,)
     http_method_names = ['post']
 
