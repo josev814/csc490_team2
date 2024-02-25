@@ -192,9 +192,6 @@ OAUTH2_PROVIDER = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -206,4 +203,4 @@ REST_FRAMEWORK = {
     )
 }
 
-AUTH_USER_MODEL = 'core_user.Users'
+AUTH_USER_MODEL = 'users.Users'
