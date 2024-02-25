@@ -1,3 +1,6 @@
+"""
+The routes needed for the users endpoints
+"""
 from rest_framework.routers import SimpleRouter
 
 from .views import UserViewSet
