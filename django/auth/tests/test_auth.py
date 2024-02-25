@@ -24,16 +24,22 @@ class AuthTestCases(TestCase):
         user_dict.pop('email')
         request = self.factory.post('/auth/register', user_dict)
         viewset = views.RegistrationViewSet()
-        self.assertRaises(ValueError, viewset.create, request)
-        #self.assertRaisesMessage('Users must have an email', viewset.create, request)
+        resp = viewset.create(request)
+        self.assertEqual(resp.status_code, 400)
+        jsonResp = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('errors', jsonResp)
+        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
     
     def test_missing_password_create_user(self):
         user_dict = self.user_dict.copy()
         user_dict.pop('password')
         request = self.factory.post('/auth/register', user_dict)
         viewset = views.RegistrationViewSet()
-        self.assertRaises(ValidationError, viewset.create, request)
-        #self.assertRaisesMessage('Users must have a password', viewset.create, request)
+        resp = viewset.create(request)
+        self.assertEqual(resp.status_code, 400)
+        jsonResp = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('errors', jsonResp)
+        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
     
     def test_invalid_body_create_user(self):
         request = self.factory.post('/auth/register', self.user_dict)
