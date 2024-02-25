@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             token = self.__generate_user_token(),
-            isactive = False
+            is_active = False
         )
         user.set_password(password)
 
@@ -33,20 +33,20 @@ class UserManager(BaseUserManager):
         Generates a user token that's used for validation
         The token must be validated prior to an account being marked active
         """
-        rand = str(randint(000000, 999999))
-        while len(rand) < 6:
-            rand = '0' + rand
-        return rand
+        self.rand = str(randint(000000, 999999))
+        if len(self.rand) < 6:
+            self.__expand_user_token_length()
+        return self.rand
 
-    def create_superuser(self, username, email, password):
+    def __expand_user_token_length(self) -> str:
+        while len(self.rand) < 6:
+            self.rand = '0' + self.rand
+
+    def create_superuser(self, email, password):
         """
         Create and return a User with superuser (admin) permissions.
         """
-        if password is None:
-            raise TypeError('Superusers must have a password.')
-        if email is None:
-            raise TypeError('Superusers must have an email.')
-
+        # Email and password are validated in create_user
         user = self.create_user(email, password)
         user.is_superuser = True
         user.is_staff = True
@@ -56,7 +56,7 @@ class UserManager(BaseUserManager):
 
 
 class Users(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(db_index=True, unique=True,  null=True, blank=True)
+    email = models.EmailField(db_index=True, unique=True,  null=False, blank=False)
     token = models.CharField(db_index=True,  max_length=6, unique=True,  null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
