@@ -44,7 +44,7 @@ class ShowTickerNews extends React.Component {
           </div>
         {this.state.news.map(news => (
           <div class="row py-3">
-            <a href={news.link} target="_blank">
+            <a href={news.link} target="_blank" rel='noreferrer'>
               <h4 key={news.uuid}>{news.title}</h4>
             </a>
           </div>
