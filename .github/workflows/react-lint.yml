@@ -36,7 +36,7 @@ jobs:
     - name: EsLint
       run: |
         docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js")' > eslint.results.log
-        if grep -qP '[0-9]+ problems' eslint-results.txt; then
+        if grep -qP '[0-9]+ problems' eslint.results.log; then
           echo "ESLint found errors."
           exit 1
         else
