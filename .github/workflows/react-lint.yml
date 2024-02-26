@@ -40,7 +40,5 @@ jobs:
           echo "ESLint found errors."
           cat eslint.results.log
           exit 1
-        else
-          echo "ESLint passed."
         fi
         
