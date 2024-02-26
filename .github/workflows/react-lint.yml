@@ -38,6 +38,7 @@ jobs:
         docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js")' > eslint.results.log
         if [[ $(grep -P '[0-9]+ problems' eslint.results.log | wc -l ) -gt 0 ]]; then
           echo "ESLint found errors."
+          cat eslint.results.log
           exit 1
         else
           echo "ESLint passed."
