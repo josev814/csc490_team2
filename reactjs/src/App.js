@@ -1,12 +1,12 @@
 import './App.css';
 import React from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
-import Find_Stock from './pages/stocks';
+import FIND_STOCK from './pages/stocks';
 import AuthedLayout from './pages/authedlayout';
 import UnauthedLayout from './pages/unauthedlayout';
 //import Dashboard from './pages/dashboard';
 import NoPage from './pages/nopage';
-import Show_Ticker_News from './pages/news';
+import SHOW_TICKER_NEWS from './pages/news';
 
 class App extends React.Component {
   render() {
@@ -24,14 +24,14 @@ class App extends React.Component {
             <Route path="*" element={<NoPage />} />
           </Route>
           <Route path="/stocks/" element={<AuthedLayout />}>
-            <Route index element={<Find_Stock />} />
-            <Route path=":ticker/news" element={<Show_Ticker_News />} />
+            <Route index element={<FIND_STOCK />} />
+            <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
             <Route path="logout" element={<></>} />
             <Route path="*" element={<NoPage />} />
           </Route>
           <Route path="/rules/" element={<AuthedLayout />}>
-            <Route index element={<Find_Stock />} />
-            <Route path=":ticker/news" element={<Show_Ticker_News />} />
+            <Route index element={<FIND_STOCK />} />
+            <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
             <Route path="logout" element={<></>} />
             <Route path="*" element={<NoPage />} />
           </Route>
