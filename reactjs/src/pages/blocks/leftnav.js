@@ -1,5 +1,5 @@
 import React from "react";
-import { Navbar, Nav, Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 export default function LeftNav() {
     const links = [
@@ -13,7 +13,7 @@ export default function LeftNav() {
             <div className="sidebar-sticky">
                 <ul className="nav flex-column">
                 {links.map(link => (
-                    <li key={link.page}>
+                    <li key={link.pageName}>
                         <NavLink to={link.path}>{link.pageName}</NavLink>
                     </li>
                 ))}

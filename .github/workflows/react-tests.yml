@@ -1,0 +1,43 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: React Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v3
+    - name: Setup Env Vars
+      run: |
+        cat >> .envvars << EOF
+            DJANGO_SECRET_KEY='django-insecure-4o3ug_h7f1r6fa2z5@4o3ug_h7f1r6fa2-!x=-n*tfuccxn5n'
+            MYSQL_HOST=stocksdb
+            MYSQL_PORT=3306
+            MYSQL_ROOT_PASSWORD=unittestrootpw
+            MYSQL_DATABASE=stocksapp
+            MYSQL_USER=team2
+            MYSQL_PASSWORD=unittestMysqlP@ssword
+            MYSQL_PWD=unittestMysqlP@ssword
+        EOF
+    - name: Build FrontEnd
+      run: |
+        docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
+    - name: Test with Jest
+      run: |
+        docker exec stocks_frontend /bin/bash -c 'cd src; npm test' > jest.results.log 2>&1
+        if [[ $(grep -P '^Tests:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
+          cat jest.results.log
+          echo 'UnitTests Failed'
+          exit 1
+        fi
