@@ -41,3 +41,4 @@ jobs:
           echo 'UnitTests Failed'
           exit 1
         fi
+        cat jest.results.log
