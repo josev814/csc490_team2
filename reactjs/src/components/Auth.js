@@ -20,16 +20,18 @@ export default function (props) {
               </span>
             </div>
             <div className="form-group mt-3">
-              <label>Email address</label>
+              <label htmlFor='email_address'>Email address</label>
               <input
+                id='email_address'
                 type="email"
                 className="form-control mt-1"
                 placeholder="Enter email"
               />
             </div>
             <div className="form-group mt-3">
-              <label>Password</label>
+              <label htmlFor='password'>Password</label>
               <input
+                id='password'
                 type="password"
                 className="form-control mt-1"
                 placeholder="Enter password"
@@ -69,16 +71,18 @@ export default function (props) {
             />
           </div> */}
           <div className="form-group mt-3">
-            <label>Email address</label>
+            <label htmlFor='email_address'>Email address</label>
             <input
+              id='email_address'
               type="email"
               className="form-control mt-1"
               placeholder="Email Address"
             />
           </div>
           <div className="form-group mt-3">
-            <label>Password</label>
+            <label htmlFor='password'>Password</label>
             <input
+              id='password'
               type="password"
               className="form-control mt-1"
               placeholder="Password"
