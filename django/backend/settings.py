@@ -160,6 +160,7 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'analysts',
     'stocks',
     'corsheaders',
+    'django_extensions'
 ]
 MIDDLEWARE = MIDDLEWARE + [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
