@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 
-export default function (props) {
+export default function LoginRegister (props) {
   let [authMode, setAuthMode] = useState("signin")
 
   const changeAuthMode = () => {
@@ -43,7 +43,7 @@ export default function (props) {
               </button>
             </div>
             <p className="text-center mt-2">
-              <a href="#">Forgot password?</a>
+              <a href="/Logout">Forgot password?</a>
             </p>
           </div>
         </form>
