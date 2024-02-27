@@ -7,11 +7,18 @@ import Home from './pages/home';
 import NoPage from './pages/nopage';
 import Show_ticker_news from './pages/news';
 
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './App.css'
+import Auth from './components/Auth'
+
+
+
 class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
         <Routes>
+        <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="stocks" element={<Find_stock />} />
