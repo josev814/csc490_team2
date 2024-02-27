@@ -7,6 +7,8 @@ from rest_framework import filters
 
 from users.serializers import UserSerializer
 from users.models import Users
+import requests
+from django.http import JsonResponse
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -32,3 +34,21 @@ class UserViewSet(viewsets.ModelViewSet):
         self.check_object_permissions(self.request, obj)
 
         return obj
+    
+    def search(self, search_param:str, retrieve:str='quotes', limit=20) -> dict:
+        """
+        This method allows to search for a string or symbol and return the results
+        
+        params: retrieve str options are quotes, news, lists
+        """
+        params = {
+            'quotesCount': 0,
+            'newsCount': 0,
+            'listsCount': 0,
+        }
+
+def find_user(request, entry:str):
+    print(request)
+    uvs = UserViewSet()
+    results = uvs.search(entry, 'user')
+    return JsonResponse(results)
