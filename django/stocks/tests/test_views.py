@@ -6,6 +6,7 @@ from stocks import views
 # Create your tests here.
 class StockTestCases(TestCase):
     symbol = None
+    story_types = ['STORY', 'VIDEO']
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
@@ -37,7 +38,7 @@ class StockTestCases(TestCase):
         self.assertIn('news', json_resp)
         self.assertEqual(len(json_resp['news']), count)
         self.assertIn('type', json_resp['news'][0])
-        self.assertIn(json_resp['news'][0]['type'], ['STORY'])
+        self.assertIn(json_resp['news'][0]['type'], self.story_types)
     
     def test_get_ticker_metrics(self):
         request = self.factory.get(f'/stocks/{self.symbol}')
