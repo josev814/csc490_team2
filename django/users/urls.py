@@ -1,16 +1,17 @@
 """
 The routes needed for the users endpoints
 """
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
+from django.urls import path, include
 
 from .views import UserViewSet
 
-routes = SimpleRouter()
+routes = DefaultRouter()
 
 # USER
-routes.register(r'user', UserViewSet, basename='user')
+routes.register(r'', UserViewSet)
 
 
 urlpatterns = [
-    *routes.urls
+    path('', include(routes.urls))
 ]
