@@ -35,7 +35,7 @@ jobs:
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
     - name: Test with Jest
       run: |
-        docker exec stocks_frontend /bin/bash -c 'cd src; npm test' > jest.results.log 2>&1
+        docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --coverage' > jest.results.log 2>&1
         if [[ $(grep -P '^Tests:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
           cat jest.results.log
           echo 'UnitTests Failed'
