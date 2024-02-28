@@ -3,7 +3,6 @@ Models for the application are stored here
 """
 from django.db import models
 
-# Create your models here.
 class Stocks(models.Model):
     """
     Model for a Stocks table
@@ -12,6 +11,7 @@ class Stocks(models.Model):
     name = models.CharField(max_length=75)
     create_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         """

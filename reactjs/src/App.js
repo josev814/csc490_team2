@@ -2,6 +2,7 @@ import './App.css';
 import React from 'react';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import FIND_STOCK from './pages/stocks';
+import SHOW_TICKER from './pages/show_ticker';
 import AuthedLayout from './pages/authedlayout';
 import UnauthedLayout from './pages/unauthedlayout';
 //import Dashboard from './pages/dashboard';
@@ -25,14 +26,13 @@ class App extends React.Component {
           </Route>
           <Route path="/stocks/" element={<AuthedLayout />}>
             <Route index element={<FIND_STOCK />} />
+            <Route path=":ticker" element={<SHOW_TICKER />} />
             <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
-            <Route path="logout" element={<></>} />
             <Route path="*" element={<NoPage />} />
           </Route>
           <Route path="/rules/" element={<AuthedLayout />}>
             <Route index element={<FIND_STOCK />} />
             <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
-            <Route path="logout" element={<></>} />
             <Route path="*" element={<NoPage />} />
           </Route>
         </Routes>

@@ -2,8 +2,19 @@
 Logic for the stocks app
 """
 import requests
-#from django.shortcuts import render
-from django.http import JsonResponse
+import json
+import datetime
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from rest_framework import viewsets, status, filters
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, action
+from rest_framework.response import Response
+
+
+from stocks.serializers import StockSerializer
+from stocks.models import Stocks
 
 class YahooFinance:
     """
@@ -25,6 +36,8 @@ class YahooFinance:
     headers = {
         'User-Agent': ' '.join(user_agents)
     }
+    starttime=int(datetime.datetime.now().timestamp()) - 86400
+    endtime=int(datetime.datetime.now().timestamp())
 
     def build_params(self, param_dict:dict) -> str:
         """
@@ -33,8 +46,12 @@ class YahooFinance:
         params = ''
         # merge dicts
         param_dict = param_dict | self.extra_params
+        separator=False
         for item in param_dict.items():
-            params += f'&{item[0]}={item[1]}'
+            if separator:
+                params += '&'
+            params += f'{item[0]}={item[1]}'
+            separator=True
         return params
 
     def search(self, search_param:str, retrieve:str='quotes', limit=20) -> dict:
@@ -44,6 +61,7 @@ class YahooFinance:
         params: retrieve str options are quotes, news, lists
         """
         params = {
+            'q': search_param,
             'quotesCount': 0,
             'newsCount': 0,
             'listsCount': 0,
@@ -51,11 +69,11 @@ class YahooFinance:
         #override default
         params[f'{retrieve}Count'] = limit
         query_params = self.build_params(params)
-        query_uri = f'{self.base_url}search?q={search_param}{query_params}'
+        query_uri = f'{self.base_url}search?{query_params}'
         return self.__make_request(query_uri)
 
-    def get_chart(self, ticker:str, interval:str='1d', 
-                  starttime:int|None=None, endtime:int|None=None) -> dict:
+    def get_chart(self, ticker:str, interval:str='1m', 
+                  starttime:int=starttime, endtime:int=endtime) -> dict:
         """
         Gets chart metrics for a symbol
 
@@ -64,6 +82,7 @@ class YahooFinance:
         param: endtime int This should be an int based on a timestamp
         """
         params = {
+            'interval': interval,
             'includePrePost': True
         }
         if starttime:
@@ -72,7 +91,7 @@ class YahooFinance:
             params['endtime'] = endtime
         query_params = self.build_params(params)
         base_url = self.base_url.replace("/v1/", "/v8/")
-        query_uri = f'{base_url}chart/{ticker}?interval={interval}{query_params}'
+        query_uri = f'{base_url}chart/{ticker}?{query_params}'
         return self.__make_request(query_uri)
 
     def __make_request(self, query_uri) -> dict:
@@ -92,43 +111,63 @@ class YahooFinance:
             return bad_result
         return r.json()        
 
-# Create your views here.
-def index(request):
-    """
-    This is the main endpoint that gets hit
-    """
-    print(request)
-    resp = {
-        'error': {
-            'msg': 'Unauthorized Access',
-            'status_code': '403'
-        }
-    }
-    return JsonResponse(resp)
 
-def find_ticker(request, search: str='amazon'):
+class StockViewSet(viewsets.ModelViewSet):
     """
-    This endpoint allows us to search for a ticker using the search parameter
+    The User ViewSet that queries the Users database
     """
-    print(request)
-    yf = YahooFinance()
-    results = yf.search(search)
-    return JsonResponse(results)
+    http_method_names = ['get']
+    queryset = Stocks.objects.all().order_by('-ticker')
+    serializer_class = StockSerializer
+    filter_backends = [filters.OrderingFilter]
+    #permission_classes = [IsAuthenticated,]
+    ordering_fields = ['ticker', 'name']
+    ordering = ['-ticker', '-name']
 
-def get_ticker_news(request, symbol: str='amazon'):
-    """
-    Gets a ticker's chart data
-    """
-    print(request)
-    yf = YahooFinance()
-    results = yf.search(symbol, 'news')
-    return JsonResponse(results)
+    @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
+    @action(detail=False, methods=['get'])
+    def find_ticker(self, request):
+        """
+        This endpoint allows us to search for a ticker using the search parameter
+        """
+        if 'ticker' not in request.query_params:
+            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+        find = request.query_params['ticker']
+        yf = YahooFinance()
+        results = yf.search(find)
+        return Response(results)
 
-def get_ticker(request, symbol:str):
-    """
-    Gets a ticker's chart data
-    """
-    print(request)
-    yf = YahooFinance()
-    results = yf.get_chart(symbol)
-    return JsonResponse(results)
+    @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
+    @action(detail=False, methods=['GET'])
+    def get_ticker_news(self, request):
+        """
+        Gets a ticker's chart data
+        """
+        if 'ticker' not in request.query_params:
+            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+        ticker = request.query_params.get('ticker')
+        yf = YahooFinance()
+        results = yf.search(ticker, 'news')
+        return Response(results)
+
+    @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
+    @action(detail=False, methods=['GET'])
+    def get_ticker(self, request):
+        """
+        Gets a ticker's chart data
+        """
+        if 'ticker' not in request.query_params:
+            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+        optionalKeys=['starttime,endtime,interval']
+        kwargs = self.__get_optional_query_params(request, optionalKeys)
+        ticker = request.query_params.get('ticker')
+        yf = YahooFinance()
+        results = yf.get_chart(ticker, **kwargs)
+        return Response(results)
+
+    def __get_optional_query_params(self, request, keys):
+        kwargs = {}
+        for item in keys:
+            if item in request.query_params:
+                kwargs[item] = request.query_params.get(item)
+        return kwargs
