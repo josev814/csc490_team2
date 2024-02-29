@@ -38,4 +38,4 @@ jobs:
         docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage run manage.py test --keepdb'
     - name: Output results
       run: |
-        docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage report -m'
+        docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage report --omit="*/tests/*" -m'
