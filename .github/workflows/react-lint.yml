@@ -41,4 +41,5 @@ jobs:
           cat eslint.results.log
           exit 1
         fi
+        cat eslint.results.log
         
