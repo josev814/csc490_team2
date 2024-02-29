@@ -64,7 +64,7 @@ class AuthTestCases(TestCase):
         self.assertRegex(self.createJsonResp['refresh'], r'^[a-zA-Z][a-zA-Z0-9\.]')
         userData = self.createJsonResp['user']
         self.assertEquals(userData['id'], self.user_id)
-        self.assertFalse(userData['is_active'])
+        self.assertTrue(userData['is_active'])
         self.assertRegex(userData['token'], r'^[0-9]{6}$')
     
     def test_refresh_token(self):
