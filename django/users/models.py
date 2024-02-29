@@ -21,7 +21,7 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             token = self.__generate_user_token(),
-            is_active = False
+            is_active = True
         )
         user.set_password(password)
 
@@ -66,4 +66,4 @@ class Users(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return f"{self.email}"
+        return f"{self.email, self.is_active, self.last_login}"

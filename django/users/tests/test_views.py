@@ -56,16 +56,19 @@ class UsersTestCases(TestCase):
         self.assertRegex(self.createJsonResp['refresh'], r'^[a-zA-Z][a-zA-Z0-9\.]')
         userData = self.createJsonResp['user']
         self.assertEqual(userData['id'], self.user_id)
-        self.assertFalse(userData['is_active'])
+        self.assertTrue(userData['is_active'])
         self.assertRegex(userData['token'], r'^[0-9]{6}$')
 
         view = views.UserViewSet()
         request = self.factory.post('/users/login', self.user_dict, content_type='application/json')
         user_results = view.login_user(request)
-        self.assertIsNotNone(user_results)
-        self.assertNotIn('errors', user_results)
-        self.assertIn('access_token', user_results)
-        self.assertIn('refresh_token', user_results)
+        self.assertIs(user_results.status_code, 200)
+        user_data = user_results.data
+        self.assertIsNotNone(user_data)
+        self.assertNotIn('errors', user_data)
+        self.assertIn('is_active', user_data)
+        self.assertIn('email', user_data)
+        self.assertEqual(user_data['email'], self.user_dict['email'])
     
     # def test_invalid_login_user_no_email(self):
     #     # Valid posts must use application/json for the content-type
