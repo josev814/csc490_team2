@@ -13,7 +13,7 @@ class UsersTestCases(TestCase):
         'email': 'qwertyuiop@mail.com',
         'password': 'UnitTestingPassword'
     }
-    user_id = 1
+    user_id = 3
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
