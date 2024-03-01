@@ -80,6 +80,14 @@ class StockData(models.Model):
     close = models.FloatField(default=0.0, max_length=28)
     granularity = models.CharField(max_length=4)
     create_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """
+        Adding indexes for the table
+        """
+        indexes = [
+            models.Index(fields=['ticker', 'timestamp', 'granularity']),
+        ]
     
     def save_stock_results(self, yahoo_data:dict) -> bool:
         """Parses the yahoo chart results and saves the results to our database
@@ -94,10 +102,10 @@ class StockData(models.Model):
             ticker = yahoo_data['meta']['symbol']
             granularity = yahoo_data['meta']['dataGranularity']
             for i in range(len(yahoo_data['timestamp'])):
-                quote_volumes = yahoo_data['indicators']['quote'][0]['volume']
+                quote_volumes = yahoo_data['indicators']['quote'][0]
                 records.append(
                     {
-                        'ticker_id': ticker,
+                        'ticker_id': Stocks.objects.filter(**{'ticker': ticker}).get().pk,
                         'granularity': granularity,
                         'timestamp': datetime.fromtimestamp(yahoo_data['timestamp'][i]),
                         'high': quote_volumes['high'][i],
@@ -124,7 +132,7 @@ class StockSearch(models.Model):
     search_phrase = models.CharField(max_length=128)
     search_args = models.CharField(max_length=1024, null=True)
     updated_date = models.DateTimeField(auto_now=True)
-    one_day_ago = datetime.now() - timedelta(days=1)
+    search_refresh = datetime.now() - timedelta(days=1)
 
 
     class Meta:
@@ -148,7 +156,7 @@ class StockSearch(models.Model):
         search_filter = {
             'search_phrase': phrase,
             'search_args': args,
-            'updated_date__gte': self.one_day_ago
+            'updated_date__gte': self.search_refresh
         }
         records = StockSearch.objects.filter(**search_filter).count()
         return records > 0
@@ -177,8 +185,9 @@ class StockSearch(models.Model):
     
     def save_search_results(self, yahoo_results: dict) -> dict:
         if 'chart' in yahoo_results:
-            return StockData().save_search_results(yahoo_results['chart']['result'][0])
+            return StockData().save_stock_results(yahoo_results['chart']['result'][0])
         elif 'quotes' in yahoo_results and len(yahoo_results['quotes']) > 0:
             return Stocks().save_search_results(yahoo_results['quotes'])
-        print('Unhandled option in save_search_results')
-        return {'status': True, 'errors': None}
+        else:
+            msg = 'Unhandled option in save_search_results'
+            return {'status': True, 'errors': msg}
