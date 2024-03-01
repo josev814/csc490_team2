@@ -39,6 +39,10 @@ class Stocks(models.Model):
         records = []
         try:
             for entry in yahoo_data:
+                if 'longname' not in entry:
+                    if 'shortname' not in entry:
+                        continue
+                    entry['longname'] = entry['shortname']
                 record = {
                     'ticker': entry['symbol'],
                     'name': entry['longname'],

@@ -128,7 +128,7 @@ class StockViewSet(viewsets.ModelViewSet):
     ordering_fields = ['ticker', 'name']
     ordering = ['-ticker', '-name']
 
-    #@method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
+    @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
     @action(detail=False, methods=['get'])
     def find_ticker(self, request):
         """
@@ -160,7 +160,11 @@ class StockViewSet(viewsets.ModelViewSet):
             context={'request': request}
         ).data
         #return Response({results: stocks})
-        return Response(stock_data, status=status.HTTP_200_OK)
+        return Response({
+            'count': len(stock_data),
+            'errors': None,
+            'records': stock_data
+        }, status=status.HTTP_200_OK)
 
     @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
     @action(detail=False, methods=['GET'])

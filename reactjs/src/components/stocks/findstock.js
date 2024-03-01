@@ -16,7 +16,7 @@ class FindStock extends React.Component {
     axios.get(
       'http://localhost:8889/stocks/find_ticker/?ticker=' + val
     ).then(res => {
-      this.setState({stocks: res.data['quotes'], loading: false})
+      this.setState({stocks: res.data['records'], loading: false})
     }).catch(error => {
       console.log('Error fetching data: ', error)
       this.setState({loading: false })
@@ -35,12 +35,12 @@ class FindStock extends React.Component {
       this.setState({ loading: false })
     }
 
-    // Start a new timer to execute the search after 1 second
+    // Start a new timer to execute the search after 1/2 second
     this.searchTimer = setTimeout(() => {
       if (e.target.value.length > 1) {
         this.search(e.target.value);
       }
-    }, 1000)
+    }, 500)
   };
 
   get renderStocks(){
@@ -50,8 +50,8 @@ class FindStock extends React.Component {
       let stocks = <h3> There are no stocks with the name {this.state.value}.</h3>
       if (this.state.stocks) {
         stocks = ( this.state.stocks.map(stocks => (
-          <div className='row py-2' key={stocks.symbol}>
-            <a href={'stocks/' + stocks.symbol}>{stocks.symbol}: {stocks.longname}</a>
+          <div className='row py-2' key={stocks.ticker}>
+            <a href={'stocks/' + stocks.ticker}>{stocks.ticker}: {stocks.name}</a>
           </div>
         )))
       }

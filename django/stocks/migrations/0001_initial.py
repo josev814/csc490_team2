@@ -16,8 +16,8 @@ class Migration(migrations.Migration):
             name='Stocks',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('ticker', models.CharField(max_length=12)),
-                ('name', models.CharField(max_length=75)),
+                ('ticker', models.CharField(max_length=50)),
+                ('name', models.CharField(max_length=125)),
                 ('exchange_name', models.CharField(max_length=50)),
                 ('exchange', models.CharField(max_length=10)),
                 ('stock_type', models.CharField(max_length=12)),
