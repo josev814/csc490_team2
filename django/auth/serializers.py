@@ -13,12 +13,12 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         refresh = self.get_token(self.user)
-        data['user'] = UserSerializer(self.user).data
+        user_serial = UserSerializer(self.user)
+        data['user'] = user_serial.data
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
 
-        if api_settings.UPDATE_LAST_LOGIN:
-            update_last_login(None, self.user)
+        update_last_login(None, self.user)
         return data
 
 class RegisterSerializer(UserSerializer):
@@ -32,7 +32,7 @@ class RegisterSerializer(UserSerializer):
 
     def create(self, validated_data):
         try:
-            user = Users.objects.get(email=validated_data['email'])
+            user = Users.objects.filter(**{'email':validated_data['email']}).get()
         except ObjectDoesNotExist:
             user = Users.objects.create_user(**validated_data)
         return user

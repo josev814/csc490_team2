@@ -58,6 +58,8 @@ class UserManager(BaseUserManager):
 class Users(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(db_index=True, unique=True,  null=False, blank=False)
     token = models.CharField(db_index=True,  max_length=6, unique=True,  null=True, blank=True)
+    created = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
