@@ -17,4 +17,15 @@ class StockSerializer(serializers.HyperlinkedModelSerializer):
         says to use the Stocks model and the fields to return
         """
         model = Stocks
-        fields = ['id', 'ticker', 'name', 'create_date', 'updated_date']
+        fields = '__all__'
+
+    def __init__(self, instance=None, data=serializers.empty, **kwargs):
+        """_summary_
+
+        :param instance: _description_, defaults to None
+        :type instance: _type_, optional
+        :param data: _description_, defaults to serializers.empty
+        :type data: _type_, optional
+        """
+        kwargs['context'] = {'request': kwargs.get('request')}
+        super().__init__(instance, data, **kwargs)

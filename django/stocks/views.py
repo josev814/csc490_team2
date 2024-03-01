@@ -2,9 +2,9 @@
 Logic for the stocks app
 """
 import requests
-import json
-import datetime
+from datetime import datetime, timedelta
 
+from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, status, filters
@@ -14,7 +14,7 @@ from rest_framework.response import Response
 
 
 from stocks.serializers import StockSerializer
-from stocks.models import Stocks
+from stocks.models import Stocks, StockSearch
 
 class YahooFinance:
     """
@@ -36,8 +36,8 @@ class YahooFinance:
     headers = {
         'User-Agent': ' '.join(user_agents)
     }
-    starttime=int(datetime.datetime.now().timestamp()) - 86400
-    endtime=int(datetime.datetime.now().timestamp())
+    starttime=int(datetime.now().timestamp()) - 86400
+    endtime=int(datetime.now().timestamp())
 
     def build_params(self, param_dict:dict) -> str:
         """
@@ -113,8 +113,12 @@ class YahooFinance:
 
 
 class StockViewSet(viewsets.ModelViewSet):
-    """
-    The User ViewSet that queries the Users database
+    """The User ViewSet that queries the Users database
+
+    :param viewsets: The ModelViewSet, so we can access the db
+    :type viewsets: class
+    :return: Returns the Viewset for stocks
+    :rtype: viewset
     """
     http_method_names = ['get']
     queryset = Stocks.objects.all().order_by('-ticker')
@@ -124,18 +128,39 @@ class StockViewSet(viewsets.ModelViewSet):
     ordering_fields = ['ticker', 'name']
     ordering = ['-ticker', '-name']
 
-    @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
+    #@method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
     @action(detail=False, methods=['get'])
     def find_ticker(self, request):
         """
         This endpoint allows us to search for a ticker using the search parameter
         """
         if 'ticker' not in request.query_params:
-            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+            return Response(
+                {
+                    'errors': [{'Missing required parameter "ticker"'}]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         find = request.query_params['ticker']
-        yf = YahooFinance()
-        results = yf.search(find)
-        return Response(results)
+        stockSearch = StockSearch()
+        if not stockSearch.does_search_record_exist(find, None):
+            yf = YahooFinance()
+            results = yf.search(find)
+            save_search_results = stockSearch.save_search_results(results)
+            if save_search_results['errors'] is not None:
+                return Response(save_search_results, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            save_search_request = stockSearch.save_search_request(find)
+            if save_search_request['errors'] is not None:
+                return Response(save_search_request, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        kwsearch = Q(ticker__istartswith=find.lower()) | Q(name__istartswith=find.lower())
+        stocks_qs = Stocks.objects.filter(kwsearch)[:20]
+        stock_data = StockSerializer(
+            instance=stocks_qs,
+            many=True,
+            context={'request': request}
+        ).data
+        #return Response({results: stocks})
+        return Response(stock_data, status=status.HTTP_200_OK)
 
     @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
     @action(detail=False, methods=['GET'])
@@ -144,7 +169,12 @@ class StockViewSet(viewsets.ModelViewSet):
         Gets a ticker's chart data
         """
         if 'ticker' not in request.query_params:
-            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+            return Response(
+                {
+                    'errors': [{'Missing required parameter "ticker"'}]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         ticker = request.query_params.get('ticker')
         yf = YahooFinance()
         results = yf.search(ticker, 'news')
@@ -157,7 +187,12 @@ class StockViewSet(viewsets.ModelViewSet):
         Gets a ticker's chart data
         """
         if 'ticker' not in request.query_params:
-            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+            return Response(
+                {
+                    'errors': [{'Missing required parameter "ticker"'}]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         optionalKeys=['starttime,endtime,interval']
         kwargs = self.__get_optional_query_params(request, optionalKeys)
         ticker = request.query_params.get('ticker')
