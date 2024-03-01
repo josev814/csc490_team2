@@ -27,13 +27,13 @@ class ShowTickerChart extends React.Component {
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure
           const results = res.data['chart']['result'][0];
-          const timestamps = results['timestamp'];
+          //const timestamps = results['timestamp'];
           const quotes = results['indicators']['quote'][0]
           const high = quotes['high'];
-          const low = quotes['low'];
-          const open = quotes['open'];
-          const close = quotes['close'];
-          const volume = quotes['volume'];
+          // const low = quotes['low'];
+          // const open = quotes['open'];
+          // const close = quotes['close'];
+          // const volume = quotes['volume'];
           this.setState({ chartData: high, loading: false }); // Set loading to false here
         })
       .catch(error => {
