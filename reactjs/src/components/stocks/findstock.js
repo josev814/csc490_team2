@@ -51,7 +51,7 @@ class FindStock extends React.Component {
       if (this.state.stocks) {
         stocks = ( this.state.stocks.map(stocks => (
           <div className='row py-2' key={stocks.ticker}>
-            <a href={'stocks/' + stocks.ticker}>{stocks.ticker}: {stocks.name}</a>
+            <a href={'/stocks/' + stocks.ticker}>{stocks.ticker}: {stocks.name}</a>
           </div>
         )))
       }
