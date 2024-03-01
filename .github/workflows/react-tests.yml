@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: NTSS Code Coverage
+name: React Tests
 
 on:
   push:
@@ -30,12 +30,15 @@ jobs:
             MYSQL_PASSWORD=unittestMysqlP@ssword
             MYSQL_PWD=unittestMysqlP@ssword
         EOF
-    - name: Compose docker
+    - name: Build FrontEnd
       run: |
-        docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans
-    - name: Test with coverage
+        docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
+    - name: Test with Jest
       run: |
-        docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage run manage.py test --keepdb'
-    - name: Output results
-      run: |
-        docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage report --omit="*/tests/*" -m'
+        docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --coverage' > jest.results.log 2>&1
+        if [[ $(grep -P '^Tests:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
+          cat jest.results.log
+          echo 'UnitTests Failed'
+          exit 1
+        fi
+        cat jest.results.log

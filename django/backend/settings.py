@@ -162,6 +162,7 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'stocks',
     'users',
     'corsheaders',
+    'django_extensions'
 ]
 MIDDLEWARE = MIDDLEWARE + [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
@@ -171,9 +172,11 @@ MIDDLEWARE = MIDDLEWARE + [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8890',
+    'http://localhost',
 ]
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8890',
+    'http://localhost',
 ]
 
 # Authentication using OAuth 2.0
