@@ -159,7 +159,6 @@ class StockViewSet(viewsets.ModelViewSet):
             many=True,
             context={'request': request}
         ).data
-        #return Response({results: stocks})
         return Response({
             'count': len(stock_data),
             'errors': None,
@@ -186,7 +185,7 @@ class StockViewSet(viewsets.ModelViewSet):
 
     @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
     @action(detail=False, methods=['GET'])
-    def get_ticker(self, request):
+    def get_ticker_metrics(self, request):
         """
         Gets a ticker's chart data
         """
@@ -200,9 +199,33 @@ class StockViewSet(viewsets.ModelViewSet):
         optionalKeys=['starttime,endtime,interval']
         kwargs = self.__get_optional_query_params(request, optionalKeys)
         ticker = request.query_params.get('ticker')
-        yf = YahooFinance()
-        results = yf.get_chart(ticker, **kwargs)
-        return Response(results)
+
+        stockSearch = StockSearch()
+        if not stockSearch.does_search_record_exist(ticker, kwargs):
+            yf = YahooFinance()
+            results = yf.get_chart(ticker, **kwargs)
+            save_search_results = stockSearch.save_search_results(results)
+            if save_search_results['errors'] is not None:
+                return Response(save_search_results, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            save_search_request = stockSearch.save_search_request(find)
+            if save_search_request['errors'] is not None:
+                return Response(save_search_request, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        kwsearch = Q(ticker__istartswith=find.lower()) | Q(name__istartswith=find.lower())
+        stocks_qs = Stocks.objects.filter(kwsearch)[:20]
+        stock_data = StockSerializer(
+            instance=stocks_qs,
+            many=True,
+            context={'request': request}
+        ).data
+        return Response({
+            'count': len(stock_data),
+            'errors': None,
+            'records': stock_data
+        }, status=status.HTTP_200_OK)
+
+        # yf = YahooFinance()
+        # results = yf.get_chart(ticker, **kwargs)
+        # return Response(results)
 
     def __get_optional_query_params(self, request, keys):
         kwargs = {}
