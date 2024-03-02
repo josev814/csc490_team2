@@ -70,6 +70,57 @@ class UsersTestCases(TestCase):
         self.assertIn('email', user_data)
         self.assertEqual(user_data['email'], self.user_dict['email'])
     
+    def test_user_does_not_exist(self):
+        user_dict = self.user_dict.copy()
+        user_dict.pop('email')
+        request = self.factory.post('/users/login', user_dict)
+        view = views.UserViewSet()
+        resp = view.create(request)
+        self.assertEqual(resp.status_code, 400)
+        jsonResp = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('errors', jsonResp)
+        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+
+    def test_invalid_password(self):
+        user_dict = self.user_dict.copy()
+        # saving the password in dict
+        testing_password = user_dict.pop('password')
+        user_dict.pop('password')
+        request = self.factory.post('/users/login', user_dict)
+        viewset = views.UserViewSet()
+        resp = viewset.create(request)
+        userData = self.createJsonResp['user']
+        # checking if the user entered password == testing password (password in dict)
+        self.assertEqual(userData['password'],testing_password)
+        self.assertEqual(resp.status_code, 400)
+        jsonResp = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('errors', jsonResp)
+        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+
+    def test_is_active_is_false(self):
+        request = self.factory.post('/auth/register', self.user_dict, content_type='application/json')
+        viewset = auth_views.RegistrationViewSet()
+        resp = viewset.create(request)
+        self.assertEqual(resp.status_code, 201)
+        self.createJsonResp = json.loads(resp.content.decode('utf-8'))
+        self.assertIn('user', self.createJsonResp)
+        self.assertIn('refresh', self.createJsonResp)
+        self.assertIn('token', self.createJsonResp)
+        self.assertRegex(self.createJsonResp['token'], r'^[a-zA-Z][a-zA-Z0-9\.]')
+        self.assertRegex(self.createJsonResp['refresh'], r'^[a-zA-Z][a-zA-Z0-9\.]')
+        userData = self.createJsonResp['user']
+        self.assertEqual(userData['id'], self.user_id)
+        self.assertTrue(userData['is_active'])
+        self.assertRegex(userData['token'], r'^[0-9]{6}$')
+
+        jsonResp = json.loads(resp.content.decode('utf-8'))
+        if userData[1]!=userData['is_active']:
+            resp = viewset.create(request)
+            self.assertIn('errors', jsonResp)
+            self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+
+
+
     # def test_invalid_login_user_no_email(self):
     #     # Valid posts must use application/json for the content-type
     #     user_dict = self.user_dict.copy()
@@ -84,7 +135,7 @@ class UsersTestCases(TestCase):
 
     # def test_invalid_login_user_no_password(self):
     #     user_dict = self.user_dict.copy()
-    #     del user_dict['password ']
+    #     del user_dict['password']
     #     request = self.factory.post('/auth/register', user_dict, content_type='application/json')
 
     #     view = views.UserViewSet()
