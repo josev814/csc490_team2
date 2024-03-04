@@ -19,7 +19,6 @@ class App extends React.Component {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/settings" element={<Settings />} />
         <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<UnauthedLayout />}>
             <Route index element={<></>} />
@@ -42,6 +41,8 @@ class App extends React.Component {
             <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
             <Route path="logout" element={<></>} />
             <Route path="*" element={<NoPage />} />
+          </Route>
+          <Route path="/settings" element={<AuthedLayout />}>
           </Route>
         </Routes>
       </BrowserRouter>
