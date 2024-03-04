@@ -3,6 +3,7 @@ The viewsets needed for the Users app
 """
 import json
 import requests
+import datetime
 
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated,AllowAny
@@ -12,6 +13,7 @@ from rest_framework.response import Response
 
 from users.serializers import UserSerializer
 from users.models import Users
+# from django.utils import timezone
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -82,6 +84,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 {'errors': ['Invalid Credentials']},
                 status=status.HTTP_401_UNAUTHORIZED
             )
+
+        user_obj.last_login = datetime.datetime.now
+        user_obj.save#()#(using=self.db)
+
+        # user_obj.last_login = timezone.now()
+        # user_obj.save() 
+        
         return Response({
             'email': user_obj.email,
             'is_active': user_obj.is_active,
