@@ -1,7 +1,7 @@
 """
 Models for the application are stored here
 """
-import sys, traceback
+import sys
 from datetime import datetime, timedelta
 
 from django.db import models, IntegrityError
@@ -37,6 +37,13 @@ class Stocks(models.Model):
         return f'{self.ticker}'
 
     def save_search_results(self, yahoo_data:dict) -> dict:
+        """_summary_
+
+        :param yahoo_data: _description_
+        :type yahoo_data: dict
+        :return: _description_
+        :rtype: dict
+        """
         records = []
         try:
             for entry in yahoo_data:
@@ -103,7 +110,7 @@ class StockData(models.Model):
             ticker = yahoo_data['meta']['symbol']
             granularity = yahoo_data['meta']['dataGranularity']
             if 'timestamp' not in yahoo_data:
-                return {'status': False, 'errors': [f'YahooData: No data']}
+                return {'status': False, 'errors': ['YahooData: No data']}
             for i in range(len(yahoo_data['timestamp'])):
                 quote_volumes = yahoo_data['indicators']['quote'][0]
                 cont = False
@@ -131,6 +138,7 @@ class StockData(models.Model):
             return {'status': False, 'errors': [f'KeyError: Failed to save record: {e}']}
         except Exception:
             ex_type, ex, tb = sys.exc_info()
+            print(tb)
             return {'status': False, 'errors': [f'{ex_type}: Failed to save record: {ex}']}
         return {'status': True, 'errors': None}
 
@@ -155,6 +163,13 @@ class StockSearch(models.Model):
         ]
     
     def set_search_refresh(self, delta_name:str, delta_value:int):
+        """sets the refresh date
+
+        :param delta_name: _description_
+        :type delta_name: str
+        :param delta_value: _description_
+        :type delta_value: int
+        """
         self.search_refresh = datetime.now() - timedelta(**{delta_name:delta_value})
 
     def does_search_record_exist(self, phrase:str, args:str) -> bool:
@@ -219,6 +234,13 @@ class StockSearch(models.Model):
         return {'status': True, 'errors': None}
     
     def save_search_results(self, yahoo_results: dict) -> dict:
+        """a wrapper for saving search results
+
+        :param yahoo_results: _description_
+        :type yahoo_results: dict
+        :return: _description_
+        :rtype: dict
+        """
         if 'chart' in yahoo_results:
             return StockData().save_stock_results(yahoo_results['chart']['result'][0])
         elif 'quotes' in yahoo_results and len(yahoo_results['quotes']) > 0:
