@@ -1,8 +1,8 @@
 """
 Logic for the stocks app
 """
-import requests
 from datetime import datetime, timedelta
+import requests
 
 from django.db.models import Q
 from django.utils.decorators import method_decorator
@@ -131,11 +131,11 @@ class StockViewSet(viewsets.ModelViewSet):
     def __find_save_ticker(self, ticker:str) -> list:
         yf = YahooFinance()
         results = yf.search(ticker)
-        stockSearch = StockSearch()
-        save_search_results = stockSearch.save_search_results(results)
+        stock_search = StockSearch()
+        save_search_results = stock_search.save_search_results(results)
         if save_search_results['errors'] is not None:
             return [False, save_search_results]
-        save_search_request = stockSearch.save_search_request(ticker)
+        save_search_request = stock_search.save_search_request(ticker)
         if save_search_request['errors'] is not None:
             return [False, save_search_request]
         return [True, None]
@@ -154,8 +154,8 @@ class StockViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         find = request.query_params['ticker']
-        stockSearch = StockSearch()
-        if not stockSearch.does_search_record_exist(find, None):
+        stock_search = StockSearch()
+        if not stock_search.does_search_record_exist(find, None):
             saved, respose = self.__find_save_ticker(find)
             if not saved:
                 return Response(respose, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -207,8 +207,8 @@ class StockViewSet(viewsets.ModelViewSet):
         kwargs = self.__get_optional_query_params(request, optionalKeys)
         ticker = request.query_params.get('ticker')
 
-        stockSearch = StockSearch()
-        if not stockSearch.does_search_record_exist(ticker, None):
+        stock_search = StockSearch()
+        if not stock_search.does_search_record_exist(ticker, None):
             saved, respose = self.__find_save_ticker(ticker)
             if not saved:
                 return Response(respose, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -217,8 +217,8 @@ class StockViewSet(viewsets.ModelViewSet):
         if 'interval' in kwargs and kwargs['interval'] == '1m':
             delta='minutes'
             interval=5
-            stockSearch.set_search_refresh(delta, interval)  # refresh every 5 minutes
-        search_qs = stockSearch.get_search_record(ticker, kwargs)
+            stock_search.set_search_refresh(delta, interval)  # refresh every 5 minutes
+        search_qs = stock_search.get_search_record(ticker, kwargs)
         search_record = StockSearchSerializer(
             instance=search_qs,
             many=True,
@@ -227,13 +227,13 @@ class StockViewSet(viewsets.ModelViewSet):
         if search_record is not None:
             yf = YahooFinance()
             results = yf.get_chart(ticker, **kwargs)
-            save_search_results = stockSearch.save_search_results(results)
+            save_search_results = stock_search.save_search_results(results)
             if save_search_results['errors'] is not None:
                 return Response(save_search_results, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            save_search_request = stockSearch.save_search_request(ticker, kwargs)
+            save_search_request = stock_search.save_search_request(ticker, kwargs)
             if save_search_request['errors'] is not None:
                 return Response(save_search_request, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            search_qs = stockSearch.get_search_record(ticker, kwargs)
+            search_qs = stock_search.get_search_record(ticker, kwargs)
             search_record = StockSearchSerializer(
                 instance=search_qs,
                 many=True,
@@ -244,13 +244,13 @@ class StockViewSet(viewsets.ModelViewSet):
         ticker_filter = Q(ticker__iexact=ticker.lower())
         ticker_pk = Stocks.objects.filter(ticker_filter)[0].pk
         kwsearch = Q(ticker=ticker_pk)
-        for filter in kwargs:
-            if filter == 'internavl':
-                kwsearch &= Q(granularity=kwargs[filter])
-            elif filter == 'starttime':
-                kwsearch &= Q(timestamp__gte=kwargs[filter])
-            elif filter == 'endtime':
-                kwsearh &= Q(timestamp__lte=kwargs[filter])
+        for kwfilter in kwargs:
+            if kwfilter == 'internavl':
+                kwsearch &= Q(granularity=kwargs[kwfilter])
+            elif kwfilter == 'starttime':
+                kwsearch &= Q(timestamp__gte=kwargs[kwfilter])
+            elif kwfilter == 'endtime':
+                kwsearh &= Q(timestamp__lte=kwargs[kwfilter])
         stockdata_qs = StockData.objects.filter(kwsearch)[:20]
         stock_data = StockDataSerializer(
             instance=stockdata_qs,
