@@ -243,8 +243,7 @@ class StockSearch(models.Model):
         """
         if 'chart' in yahoo_results:
             return StockData().save_stock_results(yahoo_results['chart']['result'][0])
-        elif 'quotes' in yahoo_results and len(yahoo_results['quotes']) > 0:
+        if 'quotes' in yahoo_results and len(yahoo_results['quotes']) > 0:
             return Stocks().save_search_results(yahoo_results['quotes'])
-        else:
-            msg = 'Unhandled option in save_search_results'
-            return {'status': True, 'errors': [msg]}
+        msg = 'Unhandled option in save_search_results'
+        return {'status': True, 'errors': [msg]}

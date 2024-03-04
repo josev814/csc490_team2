@@ -4,17 +4,18 @@ Logic for the stocks app
 from datetime import datetime, timedelta
 import requests
 
-from django.db.models import Q
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, status, filters
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view, action
+#from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
+#from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
 
 from stocks.serializers import StockSerializer, StockSearchSerializer, StockDataSerializer
 from stocks.models import Stocks, StockSearch, StockData
+
+from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 class YahooFinance:
     """
@@ -203,8 +204,8 @@ class StockViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        optionalKeys=['starttime','endtime','interval']
-        kwargs = self.__get_optional_query_params(request, optionalKeys)
+        optional_keys=['starttime','endtime','interval']
+        kwargs = self.__get_optional_query_params(request, optional_keys)
         ticker = request.query_params.get('ticker')
 
         stock_search = StockSearch()
