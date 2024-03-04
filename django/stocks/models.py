@@ -148,8 +148,8 @@ class StockSearch(models.Model):
     """
     Stores historical searches for Yahoo
     """
-    search_phrase = models.CharField(max_length=128)
-    search_args = models.CharField(max_length=1024, null=True)
+    search_phrase = models.CharField(max_length=75)
+    search_args = models.CharField(max_length=512, null=True)
     updated_date = models.DateTimeField(auto_now=True)
     search_refresh = datetime.now() - timedelta(days=1)
 
@@ -159,7 +159,8 @@ class StockSearch(models.Model):
         Adding indexes for the table
         """
         indexes = [
-            models.Index(fields=['search_phrase', 'search_args'])
+            models.Index(fields=['search_phrase']),
+            models.Index(fields=['search_args'])
         ]
     
     def set_search_refresh(self, delta_name:str, delta_value:int):
