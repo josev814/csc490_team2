@@ -41,6 +41,7 @@ class ShowTickerChart extends React.Component {
             slow.push(record.low);
             sopen.push(record.open);
             sclose.push(record.close);
+            '';
           });
           this.setState({ chartSeries: [
             {name: 'High', data: shigh},
@@ -59,28 +60,26 @@ class ShowTickerChart extends React.Component {
   get renderGraph(){
     if (this.state.loading){
       return <Spinner animation="border" variant="primary" />;
-    } else {
-      let chartTitle = this.state.symbol + ' Chart'
-      let options = {
+    } 
+    let chartTitle = this.state.symbol + ' Chart'
+    let options = {
+        title: {
+          text: chartTitle
+        },
+        yAxis: {
           title: {
-            text: chartTitle
-          },
-          yAxis: {
-            title: {
-              text: 'Value'
-            }
-          },
-          xAxis: {
-            categories: this.state.chartXaxis
-          },
-          series: this.state.chartSeries
-      }
-      return <HighchartsReact
-        highcharts = {Highcharts}
-        options = {options}
-      />
+            text: 'Value'
+          }
+        },
+        xAxis: {
+          categories: this.state.chartXaxis
+        },
+        series: this.state.chartSeries
     }
-    return ''
+    return <HighchartsReact
+      highcharts = {Highcharts}
+      options = {options}
+    />
   }
 
   render(){  
