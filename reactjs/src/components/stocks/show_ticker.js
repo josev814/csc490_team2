@@ -41,7 +41,6 @@ class ShowTickerChart extends React.Component {
             slow.push(record.low);
             sopen.push(record.open);
             sclose.push(record.close);
-            '';
           });
           this.setState({ chartSeries: [
             {name: 'High', data: shigh},
