@@ -5,7 +5,7 @@ import json
 import requests
 
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework import filters
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
@@ -68,7 +68,7 @@ class UserViewSet(viewsets.ModelViewSet):
         results = uvs.search(jsonBody['email'])
         return Response(results)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login_user(self, request):
         jsonBody = json.loads(request.body.decode('utf-8'))
         if 'email' not in jsonBody or 'password' not in jsonBody:
