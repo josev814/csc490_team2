@@ -1,6 +1,7 @@
 """
 Models for the application are stored here
 """
+import sys, traceback
 from datetime import datetime, timedelta
 
 from django.db import models, IntegrityError
@@ -57,10 +58,10 @@ class Stocks(models.Model):
                     Stocks.objects.bulk_create([Stocks(**record) for record in unique_records])
         except KeyError as e:
             error = f'KeyError when attempting to save stock results: {e}'
-            return {'status': False, 'errors': error}
+            return {'status': False, 'errors': [error]}
         except IntegrityError as e:
             error = f'IntegrityError when attempting to save stock results: {e}'
-            return {'status': False, 'errors': error}
+            return {'status': False, 'errors': [error]}
         return {'status': True, 'errors': None}
 
 
@@ -89,7 +90,7 @@ class StockData(models.Model):
             models.Index(fields=['ticker', 'timestamp', 'granularity']),
         ]
     
-    def save_stock_results(self, yahoo_data:dict) -> bool:
+    def save_stock_results(self, yahoo_data:dict) -> dict:
         """Parses the yahoo chart results and saves the results to our database
 
         :param yahoo_data: The yahoo chart results
@@ -101,8 +102,17 @@ class StockData(models.Model):
         try:
             ticker = yahoo_data['meta']['symbol']
             granularity = yahoo_data['meta']['dataGranularity']
+            if 'timestamp' not in yahoo_data:
+                return {'status': False, 'errors': [f'YahooData: No data']}
             for i in range(len(yahoo_data['timestamp'])):
                 quote_volumes = yahoo_data['indicators']['quote'][0]
+                cont = False
+                for keys in ['high', 'low', 'open', 'close']:
+                    if quote_volumes[keys][i] is None:
+                        cont = True
+                        break
+                if cont:
+                    continue
                 records.append(
                     {
                         'ticker_id': Stocks.objects.filter(**{'ticker': ticker}).get().pk,
@@ -115,13 +125,14 @@ class StockData(models.Model):
                     }
                 )
             StockData.objects.bulk_create([StockData(**record) for record in records])
-            return True
-        except KeyError as e:
-            print(f'KeyError when attempting to save stock results: {e}')
-            return False
         except IntegrityError as e:
-            print(f'IntegrityError when attempting to save stock results: {e}')
-            return False
+            return {'status': False, 'errors': [f'IntegrityError: Failed to save record: {e}']}
+        except KeyError as e:
+            return {'status': False, 'errors': [f'KeyError: Failed to save record: {e}']}
+        except Exception:
+            ex_type, ex, tb = sys.exc_info()
+            return {'status': False, 'errors': [f'{ex_type}: Failed to save record: {ex}']}
+        return {'status': True, 'errors': None}
 
 
 
@@ -143,6 +154,9 @@ class StockSearch(models.Model):
             models.Index(fields=['search_phrase', 'search_args'])
         ]
     
+    def set_search_refresh(self, delta_name:str, delta_value:int):
+        self.search_refresh = datetime.now() - timedelta(**{delta_name:delta_value})
+
     def does_search_record_exist(self, phrase:str, args:str) -> bool:
         """Determines is the search to Yahoo exists or not
 
@@ -160,6 +174,27 @@ class StockSearch(models.Model):
         }
         records = StockSearch.objects.filter(**search_filter).count()
         return records > 0
+    
+    def get_search_record(self, phrase:str, args:str) -> object|None:
+        """_summary_
+
+        :param phrase: _description_
+        :type phrase: str
+        :param args: _description_
+        :type args: str
+        :return: _description_
+        :rtype: object
+        """
+        if self.does_search_record_exist(phrase, args) == 0:
+            return None
+        search_filter = {
+            'search_phrase': phrase,
+            'search_args': args,
+            'updated_date__gte': self.search_refresh
+        }
+        record = StockSearch.objects.filter(**search_filter)
+        print(record.query)
+        return record
     
     def save_search_request(self, phrase:str, args:str|None=None) -> dict:
         """Determines is the search to Yahoo exists or not
@@ -190,4 +225,4 @@ class StockSearch(models.Model):
             return Stocks().save_search_results(yahoo_results['quotes'])
         else:
             msg = 'Unhandled option in save_search_results'
-            return {'status': True, 'errors': msg}
+            return {'status': True, 'errors': [msg]}

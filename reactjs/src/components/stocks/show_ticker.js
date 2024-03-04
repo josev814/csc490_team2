@@ -14,7 +14,8 @@ class ShowTickerChart extends React.Component {
     super(props);
     this.state = {
       symbol: null,
-      chartData: [1,2,3],
+      chartSeries: [],
+      chartXaxis: [],
       loading: true
     };
   }
@@ -22,19 +23,32 @@ class ShowTickerChart extends React.Component {
   componentDidMount() {
     let { ticker } = this.props.params
     this.setState({symbol: ticker})
-    let url = 'http://localhost:8889/stocks/get_ticker/?ticker=' + ticker    
+    let url = 'http://localhost:8889/stocks/get_ticker_metrics/?ticker=' + ticker    
     axios.get(url)
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure
-          const results = res.data['chart']['result'][0];
+          const results = res.data
           //const timestamps = results['timestamp'];
-          const quotes = results['indicators']['quote'][0]
-          const high = quotes['high'];
-          // const low = quotes['low'];
-          // const open = quotes['open'];
-          // const close = quotes['close'];
-          // const volume = quotes['volume'];
-          this.setState({ chartData: high, loading: false }); // Set loading to false here
+          const quotes = results['records']
+          const timestamps = [];
+          const shigh = [];
+          const slow = [];
+          const sopen = [];
+          const sclose = [];
+          quotes.map(record => {
+            timestamps.push(record.timestamp);
+            shigh.push(record.high);
+            slow.push(record.low);
+            sopen.push(record.open);
+            sclose.push(record.close);
+          });
+          this.setState({ chartSeries: [
+            {name: 'High', data: shigh},
+            {name: 'Low', data: slow},
+            {name: 'Open', data: sopen},
+            {name: 'Close', data: sclose},
+          ], chartXaxis: timestamps,
+          loading: false }); // Set loading to false here
         })
       .catch(error => {
           console.error('Error fetching data:', error);
@@ -51,7 +65,15 @@ class ShowTickerChart extends React.Component {
           title: {
             text: chartTitle
           },
-          series: [{ data: this.state.chartData }]
+          yAxis: {
+            title: {
+              text: 'Value'
+            }
+          },
+          xAxis: {
+            categories: this.state.chartXaxis
+          },
+          series: this.state.chartSeries
       }
       return <HighchartsReact
         highcharts = {Highcharts}
@@ -64,7 +86,7 @@ class ShowTickerChart extends React.Component {
   render(){  
     return (
         <div className="container-fluid">
-          <div className="row pb-3">
+          <div className="row pb-3" id="chartContainer" style={{ height: "600px" }}>
           {this.renderGraph}
           </div>
         </div>

@@ -13,8 +13,8 @@ from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 
 
-from stocks.serializers import StockSerializer
-from stocks.models import Stocks, StockSearch
+from stocks.serializers import StockSerializer, StockSearchSerializer, StockDataSerializer
+from stocks.models import Stocks, StockSearch, StockData
 
 class YahooFinance:
     """
@@ -36,7 +36,7 @@ class YahooFinance:
     headers = {
         'User-Agent': ' '.join(user_agents)
     }
-    starttime=int(datetime.now().timestamp()) - 86400
+    starttime=int(datetime.now().timestamp()) - ( 86400 * 7 )
     endtime=int(datetime.now().timestamp())
 
     def build_params(self, param_dict:dict) -> str:
@@ -73,22 +73,22 @@ class YahooFinance:
         return self.__make_request(query_uri)
 
     def get_chart(self, ticker:str, interval:str='1m', 
-                  starttime:int=starttime, endtime:int=endtime) -> dict:
+                  period1:int=starttime, period2:int=endtime) -> dict:
         """
         Gets chart metrics for a symbol
 
         param: interval: str values: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, ytd, max
-        param: starttime int This should be an int based on a timestamp
-        param: endtime int This should be an int based on a timestamp
+        param: period1 int The start of the data we want. This should be an int based on a timestamp
+        param: period2 int The end of the data we want. This should be an int based on a timestamp
         """
         params = {
             'interval': interval,
             'includePrePost': True
         }
-        if starttime:
-            params['starttime'] = starttime
-        if endtime:
-            params['endtime'] = endtime
+        if period1:
+            params['period1'] = period1
+        if period2:
+            params['period2'] = period2
         query_params = self.build_params(params)
         base_url = self.base_url.replace("/v1/", "/v8/")
         query_uri = f'{base_url}chart/{ticker}?{query_params}'
@@ -128,6 +128,18 @@ class StockViewSet(viewsets.ModelViewSet):
     ordering_fields = ['ticker', 'name']
     ordering = ['-ticker', '-name']
 
+    def __find_save_ticker(self, ticker:str) -> list:
+        yf = YahooFinance()
+        results = yf.search(ticker)
+        stockSearch = StockSearch()
+        save_search_results = stockSearch.save_search_results(results)
+        if save_search_results['errors'] is not None:
+            return [False, save_search_results]
+        save_search_request = stockSearch.save_search_request(ticker)
+        if save_search_request['errors'] is not None:
+            return [False, save_search_request]
+        return [True, None]
+
     @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
     @action(detail=False, methods=['get'])
     def find_ticker(self, request):
@@ -144,14 +156,9 @@ class StockViewSet(viewsets.ModelViewSet):
         find = request.query_params['ticker']
         stockSearch = StockSearch()
         if not stockSearch.does_search_record_exist(find, None):
-            yf = YahooFinance()
-            results = yf.search(find)
-            save_search_results = stockSearch.save_search_results(results)
-            if save_search_results['errors'] is not None:
-                return Response(save_search_results, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            save_search_request = stockSearch.save_search_request(find)
-            if save_search_request['errors'] is not None:
-                return Response(save_search_request, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            saved, respose = self.__find_save_ticker(find)
+            if not saved:
+                return Response(respose, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         kwsearch = Q(ticker__istartswith=find.lower()) | Q(name__istartswith=find.lower())
         stocks_qs = Stocks.objects.filter(kwsearch)[:20]
         stock_data = StockSerializer(
@@ -183,7 +190,7 @@ class StockViewSet(viewsets.ModelViewSet):
         results = yf.search(ticker, 'news')
         return Response(results)
 
-    @method_decorator(cache_page(60 * 60 * 24))  # cache for 24 hours
+    #@method_decorator(cache_page(60 * 60 * 1))  # cache for 24 hours
     @action(detail=False, methods=['GET'])
     def get_ticker_metrics(self, request):
         """
@@ -196,40 +203,80 @@ class StockViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        optionalKeys=['starttime,endtime,interval']
+        optionalKeys=['starttime','endtime','interval']
         kwargs = self.__get_optional_query_params(request, optionalKeys)
         ticker = request.query_params.get('ticker')
 
         stockSearch = StockSearch()
-        if not stockSearch.does_search_record_exist(ticker, kwargs):
+        if not stockSearch.does_search_record_exist(ticker, None):
+            saved, respose = self.__find_save_ticker(ticker)
+            if not saved:
+                return Response(respose, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        delta='days'
+        interval=1
+        if 'interval' in kwargs and kwargs['interval'] == '1m':
+            delta='minutes'
+            interval=5
+            stockSearch.set_search_refresh(delta, interval)  # refresh every 5 minutes
+        search_qs = stockSearch.get_search_record(ticker, kwargs)
+        search_record = StockSearchSerializer(
+            instance=search_qs,
+            many=True,
+            context={'request': request}
+        ).data
+        if search_record is not None:
             yf = YahooFinance()
             results = yf.get_chart(ticker, **kwargs)
             save_search_results = stockSearch.save_search_results(results)
             if save_search_results['errors'] is not None:
                 return Response(save_search_results, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            save_search_request = stockSearch.save_search_request(find)
+            save_search_request = stockSearch.save_search_request(ticker, kwargs)
             if save_search_request['errors'] is not None:
                 return Response(save_search_request, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        kwsearch = Q(ticker__istartswith=find.lower()) | Q(name__istartswith=find.lower())
-        stocks_qs = Stocks.objects.filter(kwsearch)[:20]
-        stock_data = StockSerializer(
-            instance=stocks_qs,
+            search_qs = stockSearch.get_search_record(ticker, kwargs)
+            search_record = StockSearchSerializer(
+                instance=search_qs,
+                many=True,
+                context={'request': request}
+            ).data
+        last_updated = search_record[0]['updated_date']
+        next_update = datetime.fromisoformat(last_updated) + timedelta(**{delta:interval})
+        ticker_filter = Q(ticker__iexact=ticker.lower())
+        ticker_pk = Stocks.objects.filter(ticker_filter)[0].pk
+        kwsearch = Q(ticker=ticker_pk)
+        for filter in kwargs:
+            if filter == 'internavl':
+                kwsearch &= Q(granularity=kwargs[filter])
+            elif filter == 'starttime':
+                kwsearch &= Q(timestamp__gte=kwargs[filter])
+            elif filter == 'endtime':
+                kwsearh &= Q(timestamp__lte=kwargs[filter])
+        stockdata_qs = StockData.objects.filter(kwsearch)[:20]
+        stock_data = StockDataSerializer(
+            instance=stockdata_qs,
             many=True,
             context={'request': request}
         ).data
         return Response({
             'count': len(stock_data),
             'errors': None,
+            'refresh': {
+                'last_refresh': last_updated,
+                'next_refresh':next_update
+            },
             'records': stock_data
         }, status=status.HTTP_200_OK)
 
-        # yf = YahooFinance()
-        # results = yf.get_chart(ticker, **kwargs)
-        # return Response(results)
-
     def __get_optional_query_params(self, request, keys):
         kwargs = {}
+        key_replacements = {
+            'starttime': 'period1',
+            'endtime': 'period2',
+        }
         for item in keys:
             if item in request.query_params:
-                kwargs[item] = request.query_params.get(item)
+                if item in key_replacements.keys():
+                    kwargs[key_replacements[item]] = request.query_params.get(item)
+                else:
+                    kwargs[item] = request.query_params.get(item)
         return kwargs
