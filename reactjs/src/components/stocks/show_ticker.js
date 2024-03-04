@@ -45,8 +45,8 @@ class ShowTickerChart extends React.Component {
           this.setState({ chartSeries: [
             {name: 'High', data: shigh},
             {name: 'Low', data: slow},
-            {name: 'Open', data: sopen},
-            {name: 'Close', data: sclose},
+            {name: 'Market Open', data: sopen},
+            {name: 'Market Close', data: sclose},
           ], chartXaxis: timestamps,
           loading: false }); // Set loading to false here
         })
@@ -81,9 +81,17 @@ class ShowTickerChart extends React.Component {
     />
   }
 
-  render(){  
+  render(){
     return (
         <div className="container-fluid">
+          <div className="row pb-3">
+            <form>
+              <label className="px-2">Granularity:</label>
+              <select>
+                <option>1d</option>
+              </select>
+            </form>
+          </div>
           <div className="row pb-3" id="chartContainer" style={{ height: "600px" }}>
           {this.renderGraph}
           </div>

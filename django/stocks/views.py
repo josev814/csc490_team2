@@ -190,7 +190,7 @@ class StockViewSet(viewsets.ModelViewSet):
         results = yf.search(ticker, 'news')
         return Response(results)
 
-    #@method_decorator(cache_page(60 * 60 * 1))  # cache for 24 hours
+    @method_decorator(cache_page(60 * 60 * 1))  # cache for 24 hours
     @action(detail=False, methods=['GET'])
     def get_ticker_metrics(self, request):
         """
