@@ -13,7 +13,7 @@ class UsersTestCases(TestCase):
         'email': 'qwertyuiop@mail.com',
         'password': 'UnitTestingPassword'
     }
-    user_id = 1
+    user_id = 3
 
     def setUp(self) -> None:
         self.factory = RequestFactory()
@@ -26,10 +26,11 @@ class UsersTestCases(TestCase):
         request = self.factory.post('/auth/register', self.user_dict, content_type='application/json')
         viewset = auth_views.RegistrationViewSet()
         resp = viewset.create(request)
+        print(resp.content)
         self.assertEqual(resp.status_code, 201)
         # print("Actual Status Code:", resp.status_code)
         # self.createJsonResp = resp.data
-        self.createJsonResp = json.loads(resp.data.decode('utf-8'))
+        self.createJsonResp = json.loads(resp.data)
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)

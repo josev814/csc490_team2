@@ -26,7 +26,7 @@ class AuthTestCases(TestCase):
         viewset = views.RegistrationViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.data.decode('utf-8'))
+        jsonResp = json.loads(resp.data)
         self.assertIn('errors', jsonResp)
         self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
     
@@ -37,7 +37,7 @@ class AuthTestCases(TestCase):
         viewset = views.RegistrationViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.data.decode('utf-8'))
+        jsonResp = json.loads(resp.data)
         self.assertIn('errors', jsonResp)
         self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
     
@@ -46,7 +46,7 @@ class AuthTestCases(TestCase):
         viewset = views.RegistrationViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.data.decode('utf-8'))
+        jsonResp = json.loads(resp.data)
         self.assertIn('errors', jsonResp)
         self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
             
@@ -56,7 +56,7 @@ class AuthTestCases(TestCase):
         viewset = views.RegistrationViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 201)
-        self.createJsonResp = json.loads(resp.data.decode('utf-8'))
+        self.createJsonResp = json.loads(resp.data)
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)
@@ -78,7 +78,7 @@ class AuthTestCases(TestCase):
         viewset = views.RefreshViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 200)
-        jsonResp = json.loads(resp.data.decode('utf-8'))
+        jsonResp = json.loads(resp.data)
         self.assertListEqual(['access', 'refresh'], list(jsonResp.keys()))
     
     def test_refresh_invalid_token_format(self):
