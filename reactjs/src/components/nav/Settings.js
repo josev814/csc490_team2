@@ -1,5 +1,5 @@
 
-export default function Home(){
+export default function Settings(){
     return (
         <div classNameName="wrapper bg-white mt-sm-5">
     <h4 className="pb-4 border-bottom">Account settings</h4>

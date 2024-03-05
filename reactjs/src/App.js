@@ -19,6 +19,7 @@ class App extends React.Component {
     return (
       <BrowserRouter>
         <Routes>
+
         <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<UnauthedLayout />}>
             <Route index element={<></>} />
@@ -43,6 +44,7 @@ class App extends React.Component {
             <Route path="*" element={<NoPage />} />
           </Route>
           <Route path="/settings" element={<AuthedLayout />}>
+            <Route path="/settings" element={<Settings />}></Route>
           </Route>
         </Routes>
       </BrowserRouter>
