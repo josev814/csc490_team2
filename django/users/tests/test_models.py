@@ -24,21 +24,12 @@ class UsersTestCases(TestCase):
     def test_missing_email_create_user(self):
         user_dict = self.user_dict.copy()
         user_dict.pop('email')
-        request = self.factory.post('/auth/register', user_dict)
         viewset = models.UserManager()
-        resp = viewset.create(request)
-        self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.content.decode('utf-8'))
-        self.assertIn('errors', jsonResp)
-        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+        self.assertRaises(TypeError,viewset.create_user, **user_dict)
+
     
     def test_missing_password_create_user(self):
         user_dict = self.user_dict.copy()
         user_dict.pop('password')
-        request = self.factory.post('/auth/register', user_dict)
         viewset = models.UserManager()
-        resp = viewset.create(request)
-        self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.content.decode('utf-8'))
-        self.assertIn('errors', jsonResp)
-        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+        self.assertRaises(TypeError,viewset.create_user, **user_dict)

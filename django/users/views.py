@@ -10,9 +10,14 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework import filters
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
+from rest_framework import renderers
+from rest_framework.renderers import JSONRenderer
+
+
 
 from users.serializers import UserSerializer
 from users.models import Users
+from django.core.exceptions import ObjectDoesNotExist
 # from django.utils import timezone
 
 
@@ -38,16 +43,11 @@ class UserViewSet(viewsets.ModelViewSet):
         # Perform your filtering here based on a specific column
         column_name = self.lookup_field
         object_filter = {column_name: self.kwargs[column_name]}
-        obj = Users.objects.filter(**object_filter).get()
-        return obj
-
-    # def get_object(self):
-    #     lookup_field_value = self.kwargs[self.lookup_field]
-
-    #     obj = Users.objects.get(lookup_field_value)
-    #     self.check_object_permissions(self.request, obj)
-
-    #     return 
+        try:
+            result = Users.objects.filter(**object_filter).get()
+        except ObjectDoesNotExist:
+            result = None
+        return result
     
     def search(self, search_value:str, search_column:str='email', limit=20) -> dict:
         """
@@ -72,6 +72,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login_user(self, request):
+        print(request.body)
         jsonBody = json.loads(request.body.decode('utf-8'))
         if 'email' not in jsonBody or 'password' not in jsonBody:
             return Response(
@@ -79,14 +80,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         user_obj = self.search(jsonBody['email'])
-        if not user_obj.check_password(jsonBody['password']) or not user_obj.is_active:
+        if user_obj is None or not user_obj.check_password(jsonBody['password']) or not user_obj.is_active:
             return Response(
                 {'errors': ['Invalid Credentials']},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        user_obj.last_login = datetime.datetime.now
-        user_obj.save#()#(using=self.db)
+        user_obj = Users.objects.filter(**{'email':jsonBody['email']})[0]
+        user_obj.last_login = datetime.datetime.now()
+        user_obj.save()
 
         # user_obj.last_login = timezone.now()
         # user_obj.save() 

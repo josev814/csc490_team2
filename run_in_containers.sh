@@ -14,8 +14,13 @@ case "${1}" in
         docker exec stocks_backend /bin/bash -c "${pylintCmd}"
         ;;
     "pycoverage")
-        docker exec stocks_backend /bin/bash -c "${coverageCmd}"
-        docker exec stocks_backend /bin/bash -c "${coverageReport}"
+        if ! [[ -z "${2}" ]]
+        then
+            docker exec stocks_backend /bin/bash -c "${coverageCmd} $2"
+        else
+            docker exec stocks_backend /bin/bash -c "${coverageCmd}"
+        fi
+        # docker exec stocks_backend /bin/bash -c "${coverageReport}"
         ;;
     "django")
         docker exec stocks_backend /bin/bash -c "${pylintCmd}"
