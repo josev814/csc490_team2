@@ -26,11 +26,11 @@ class UsersTestCases(TestCase):
         request = self.factory.post('/auth/register', self.user_dict, content_type='application/json')
         viewset = auth_views.RegistrationViewSet()
         resp = viewset.create(request)
-        print(resp.content)
+        print(resp.data)
         self.assertEqual(resp.status_code, 201)
         # print("Actual Status Code:", resp.status_code)
         # self.createJsonResp = resp.data
-        self.createJsonResp = json.loads(resp.data)
+        self.createJsonResp = resp.data
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)
