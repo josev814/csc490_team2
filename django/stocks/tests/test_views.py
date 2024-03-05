@@ -32,7 +32,6 @@ class StockTestCases(TestCase):
         resp = views.get_ticker_news(request)
         self.assertIsNotNone(resp)
         self.assertEqual(resp.status_code, 200)
-        print(resp.content)
         json_resp = json.loads(resp.content)
         self.assertEqual(json_resp['count'], 20)
         count = json_resp['count']

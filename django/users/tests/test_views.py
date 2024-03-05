@@ -26,10 +26,9 @@ class UsersTestCases(TestCase):
         request = self.factory.post('/auth/register', self.user_dict, content_type='application/json')
         viewset = auth_views.RegistrationViewSet()
         resp = viewset.create(request)
-        print(resp.data)
+        print('Resp: ', resp)
+        print('Data: ', resp.data)
         self.assertEqual(resp.status_code, 201)
-        # print("Actual Status Code:", resp.status_code)
-        # self.createJsonResp = resp.data
         self.createJsonResp = resp.data
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
@@ -91,7 +90,6 @@ class UsersTestCases(TestCase):
         self.assertEqual(userData['id'], self.user_id)
         self.assertTrue(userData['is_active'])
         self.assertRegex(userData['token'], r'^[0-9]{6}$')
-        print(userData)
         jsonResp = resp.data
         if userData['is_active']!=True:
         #changing this if statement
