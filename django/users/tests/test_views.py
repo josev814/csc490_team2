@@ -59,7 +59,6 @@ class UsersTestCases(TestCase):
         resp = view.login_user(request)
         self.assertEqual(resp.status_code, 400)
         jsonResp = json.loads = resp.data
-        #jsonResp = json.loads(resp.content.decode('utf-8'))
         self.assertIn('errors', jsonResp)
         #changed to assertNotEqual from assertEqual
         self.assertNotEqual(jsonResp['errors'][0], 'Invalid Request')
@@ -73,7 +72,6 @@ class UsersTestCases(TestCase):
         resp = viewset.login_user(request)
         self.assertEqual(resp.status_code, 401)
         jsonResp = resp.data
-        #jsonResp = json.loads(resp.content.decode('utf-8'))
         self.assertIn('errors', jsonResp)
         self.assertEqual(jsonResp['errors'][0], 'Invalid Credentials')
 
@@ -83,7 +81,6 @@ class UsersTestCases(TestCase):
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 201)
         self.createJsonResp = resp.data
-        #self.createJsonResp = json.loads(resp.content.decode('utf-8'))
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)
@@ -95,7 +92,6 @@ class UsersTestCases(TestCase):
         self.assertRegex(userData['token'], r'^[0-9]{6}$')
         print(userData)
         jsonResp = resp.data
-        #jsonResp = json.loads(resp.content.decode('utf-8'))
         if userData['is_active']!=True:
         #changing this if statement
         #if userData[1]!=userData['is_active']:
