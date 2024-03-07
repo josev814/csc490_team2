@@ -44,7 +44,7 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
             body = json.loads(request.body.decode(encoding='utf-8'))
         except Exception:
             return Response(
-                {'errors': ['Invalid Request']},
+                {'errors': ['Invalid Request', request.body]},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
