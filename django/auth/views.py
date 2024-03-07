@@ -1,3 +1,5 @@
+import json
+
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.viewsets import ModelViewSet, ViewSet
@@ -5,8 +7,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+
 from . import serializers
-import json
 
 
 class LoginViewSet(ModelViewSet, TokenObtainPairView):
@@ -41,14 +43,33 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
 
     def create(self, request, *args, **kwargs):
         try:
-            body = json.loads(request.body.decode(encoding='utf-8'))
+            decoded_body = request.body.decode(encoding='utf-8').strip()
         except Exception as err_msg:
             return Response(
-                {'errors': ['Invalid Request', err_msg]},
+                {'errors': ['Unable to decode', err_msg]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not decoded_body:
+            # Handle empty decoded_body
+            return Response(
+                {'errors': ['Empty request body']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            jsonBody = json.loads(decoded_body)
+        except Exception as err_msg:
+            return Response(
+                {
+                    'errors': [
+                        'Invalid Request',
+                        err_msg,
+                        decoded_body
+                    ]
+                },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = self.get_serializer(data=body)
+        serializer = self.get_serializer(data=jsonBody)
 
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
