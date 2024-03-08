@@ -72,7 +72,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login_user(self, request):
-        print(request.body)
         jsonBody = json.loads(request.body.decode('utf-8'))
         if 'email' not in jsonBody or 'password' not in jsonBody:
             return Response(
