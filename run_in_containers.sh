@@ -16,7 +16,7 @@ case "${1}" in
     "pycoverage")
         if ! [[ -z "${2}" ]]
         then
-            docker exec stocks_backend /bin/bash -c "${coverageCmd} $2"
+            docker exec stocks_backend /bin/bash -c "${coverageCmd} ${2}"
         else
             docker exec stocks_backend /bin/bash -c "${coverageCmd}"
         fi
