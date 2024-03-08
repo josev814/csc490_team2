@@ -1,3 +1,6 @@
+"""
+Models for the users application are stored here
+"""
 from random import randint
 from django.db import models
 
@@ -8,11 +11,13 @@ class UserManager(BaseUserManager):
     """
     Class that handles the management of a user
     """
+    rand = 0
     
     def create_user(self, email:str, password:str, **kwargs):
         """
         Use this to create a regular user
         """
+        print(kwargs)
         if password is None:
             raise TypeError('Users must have a password.')
         if email is None:
@@ -38,7 +43,10 @@ class UserManager(BaseUserManager):
             self.__expand_user_token_length()
         return self.rand
 
-    def __expand_user_token_length(self) -> str:
+    def __expand_user_token_length(self) -> None:
+        """
+        expands the token to 6 characters
+        """
         while len(self.rand) < 6:
             self.rand = '0' + self.rand
 
@@ -56,6 +64,9 @@ class UserManager(BaseUserManager):
 
 
 class Users(AbstractBaseUser, PermissionsMixin):
+    """
+    The users database model
+    """
     email = models.EmailField(db_index=True, unique=True,  null=False, blank=False)
     token = models.CharField(db_index=True,  max_length=6, unique=True,  null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
@@ -69,4 +80,9 @@ class Users(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return f"{self.email, self.is_active, self.last_login}"
+        """
+        returns the user data in a dictionary
+        :return: _description_
+        :rtype: _type_
+        """
+        return f"{'email': self.email, 'is_active': self.is_active, 'last_login': self.last_login}"

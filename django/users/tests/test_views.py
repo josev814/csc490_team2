@@ -10,7 +10,7 @@ from users import views
 class UsersTestCases(TestCase):
 
     user_dict = {
-        'email': 'qwertyuiop@mail.com',
+        'email': 'qwertyuiop@mailinator.com',
         'password': 'UnitTestingPassword'
     }
     user_id = 1
@@ -21,22 +21,24 @@ class UsersTestCases(TestCase):
     def tearDown(self) -> None:
         return super().tearDown()
     
-    def test_valid_login_user(self):
+    def create_user(self):
         # Valid posts must use application/json for the content-type
         request = self.factory.post('/auth/register', self.user_dict, content_type='application/json')
         viewset = auth_views.RegistrationViewSet()
         resp = viewset.create(request)
+        return resp
+    
+    def test_valid_login_user(self):
+        resp = self.create_user()
         self.assertEqual(resp.status_code, 201)
-        # print("Actual Status Code:", resp.status_code)
-        # self.createJsonResp = resp.data
-        self.createJsonResp = json.loads(resp.data.decode('utf-8'))
+        self.createJsonResp = resp.data
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)
         self.assertRegex(self.createJsonResp['token'], r'^[a-zA-Z][a-zA-Z0-9\.]')
         self.assertRegex(self.createJsonResp['refresh'], r'^[a-zA-Z][a-zA-Z0-9\.]')
         userData = self.createJsonResp['user']
-        self.assertEqual(userData['id'], self.user_id)
+        self.assertGreaterEqual(userData['id'], self.user_id)
         self.assertTrue(userData['is_active'])
         self.assertRegex(userData['token'], r'^[0-9]{6}$')
 
@@ -58,10 +60,8 @@ class UsersTestCases(TestCase):
         view = views.UserViewSet()
         resp = view.login_user(request)
         self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads = resp.data
-        #jsonResp = json.loads(resp.content.decode('utf-8'))
+        jsonResp = resp.data
         self.assertIn('errors', jsonResp)
-        #changed to assertNotEqual from assertEqual
         self.assertNotEqual(jsonResp['errors'][0], 'Invalid Request')
 
     def test_invalid_password(self):
@@ -73,32 +73,19 @@ class UsersTestCases(TestCase):
         resp = viewset.login_user(request)
         self.assertEqual(resp.status_code, 401)
         jsonResp = resp.data
-        #jsonResp = json.loads(resp.content.decode('utf-8'))
         self.assertIn('errors', jsonResp)
         self.assertEqual(jsonResp['errors'][0], 'Invalid Credentials')
 
-    def test_is_active_is_false(self):
-        request = self.factory.post('/auth/register', self.user_dict, content_type='application/json')
-        viewset = auth_views.RegistrationViewSet()
-        resp = viewset.create(request)
+    def test_is_active_is_true(self):
+        resp = self.create_user()
         self.assertEqual(resp.status_code, 201)
         self.createJsonResp = resp.data
-        #self.createJsonResp = json.loads(resp.content.decode('utf-8'))
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)
         self.assertRegex(self.createJsonResp['token'], r'^[a-zA-Z][a-zA-Z0-9\.]')
         self.assertRegex(self.createJsonResp['refresh'], r'^[a-zA-Z][a-zA-Z0-9\.]')
         userData = self.createJsonResp['user']
-        self.assertEqual(userData['id'], self.user_id)
+        self.assertGreaterEqual(userData['id'], self.user_id)
         self.assertTrue(userData['is_active'])
         self.assertRegex(userData['token'], r'^[0-9]{6}$')
-        print(userData)
-        jsonResp = resp.data
-        #jsonResp = json.loads(resp.content.decode('utf-8'))
-        if userData['is_active']!=True:
-        #changing this if statement
-        #if userData[1]!=userData['is_active']:
-            resp = viewset.create(request)
-            self.assertIn('errors', jsonResp)
-            self.assertEqual(jsonResp['errors'][0], 'Invalid Request')

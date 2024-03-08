@@ -22,31 +22,23 @@ class AuthTestCases(TestCase):
     def test_missing_email_create_user(self):
         user_dict = self.user_dict.copy()
         user_dict.pop('email')
-        request = self.factory.post('/auth/register', user_dict)
+        request = self.factory.post('/auth/register', user_dict, content_type='application/json')
         viewset = views.RegistrationViewSet()
-        resp = viewset.create(request)
-        self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.content.decode('utf-8'))
-        self.assertIn('errors', jsonResp)
-        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+        self.assertRaises(ValidationError, viewset.create, request)
     
     def test_missing_password_create_user(self):
         user_dict = self.user_dict.copy()
         user_dict.pop('password')
-        request = self.factory.post('/auth/register', user_dict)
+        request = self.factory.post('/auth/register', user_dict, content_type='application/json')
         viewset = views.RegistrationViewSet()
-        resp = viewset.create(request)
-        self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.content.decode('utf-8'))
-        self.assertIn('errors', jsonResp)
-        self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
+        self.assertRaises(ValidationError, viewset.create, request)
     
     def test_invalid_body_create_user(self):
         request = self.factory.post('/auth/register', self.user_dict)
         viewset = views.RegistrationViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 400)
-        jsonResp = json.loads(resp.content.decode('utf-8'))
+        jsonResp = resp.data
         self.assertIn('errors', jsonResp)
         self.assertEqual(jsonResp['errors'][0], 'Invalid Request')
             
@@ -56,7 +48,7 @@ class AuthTestCases(TestCase):
         viewset = views.RegistrationViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 201)
-        self.createJsonResp = json.loads(resp.content.decode('utf-8'))
+        self.createJsonResp = resp.data
         self.assertIn('user', self.createJsonResp)
         self.assertIn('refresh', self.createJsonResp)
         self.assertIn('token', self.createJsonResp)
@@ -78,7 +70,7 @@ class AuthTestCases(TestCase):
         viewset = views.RefreshViewSet()
         resp = viewset.create(request)
         self.assertEqual(resp.status_code, 200)
-        jsonResp = json.loads(resp.content.decode('utf-8'))
+        jsonResp = resp.data
         self.assertListEqual(['access', 'refresh'], list(jsonResp.keys()))
     
     def test_refresh_invalid_token_format(self):

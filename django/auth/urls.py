@@ -1,3 +1,6 @@
+"""
+Defines the viewsets that map to routes
+"""
 from rest_framework.routers import SimpleRouter
 from .views import LoginViewSet, RegistrationViewSet, RefreshViewSet
 
