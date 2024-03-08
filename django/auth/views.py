@@ -83,9 +83,9 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
         """
         try:
             decoded_body = request.body.decode(encoding='utf-8').strip()
-        except Exception as err_msg:
+        except Exception:
             return Response(
-                {'errors': ['Unable to decode', err_msg]},
+                {'errors': ['Unable to decode']},
                 status=status.HTTP_400_BAD_REQUEST
             )
         if not decoded_body:
@@ -96,13 +96,11 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
             )
         try:
             json_body = json.loads(decoded_body)
-        except Exception as err_msg:
+        except Exception:
             return Response(
                 {
                     'errors': [
-                        'Invalid Request',
-                        err_msg,
-                        decoded_body
+                        'Invalid Request'
                     ]
                 },
                 status=status.HTTP_400_BAD_REQUEST
