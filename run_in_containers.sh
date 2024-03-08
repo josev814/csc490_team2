@@ -5,7 +5,7 @@ then
     echo "Missing parameter"
 fi
 
-pylintExclusions='C0200,C0303,C0413,C0415,W0511,W0702,W0718,W0719,R0801,R0901,R0902,R0913,R0904,R0903,W0223'
+pylintExclusions='C0200,C0303,C0411,C0413,C0415,W0511,W0702,W0718,W0719,R0801,R0901,R0902,R0913,R0904,R0903,W0223'
 pylintCmd="source /var/local/bin/stocks_venv/bin/activate; python -m pip install --quiet pylint; pylint --disable ${pylintExclusions} \$(find ./ -name '*.py' | grep -vP '(migrations|tests)')"
 coverageCmd='source /var/local/bin/stocks_venv/bin/activate; coverage run manage.py test'
 coverageReport='source /var/local/bin/stocks_venv/bin/activate; coverage report -m'

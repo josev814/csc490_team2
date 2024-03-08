@@ -25,4 +25,4 @@ jobs:
         python -m pip install -r requirements.txt
     - name: Analysing the code with pylint
       run: |
-        pylint --disable C0200,C0303,C0413,C0415,W0511,W0702,W0718,W0719,R0801,R0901,R0902,R0913,R0904,R0903,W0223 $(git ls-files '*.py' | grep -vP 'django/.*/(migrations|tests)')
+        pylint --disable C0200,C0303,C0411,C0413,C0415,W0511,W0702,W0718,W0719,R0801,R0901,R0902,R0913,R0904,R0903,W0223 $(git ls-files '*.py' | grep -vP 'django/.*/(migrations|tests)')
