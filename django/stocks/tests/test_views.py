@@ -1,7 +1,7 @@
 import json
 from django.test import RequestFactory, TestCase
 
-from stocks import views
+from stocks.views import StockViewSet
 
 # Create your tests here.
 class StockTestCases(TestCase):
@@ -17,7 +17,8 @@ class StockTestCases(TestCase):
 
     def test_find_ticker(self):
         request = self.factory.get('/stocks/find/amazon')
-        self.resp = views.find_ticker(request)
+        stock_view = StockViewSet()
+        self.resp = stock_view.find_ticker(request)
         self.assertIsNotNone(self.resp)
         self.assertEqual(self.resp.status_code, 200)
         json_resp = json.loads(self.resp.content)
@@ -29,7 +30,8 @@ class StockTestCases(TestCase):
 
     def test_get_ticker_news(self):
         request = self.factory.get(f'/stocks/{self.symbol}/news')
-        resp = views.get_ticker_news(request)
+        stock_view = StockViewSet()
+        resp = stock_view.get_ticker_news(request)
         self.assertIsNotNone(resp)
         self.assertEqual(resp.status_code, 200)
         json_resp = json.loads(resp.content)
@@ -42,7 +44,8 @@ class StockTestCases(TestCase):
     
     def test_get_ticker_metrics(self):
         request = self.factory.get(f'/stocks/{self.symbol}')
-        resp = views.get_ticker(request, self.symbol)
+        stock_view = StockViewSet()
+        resp = stock_view.get_ticker(request, self.symbol)
         self.assertIsNotNone(resp)
         self.assertEqual(resp.status_code, 200)
         json_resp = json.loads(resp.content)
