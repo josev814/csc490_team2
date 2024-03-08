@@ -192,3 +192,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
+
+"""
+Disable Time Zone Support:
+This will make Django use naive datetime objects instead, and the warning should no longer appear.
+"""
+USE_TZ = False

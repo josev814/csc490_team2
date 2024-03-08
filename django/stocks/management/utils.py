@@ -2,13 +2,14 @@
 This should be used for utility aspects only
 """
 from django.core.cache import cache
-from django.http import JsonResponse
+from rest_framework.response import Response
 
 def clear_cache(request) -> None:
     """
     Clears the redis cache
     """
-    results = {'error': 'Unable to clear cache'}
+    print(request)
+    results = {'errors': ['Unable to clear cache']}
     if cache.clear():
-        results = {'msg': 'Cache Cleared'}
-    return JsonResponse(results)
+        results = {'msg': 'Cache Cleared', 'errors': None}
+    return Response(results)

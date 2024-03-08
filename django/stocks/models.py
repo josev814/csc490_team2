@@ -190,7 +190,7 @@ class StockSearch(models.Model):
             'search_phrase': phrase,
             'updated_date__gte': self.search_refresh
         }
-        if isinstance(args, str) or isinstance(args, dict):
+        if isinstance(args, (str, dict)):
             search_filter['search_args'] = args
         records = StockSearch.objects.filter(**search_filter)
         return records.count() > 0
@@ -211,7 +211,7 @@ class StockSearch(models.Model):
             'search_phrase': phrase,
             'updated_date__gte': self.search_refresh
         }
-        if isinstance(args, str) or isinstance(args, dict):
+        if isinstance(args, (str, dict)):
             search_filter['search_args'] = args
         record = StockSearch.objects.filter(**search_filter)
         # This is how to print the query being performed
