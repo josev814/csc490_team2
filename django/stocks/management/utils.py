@@ -1,8 +1,8 @@
 """
 This should be used for utility aspects only
 """
-from django.core.cache import cache
 from rest_framework.response import Response
+from django.core.cache import cache
 
 def clear_cache(request) -> None:
     """
