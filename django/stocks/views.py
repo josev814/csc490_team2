@@ -17,6 +17,7 @@ from django.db.models import Q
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
+
 class YahooFinance:
     """
     This class is for making requests to Yahoo Finance's API
@@ -157,9 +158,9 @@ class StockViewSet(viewsets.ModelViewSet):
         find = request.query_params['ticker']
         stock_search = StockSearch()
         if not stock_search.does_search_record_exist(find, None):
-            saved, respose = self.__find_save_ticker(find)
+            saved, response = self.__find_save_ticker(find)
             if not saved:
-                return Response(respose, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         kwsearch = Q(ticker__istartswith=find.lower()) | Q(name__istartswith=find.lower())
         stocks_qs = Stocks.objects.filter(kwsearch)[:20]
         stock_data = StockSerializer(
@@ -191,7 +192,7 @@ class StockViewSet(viewsets.ModelViewSet):
         results = yf.search(ticker, 'news')
         return Response(results)
 
-    @method_decorator(cache_page(60 * 60 * 1))  # cache for 24 hours
+    #@method_decorator(cache_page(60 * 60 * 1))  # cache for 24 hours
     @action(detail=False, methods=['GET'])
     def get_ticker_metrics(self, request):
         """
@@ -209,10 +210,16 @@ class StockViewSet(viewsets.ModelViewSet):
         ticker = request.query_params.get('ticker')
 
         stock_search = StockSearch()
-        if not stock_search.does_search_record_exist(ticker, None):
-            saved, respose = self.__find_save_ticker(ticker)
+        search_qs = stock_search.get_search_record(ticker, None)
+        search_records = StockSearchSerializer(
+            instance=search_qs,
+            many=True,
+            context={'request': request}
+        )
+        if search_records is None or not search_records or len(search_records.data) == 0:
+            saved, response = self.__find_save_ticker(ticker)
             if not saved:
-                return Response(respose, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         delta='days'
         interval=1
         if 'interval' in kwargs and kwargs['interval'] == '1m':
@@ -220,12 +227,12 @@ class StockViewSet(viewsets.ModelViewSet):
             interval=5
             stock_search.set_search_refresh(delta, interval)  # refresh every 5 minutes
         search_qs = stock_search.get_search_record(ticker, kwargs)
-        search_record = StockSearchSerializer(
+        search_records = StockSearchSerializer(
             instance=search_qs,
             many=True,
             context={'request': request}
-        ).data
-        if search_record is not None:
+        )
+        if search_records is None or not search_records or len(search_records.data) == 0:
             yf = YahooFinance()
             results = yf.get_chart(ticker, **kwargs)
             save_search_results = stock_search.save_search_results(results)
@@ -235,12 +242,14 @@ class StockViewSet(viewsets.ModelViewSet):
             if save_search_request['errors'] is not None:
                 return Response(save_search_request, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             search_qs = stock_search.get_search_record(ticker, kwargs)
-            search_record = StockSearchSerializer(
+            search_records = StockSearchSerializer(
                 instance=search_qs,
                 many=True,
                 context={'request': request}
-            ).data
-        last_updated = search_record[0]['updated_date']
+            )
+            if search_records is None or not search_records or len(search_records.data) == 0:
+                return Response({'errors': ['Yahoo Finance data was not successfully saved']})
+        last_updated = search_records.data[-1]['updated_date']
         next_update = datetime.fromisoformat(last_updated) + timedelta(**{delta:interval})
         ticker_filter = Q(ticker__iexact=ticker.lower())
         ticker_pk = Stocks.objects.filter(ticker_filter)[0].pk

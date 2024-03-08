@@ -8,7 +8,6 @@ def clear_cache(request) -> None:
     """
     Clears the redis cache
     """
-    print(request)
     results = {'error': 'Unable to clear cache'}
     if cache.clear():
         results = {'msg': 'Cache Cleared'}

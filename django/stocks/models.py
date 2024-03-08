@@ -2,6 +2,7 @@
 Models for the application are stored here
 """
 import sys
+#import logging
 from datetime import datetime, timedelta
 
 from django.db import models, IntegrityError
@@ -47,6 +48,8 @@ class Stocks(models.Model):
         records = []
         try:
             for entry in yahoo_data:
+                if entry['typeDisp'].lower() in ['option']: # skip options
+                    continue
                 if 'longname' not in entry:
                     if 'shortname' not in entry:
                         continue
@@ -173,7 +176,7 @@ class StockSearch(models.Model):
         """
         self.search_refresh = datetime.now() - timedelta(**{delta_name:delta_value})
 
-    def does_search_record_exist(self, phrase:str, args:str) -> bool:
+    def does_search_record_exist(self, phrase:str, args:str|dict) -> bool:
         """Determines is the search to Yahoo exists or not
 
         :param phrase: The ticker or company that is being searched for
@@ -185,13 +188,14 @@ class StockSearch(models.Model):
         """
         search_filter = {
             'search_phrase': phrase,
-            'search_args': args,
             'updated_date__gte': self.search_refresh
         }
-        records = StockSearch.objects.filter(**search_filter).count()
-        return records > 0
+        if isinstance(args, str) or isinstance(args, dict):
+            search_filter['search_args'] = args
+        records = StockSearch.objects.filter(**search_filter)
+        return records.count() > 0
     
-    def get_search_record(self, phrase:str, args:str) -> object|None:
+    def get_search_record(self, phrase:str, args:str|dict) -> object|None:
         """_summary_
 
         :param phrase: _description_
@@ -201,15 +205,17 @@ class StockSearch(models.Model):
         :return: _description_
         :rtype: object
         """
-        if self.does_search_record_exist(phrase, args) == 0:
+        if self.does_search_record_exist(phrase, args) is False:
             return None
         search_filter = {
             'search_phrase': phrase,
-            'search_args': args,
             'updated_date__gte': self.search_refresh
         }
+        if isinstance(args, str) or isinstance(args, dict):
+            search_filter['search_args'] = args
         record = StockSearch.objects.filter(**search_filter)
-        print(record.query)
+        # This is how to print the query being performed
+        # logging.error(record.query)
         return record
     
     def save_search_request(self, phrase:str, args:str|None=None) -> dict:
