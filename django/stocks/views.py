@@ -151,7 +151,7 @@ class StockViewSet(viewsets.ModelViewSet):
         if 'ticker' not in request.query_params:
             return Response(
                 {
-                    'errors': [{'Missing required parameter "ticker"'}]
+                    'errors': ['Missing required parameter "ticker"']
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -183,7 +183,7 @@ class StockViewSet(viewsets.ModelViewSet):
         if 'ticker' not in request.query_params:
             return Response(
                 {
-                    'errors': [{'Missing required parameter "ticker"'}]
+                    'errors': ['Missing required parameter "ticker"']
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -261,7 +261,7 @@ class StockViewSet(viewsets.ModelViewSet):
         if 'ticker' not in request.query_params:
             return Response(
                 {
-                    'errors': [{'Missing required parameter "ticker"'}]
+                    'errors': ['Missing required parameter "ticker"']
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )

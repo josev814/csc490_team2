@@ -2,7 +2,7 @@
 Models for the application are stored here
 """
 import sys
-#import logging
+import logging
 from datetime import datetime, timedelta
 
 from django.db import models, IntegrityError
@@ -141,7 +141,7 @@ class StockData(models.Model):
             return {'status': False, 'errors': [f'KeyError: Failed to save record: {e}']}
         except Exception:
             ex_type, ex, tb = sys.exc_info()
-            print(tb)
+            logging.debug(tb)
             return {'status': False, 'errors': [f'{ex_type}: Failed to save record: {ex}']}
         return {'status': True, 'errors': None}
 

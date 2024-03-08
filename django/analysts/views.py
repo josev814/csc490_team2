@@ -1,6 +1,7 @@
 """
 Holds the business logic for the application
 """
+import logging
 #from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -9,5 +10,5 @@ def index(request):
     """
     The default endpoint
     """
-    print(request)
+    logging.debug(f'Analysts index: {request}')
     return HttpResponse("Hello, world. The index of analysts")

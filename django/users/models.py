@@ -1,6 +1,7 @@
 """
 Models for the users application are stored here
 """
+import logging
 from random import randint
 from django.db import models
 
@@ -17,7 +18,7 @@ class UserManager(BaseUserManager):
         """
         Use this to create a regular user
         """
-        print(kwargs)
+        logging.debug(f'create_user kwargs: {kwargs}')
         if password is None:
             raise TypeError('Users must have a password.')
         if email is None:

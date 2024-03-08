@@ -64,3 +64,60 @@ class StockTestCases(TestCase):
         first_record = json_resp['records'][0]
         self.assertGreaterEqual(first_record['high'], 1)
         self.assertEqual(first_record['granularity'], '1m')
+    
+    def test_missing_ticker_in_request_for_search(self):
+        query_params = {}
+        request = self.__mock_get_request(f'/stocks/find_ticker/', query_params)
+        stock_view = StockViewSet()
+        resp = stock_view.find_ticker(request)
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp.status_code, 400)
+        json_resp = resp.data
+        self.assertIn('errors', json_resp)
+        self.assertIsNotNone(json_resp['errors'])
+        self.assertIn('Missing required', json_resp['errors'][0])
+
+    def test_missing_ticker_in_request_for_news(self):
+        query_params = {}
+        request = self.__mock_get_request(f'/stocks/get_ticker_news/', query_params)
+        stock_view = StockViewSet()
+        resp = stock_view.get_ticker_news(request)
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp.status_code, 400)
+        json_resp = resp.data
+        self.assertIn('errors', json_resp)
+        self.assertIsNotNone(json_resp['errors'])
+        self.assertIn('Missing required', json_resp['errors'][0])
+    
+    def test_missing_ticker_in_request_for_metrics(self):
+        query_params = {}
+        request = self.__mock_get_request(f'/stocks/get_ticker_metrics/', query_params)
+        stock_view = StockViewSet()
+        resp = stock_view.get_ticker_metrics(request)
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp.status_code, 400)
+        json_resp = resp.data
+        self.assertIn('errors', json_resp)
+        self.assertIsNotNone(json_resp['errors'])
+        self.assertIn('Missing required', json_resp['errors'][0])
+    
+    def test_metric_interval(self):
+        query_params = {
+            'ticker': 'amzn',
+            'interval': '5m',
+            'starttime': 1708114200,
+            'endtime': 1709517600
+        }
+        request = self.__mock_get_request(f'/stocks/get_ticker_metrics/', query_params)
+        stock_view = StockViewSet()
+        resp = stock_view.get_ticker_metrics(request)
+        self.assertIsNotNone(resp)
+        self.assertEqual(resp.status_code, 200)
+        json_resp = resp.data
+        self.assertIn('errors', json_resp)
+        self.assertIsNone(json_resp['errors'])
+        self.assertIn('records', json_resp)
+        first_record = json_resp['records'][0]
+        self.assertGreaterEqual(first_record['high'], 169)
+        self.assertEqual(first_record['granularity'], '5m')
+    
