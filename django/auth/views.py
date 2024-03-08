@@ -1,40 +1,72 @@
+"""
+Defines the viewsets that will be access for authentication purposes
+"""
 import json
 
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework.viewsets import ModelViewSet, ViewSet
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 from . import serializers
 
 
 class LoginViewSet(ModelViewSet, TokenObtainPairView):
+    """_summary_
+
+    :param ModelViewSet: _description_
+    :type ModelViewSet: _type_
+    :param TokenObtainPairView: _description_
+    :type TokenObtainPairView: _type_
+    :raises InvalidToken: _description_
+    :return: _description_
+    :rtype: _type_
+    """
     serializer_class = serializers.LoginSerializer
     permission_classes = (AllowAny,)
     http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
+        """Overrides the default create from the modelViewset
+
+        :param request: _description_
+        :type request: _type_
+        :raises InvalidToken: _description_
+        :return: _description_
+        :rtype: _type_
+        """
         try:
-            jsonBody = json.loads(request.body.decode(encoding='utf-8'))
+            json_body = json.loads(request.body.decode(encoding='utf-8'))
         except Exception:
             return Response(
                 {'errors': ['Invalid Request']},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        serializer = self.get_serializer(data=jsonBody)
+        serializer = self.get_serializer(data=json_body)
 
         try:
             serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            raise InvalidToken(e.args[0])
+        except TokenError as err:
+            raise InvalidToken(err.args[0]) from err
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
+    """_summary_
+
+    :param ModelViewSet: _description_
+    :type ModelViewSet: _type_
+    :param TokenObtainPairView: _description_
+    :type TokenObtainPairView: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     serializer_class = serializers.RegisterSerializer
     permission_classes = (AllowAny,)
     http_method_names = ['post']
@@ -42,6 +74,13 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
     format_kwarg = None
 
     def create(self, request, *args, **kwargs):
+        """Overrides the create method so we can register a user
+
+        :param request: _description_
+        :type request: _type_
+        :return: _description_
+        :rtype: _type_
+        """
         try:
             decoded_body = request.body.decode(encoding='utf-8').strip()
         except Exception as err_msg:
@@ -56,7 +95,7 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
-            jsonBody = json.loads(decoded_body)
+            json_body = json.loads(decoded_body)
         except Exception as err_msg:
             return Response(
                 {
@@ -69,7 +108,7 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = self.get_serializer(data=jsonBody)
+        serializer = self.get_serializer(data=json_body)
 
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -89,12 +128,32 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
 
 
 class RefreshViewSet(ViewSet, TokenRefreshView):
+    """Refreshes a users token
+
+    :param ViewSet: _description_
+    :type ViewSet: _type_
+    :param TokenRefreshView: _description_
+    :type TokenRefreshView: _type_
+    :raises InvalidToken: _description_
+    :return: _description_
+    :rtype: _type_
+    """
     permission_classes = (AllowAny,)
     http_method_names = ['post']
     request = None
     format_kwarg = None
 
     def create(self, request, *args, **kwargs):
+        """Refreshes the user's token
+
+        :param request: _description_
+        :type request: _type_
+        :raises InvalidToken: _description_
+        :return: _description_
+        :rtype: _type_
+        """
+        print(args)
+        print(kwargs)
         try:
             body = json.loads(request.body.decode(encoding='utf-8'))
         except Exception:
@@ -107,8 +166,8 @@ class RefreshViewSet(ViewSet, TokenRefreshView):
 
         try:
             serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            raise InvalidToken(e.args[0])
+        except TokenError as err:
+            raise InvalidToken(err.args[0]) from err
 
         return Response(
             serializer.validated_data, 
