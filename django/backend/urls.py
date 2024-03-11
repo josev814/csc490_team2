@@ -20,7 +20,6 @@ from django.urls import include, path
 #from rest_framework import routers, serializers, viewsets
 
 urlpatterns = [
-    path('', include('analysts.urls')),
     path('auth/', include('auth.urls')),
     path('stocks/', include('stocks.urls')),
     path('users/', include('users.urls')),
