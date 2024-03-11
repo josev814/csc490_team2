@@ -3,6 +3,7 @@ The viewsets needed for the Users app
 """
 import json
 import datetime
+import logging
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import viewsets, status
@@ -66,7 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         self.lookup_field = search_column
         self.kwargs[search_column] = search_value
-        print(limit)
+        logging.info(f'object limit set to {limit}')
         return self.get_object()
 
     def find_user(self, request):

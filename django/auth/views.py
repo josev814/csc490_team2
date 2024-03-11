@@ -2,6 +2,7 @@
 Defines the viewsets that will be access for authentication purposes
 """
 import json
+import logging
 
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -150,8 +151,8 @@ class RefreshViewSet(ViewSet, TokenRefreshView):
         :return: _description_
         :rtype: _type_
         """
-        print(args)
-        print(kwargs)
+        logging.info(f'RefreshToken create args: {args}')
+        logging.info(f'RefreshToken create kwargs: {kwargs}')
         try:
             body = json.loads(request.body.decode(encoding='utf-8'))
         except Exception:

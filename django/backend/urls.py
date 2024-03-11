@@ -24,4 +24,7 @@ urlpatterns = [
     path('stocks/', include('stocks.urls')),
     path('users/', include('users.urls')),
     path('admin/', admin.site.urls),
+    path('api-auth/', 
+            include('rest_framework.urls', namespace='rest_framework')
+        )  # django rest browable api
 ]
