@@ -115,12 +115,12 @@ export default function LIST_RULES() {
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
                         <div className='col-md-6 d-flex me-3 align-items-center justify-content-end'>
-                            <button role='button' className="btn btn-outline-dark btn-lg">
+                            <button className="btn btn-outline-dark btn-lg">
                                 <NotificationsNoneOutlined /> Notifications
                             </button>
                         </div>
                         <div className='col-md-6 d-flex align-items-center justify-content-end'>
-                            <button role='button' className="btn btn-info btn-lg">
+                            <button className="btn btn-info btn-lg">
                                 Create Rule <AddCircleOutlineOutlined />
                             </button>
                         </div>
