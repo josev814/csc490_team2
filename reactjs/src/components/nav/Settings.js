@@ -1,43 +1,53 @@
 
-export default function Settings(){
+import React from 'react';
+
+export default function Settings() {
     return (
-        <div classNameName="wrapper bg-white mt-sm-5">
-    <h4 className="pb-4 border-bottom">Account settings</h4>
-    <div className="py-2">
-        <div className="row py-2">
-            <div className="col-md-6">
-                <label for="firstname">First Name</label>
-                <input type="text" className="bg-light form-control" placeholder="Enter First name.."/>
-            </div>
-            <div className="col-md-6 pt-md-0 pt-3">
-                <label for="lastname">Last Name</label>
-                <input type="text" className="bg-light form-control" placeholder="Enter Last Name..."/>
+        <div className="container mt-5">
+            <div className="card">
+                <h4 className="card-header">Account settings</h4>
+                <div className="card-body">
+                    <div className="form-group row">
+                        <label htmlFor="firstname" className="col-md-3 col-form-label">First Name</label>
+                        <div className="col-md-9">
+                            <input type="text" className="form-control" id="firstname" placeholder="Enter First name.." />
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label htmlFor="lastname" className="col-md-3 col-form-label">Last Name</label>
+                        <div className="col-md-9">
+                            <input type="text" className="form-control" id="lastname" placeholder="Enter Last Name..." />
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label htmlFor="email" className="col-md-3 col-form-label">Email Address</label>
+                        <div className="col-md-9">
+                            <input type="email" className="form-control" id="email" placeholder="Enter Email Address..." />
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label htmlFor="phone" className="col-md-3 col-form-label">Phone Number</label>
+                        <div className="col-md-9">
+                            <input type="tel" className="form-control" id="phone" placeholder="Enter Phone Number..." />
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <div className="col-md-9 offset-md-3">
+                            <button className="btn btn-primary mr-3">Save Changes</button>
+                            <button className="btn btn-secondary">Cancel</button>
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <div className="col-md-9 offset-md-3">
+                            <div>
+                                <b>Deactivate your account</b>
+                                <p>Details about your account and password will be erased!</p>
+                            </div>
+                            <button className="btn btn-danger">Deactivate</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div className="row py-2">
-            <div className="col-md-6">
-                <label for="email">Email Address</label>
-                <input type="text" className="bg-light form-control" placeholder="Enter Email Address..."/>
-            </div>
-            <div className="col-md-6 pt-md-0 pt-3">
-                <label for="phone">Phone Number</label>
-                <input type="tel" className="bg-light form-control" placeholder="Enter Phone Number..."/>
-            </div>
-        </div>
-        <div className="mx-auto py-3 pb-4 border-bottom">
-            <button className="btn btn-primary mr-3">Save Changes</button>
-            <button className="btn border button">Cancel</button>
-        </div>
-        <div className="d-sm-flex align-items-center pt-3" id="deactivate">
-            <div>
-                <b>Deactivate your account</b>
-                <p>Details about your account and password will be erased!</p>
-            </div>
-            <div className="ml-10">
-                <button className="btn danger">Deactivate</button>
-            </div>
-        </div>
-    </div>
-</div>
     );
-};
+}
