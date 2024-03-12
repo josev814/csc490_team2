@@ -35,7 +35,7 @@ class ShowTickerChart extends React.Component {
           const slow = [];
           const sopen = [];
           const sclose = [];
-          quotes.map(record => {
+          quotes.forEach(record => {
             timestamps.push(record.timestamp);
             shigh.push(record.high);
             slow.push(record.low);
