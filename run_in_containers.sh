@@ -14,11 +14,30 @@ Supported Arguments:
     - pycoverage (optional argument to pycoverage is the app to run tests against)
     - pycovreport
     - django (this runs pylint, pycoverage and pycovreport)
+    - eslint
+    - reacttest | jest
+    - react (this runs eslint and react tests)
 
 Example:
     bash run_in_containers.sh pycoverage users"
 
     exit
+}
+
+function react_lint(){
+    docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js")' > eslint.results.log
+    if [[ $(grep -P '[0-9]+ problems' eslint.results.log | wc -l ) -gt 0 ]]; then
+        echo "########## ESLint found errors ################"
+    fi
+    cat eslint.results.log
+}
+
+function react_unittests(){
+    docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --coverage' > jest.results.log 2>&1
+    if [[ $(grep -P '^Tests:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
+        echo '################# UnitTests Failed ####################'
+    fi
+    cat jest.results.log
 }
 
 case "${1}" in
@@ -42,6 +61,16 @@ case "${1}" in
         docker exec stocks_backend /bin/bash -c "${removeTestDB}"
         docker exec stocks_backend /bin/bash -c "${coverageCmd}"
         docker exec stocks_backend /bin/bash -c "${coverageReport}"
+        ;;
+    "eslint")
+        react_lint
+        ;;
+    "reacttest" | "jest")
+        react_unittests    
+        ;;
+    "react")
+        react_lint
+        react_unittests
         ;;
     *|"--help")
         usage
