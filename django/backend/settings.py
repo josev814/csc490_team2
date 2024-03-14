@@ -148,6 +148,7 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'django_filters',
     'stocks',
     'users',
+    'rules',
     'corsheaders',
     'django_extensions'
 ]
