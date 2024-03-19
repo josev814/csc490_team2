@@ -4,6 +4,7 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import AuthedLayout from './pages/authedlayout';
 import UnauthedLayout from './pages/unauthedlayout';
 import NoPage from './pages/nopage';
+import Home from './pages/home';
 import FIND_STOCK from './pages/stocks';
 import SHOW_TICKER from './pages/show_ticker';
 //import Dashboard from './pages/dashboard';
@@ -17,7 +18,7 @@ class App extends React.Component {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<UnauthedLayout />}>
-            <Route index element={<></>} />
+            <Route index element={<Home />} />
             <Route path="login" element={<></>} />
             <Route path="logout" element={<></>} />
           </Route>
