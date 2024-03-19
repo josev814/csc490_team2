@@ -113,7 +113,9 @@ class UserViewSet(viewsets.ModelViewSet):
         # user_obj.save() 
         
         return Response({
+            'user_id': user_obj.pk,
             'email': user_obj.email,
             'is_active': user_obj.is_active,
-            'last_login': user_obj.last_login
+            'last_login': user_obj.last_login,
+            'last_updated': user_obj.updated
         }, status=status.HTTP_200_OK)
