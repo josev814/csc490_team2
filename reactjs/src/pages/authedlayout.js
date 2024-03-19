@@ -11,6 +11,11 @@ export default function AuthedLayout() {
         <div className='row'>
           <LeftNav />
           <main role='main' className='col-md-9 ml-sm-auto col-lg-10 pt-3 px-4'>
+              <div className="justify-content-end d-flex container-fluid">
+                <a href='/users/user_id/'>
+                  firstName,LastName
+                </a>
+              </div>
               <Outlet />
           </main>
         <Footer />
