@@ -4,9 +4,9 @@ Application Configurations
 from django.apps import AppConfig
 
 
-class AnalystsConfig(AppConfig):
+class UsersConfig(AppConfig):
     """
-    Adds metadata for the application
+    Adds metadata for the Users app
     """
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'analysts'
+    name = 'users'

@@ -104,7 +104,7 @@ kubectl create naespace csc490-stocks
 Run the commands below to view the endpoints available for React to use
 
 ```bash
-docker exec stocks_backend bash
+docker exec -it stocks_backend bash
 source /var/local/bin/stocks_venv/bin/activate;
 python3 manage.py show_urls | grep -vP "^/admin"
 ```

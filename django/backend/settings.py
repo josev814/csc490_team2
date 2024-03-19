@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -68,17 +69,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": "mydatabase",
-#     }
-# }
 
 
 # Password validation
@@ -150,15 +140,15 @@ ADMINS = [
 ]
 MANAGERS = ADMINS
 STATIC_ROOT = '/app/static/'
-STATIC_URL = 'static/'
 
 """
 INSTALLED_APPS = INSTALLED_APPS + [
     'oauth2_provider',
     'rest_framework',
     'django_filters',
-    'analysts',
     'stocks',
+    'users',
+    'rules',
     'corsheaders',
     'django_extensions'
 ]
@@ -170,9 +160,11 @@ MIDDLEWARE = MIDDLEWARE + [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8890',
+    'http://localhost',
 ]
 CORS_ORIGIN_WHITELIST = [
     'http://localhost:8890',
+    'http://localhost',
 ]
 
 # Authentication using OAuth 2.0
@@ -192,10 +184,30 @@ OAUTH2_PROVIDER = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+        #'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
+
+AUTH_USER_MODEL = 'users.Users'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+
+"""
+Disable Time Zone Support:
+This will make Django use naive datetime objects instead, and the warning should no longer appear.
+"""
+USE_TZ = False

@@ -1,25 +1,9 @@
 import React from 'react';
 import axios from 'axios';
-//import './searchBar.css';
+import Spinner from 'react-bootstrap/Spinner'
 
 
 class FindStock extends React.Component {
-  
-  // state = {
-  //   tickers: [],
-  //   loading: false
-  // };
-
-  // componentDidMount() {
-  //   this.setState({loading: true});
-  //   axios.get('http://localhost:8889/stocks/ticker/find/amazon/')
-  //     .then(res => {
-  //       const tickers = res.data['quotes'];
-  //       this.setState({ tickers });
-  //     })
-  //     .then(this.setState({loading: false}));
-  // }
-
   state = {
     stocks: null,
     loading: false,
@@ -30,31 +14,44 @@ class FindStock extends React.Component {
   search = async val => {
     this.setState({ loading: true});
     axios.get(
-      'http://localhost:8889/stocks/ticker/find/' + val + '/'
+      'http://localhost:8889/stocks/find_ticker/?ticker=' + val
     ).then(res => {
-      this.setState({stocks: res.data['quotes']})
-    }).then(
-      this.setState({ loading: false })
-    ).catch(error => {
+      this.setState({stocks: res.data['records'], loading: false})
+    }).catch(error => {
       console.log('Error fetching data: ', error)
       this.setState({loading: false })
     })
   };
 
   onChangeHandler = async e => {
-    if (e.target.value.length > 1) {
-      this.search(e.target.value);
+    this.setState({ loading: true});
+    
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
     }
-    this.setState({ value: e.target.value});
+
+    this.setState({ value: e.target.value });
+    if (e.target.value.length <= 1) {
+      this.setState({ loading: false })
+    }
+
+    // Start a new timer to execute the search after 1/2 second
+    this.searchTimer = setTimeout(() => {
+      if (e.target.value.length > 1) {
+        this.search(e.target.value);
+      }
+    }, 500)
   };
 
   get renderStocks(){
-    if (this.state.value.length > 1){
+    if (this.state.loading){
+      return <Spinner animation="border" variant="primary" />;
+    } else if (this.state.value.length > 1){
       let stocks = <h3> There are no stocks with the name {this.state.value}.</h3>
       if (this.state.stocks) {
         stocks = ( this.state.stocks.map(stocks => (
-          <div className='row py-2'>
-            <a href={'stocks/' + stocks.symbol + '/news'} key={stocks.symbol}>{stocks.symbol}: {stocks.longname}</a>
+          <div className='row py-2' key={stocks.ticker}>
+            <a href={'/stocks/' + stocks.ticker}>{stocks.ticker}: {stocks.name}</a>
           </div>
         )))
       }
@@ -67,7 +64,7 @@ class FindStock extends React.Component {
     return (
         <>
         <div className="container-fluid">
-          <div className="row">
+          <div className="row mb-3">
             <input 
               className="form-control mr-sm-2"
               type="search"
