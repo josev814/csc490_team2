@@ -108,7 +108,7 @@
 
 import React, { useState } from "react";
 import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginRegister(props) {
   const [authMode, setAuthMode] = useState("signin");
@@ -116,9 +116,9 @@ export default function LoginRegister(props) {
     email: "",
     password: ""
   });
-  //const history = useHistory(); // Access the history object for navigation
+  const navigate = useNavigate(); // Access the history object for navigation
 
-  const base_url = 'http://localhost:8890'; // Define your base URL here
+  const base_url = 'http://localhost:8889'; // Define your base URL here
 
   const changeAuthMode = () => {
     setAuthMode(authMode === "signin" ? "signup" : "signin");
@@ -136,7 +136,7 @@ export default function LoginRegister(props) {
       const response = await axios.post(url, formData);
       if (response.status === 200 || response.status === 201) {
         // Handle successful authentication or registration
-        //history.push('/dashboard'); // Redirect to dashboard or any other desired route
+        navigate('/rules'); // Redirect to dashboard or any other desired route
       } else {
         // Handle authentication or registration failure
       }
