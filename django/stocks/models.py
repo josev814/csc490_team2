@@ -111,6 +111,7 @@ class StockData(models.Model):
         records = []
         try:
             ticker = yahoo_data['meta']['symbol']
+            ticker_id = Stocks.objects.filter(**{'ticker': ticker}).get().pk
             granularity = yahoo_data['meta']['dataGranularity']
             if 'timestamp' not in yahoo_data:
                 return {'status': False, 'errors': ['YahooData: No data']}
@@ -125,7 +126,7 @@ class StockData(models.Model):
                     continue
                 records.append(
                     {
-                        'ticker_id': Stocks.objects.filter(**{'ticker': ticker}).get().pk,
+                        'ticker_id': ticker_id,
                         'granularity': granularity,
                         'timestamp': datetime.fromtimestamp(yahoo_data['timestamp'][i]),
                         'high': quote_volumes['high'][i],
@@ -233,7 +234,7 @@ class StockSearch(models.Model):
                 'search_args': args,
                 'search_phrase': phrase
             }
-            StockSearch.objects.create(**kwargs)
+            StockSearch.objects.update_or_create(**kwargs)
         except IntegrityError as e:
             return {'status': False, 'IntegrityError': f'Failed to save record: {e}'}
         except Exception as e:
