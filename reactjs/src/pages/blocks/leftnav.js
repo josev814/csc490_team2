@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 export default function LeftNav() {
     const links = [
         {'pageName': 'Home', 'path': '/rules'},
-        {'pageName': 'Stocks', 'path': '/stocks'},
+        {'pageName': 'Stock Search', 'path': '/stocks'},
         {'pageName': 'Settings', 'path': '/settings'},
         {'pageName': 'Logout', 'path': '/logout'}
     ]
