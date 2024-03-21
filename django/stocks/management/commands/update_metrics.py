@@ -24,7 +24,7 @@ class Command(BaseCommand):
                 f'Start Time: {start_time}'
             ])
             # Query all symbols from the Stocks table
-            symbol_count = Stocks.objects.count()
+            symbol_count = Stocks.objects.filter(is_active=1).count()
             max_page = ceil(symbol_count/self.record_limit)
             self.stdout.write(f'Records: {symbol_count}, MaxPage: {max_page}')
             for page_num in range(max_page):
@@ -35,11 +35,13 @@ class Command(BaseCommand):
                 symbols = Stocks.objects.values_list(
                     'ticker', 'id'
                 ).filter(
+                    is_active=1,
                     updated_date__lte=self.refresh
                 ).all()[start:start + self.record_limit]
                 query = Stocks.objects.values_list(
                             'ticker', flat=True
                         ).filter(
+                            is_active=1,
                             updated_date__lte=self.refresh
                         ).query
                 if page_num == 0:
@@ -84,7 +86,7 @@ class Command(BaseCommand):
                 )
                 # update the symbol for when was last saved it
                 stock_search.save_search_request(ticker)
-                stock = Stocks.objects.get(id=ticker_id)
+                stock = Stocks.objects.filter(id=ticker_id, is_active=1).get()
                 stock.updated_date = datetime.now()
                 stock.save()
             else:
