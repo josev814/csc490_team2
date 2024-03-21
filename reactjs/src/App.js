@@ -12,11 +12,18 @@ import SHOW_TICKER_NEWS from './pages/news';
 import LIST_RULES from './pages/rules';
 
 
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './App.css'
+import Auth from './components/Auth'
+
+
+
 class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
         <Routes>
+        <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<UnauthedLayout />}>
             <Route index element={<Home />} />
             <Route path="login" element={<></>} />
