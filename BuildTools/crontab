@@ -1,0 +1,1 @@
+@hourly source /var/local/bin/stocks_venv/bin/activate && python manage.py runjobs hourly
