@@ -29,7 +29,9 @@ class Command(BaseCommand):
             self.stdout.write(f'Records: {symbol_count}, MaxPage: {max_page}')
             for page_num in range(max_page):
                 start = page_num * self.record_limit
-                self.stdout.write(f'Page: {page_num}, Start: {start}, End: {start + self.record_limit}')
+                self.stdout.write(
+                    f'Page: {page_num}, Start: {start}, End: {start + self.record_limit}'
+                )
                 symbols = Stocks.objects.values_list(
                     'ticker', 'id'
                 ).filter(

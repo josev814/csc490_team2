@@ -5,6 +5,9 @@ Run a job to import metrics hourly
 from django_extensions.management.jobs import HourlyJob
 
 class Job(HourlyJob):
+    """
+    Hourly jobs to run
+    """
     help = "Hourly job to pull metrics"
 
     def execute(self):
