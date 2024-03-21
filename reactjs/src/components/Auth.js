@@ -75,6 +75,7 @@ export default function LoginRegister(props) {
                   name="password"
                   className="form-control mt-1"
                   placeholder="Enter password"
+                  minLength={8}
                   value={formData.password}
                   onChange={handleChange}
                 />
