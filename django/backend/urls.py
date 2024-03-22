@@ -23,7 +23,7 @@ urlpatterns = [
     path('auth/', include('auth.urls')),
     path('stocks/', include('stocks.urls')),
     path('users/', include('users.urls')),
-    path('rules/', include('rules.urls')),
+    # path('rules/', include('rules.urls')),
     path('admin/', admin.site.urls),
     path('api-auth/', 
             include('rest_framework.urls', namespace='rest_framework')
