@@ -24,7 +24,10 @@ class Command(BaseCommand):
                 f'Start Time: {start_time}'
             ])
             # Query all symbols from the Stocks table
-            symbol_count = Stocks.objects.filter(is_active=1).count()
+            symbol_count = Stocks.objects.filter(
+                is_active=1,
+                updated_date__lte=self.refresh
+            ).count()
             max_page = ceil(symbol_count/self.record_limit)
             self.stdout.write(f'Records: {symbol_count}, MaxPage: {max_page}')
             for page_num in range(max_page):
@@ -37,15 +40,7 @@ class Command(BaseCommand):
                 ).filter(
                     is_active=1,
                     updated_date__lte=self.refresh
-                ).all()[start:start + self.record_limit]
-                query = Stocks.objects.values_list(
-                            'ticker', flat=True
-                        ).filter(
-                            is_active=1,
-                            updated_date__lte=self.refresh
-                        ).query
-                if page_num == 0:
-                    self.stdout.write(str(query))
+                ).all()[0:self.record_limit]
                 # Iterate over each symbol and update metrics in StocksData table
                 for ticker, ticker_id in symbols:
                     self.process_ticker(ticker, ticker_id)
@@ -79,7 +74,7 @@ class Command(BaseCommand):
             
             # Create or update StocksData entry for the symbol
             dict_resp = StockData().save_stock_results(chart_metrics)
-
+            
             if dict_resp['status']:
                 self.output_success(
                     f'Successfully added metrics for {ticker}'
