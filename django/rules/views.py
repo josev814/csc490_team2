@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 # Create your views here.
 """ 
 viewset for setting the rules
@@ -11,7 +9,6 @@ from rest_framework.response import Response
 from datetime import datetime
 
 from rest_framework import viewsets, status, filters
-from rest_framework import filters
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.viewsets import ViewSet
@@ -19,17 +16,23 @@ from rest_framework.permissions import AllowAny
 from rules.models import Rules
 from rules.serializers import RuleSerializer
 from rest_framework.decorators import action
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-class RuleViewSet(ModelViewSet):
+
+class RuleViewSet(ModelViewSet, TokenObtainPairView):
+
     """
     The view set for the rules
     """
+    permission_classes = (AllowAny,)
+    http_method_names = ['post']
     kwargs = {}
     serializer_class = RuleSerializer
     queryset = Rules.objects.all().order_by('-id')
+    request = None
+    format_kwarg = None
 
-    @action(detail=False, methods=['post'])
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         """
         endpoint for creating new rules
         """
@@ -41,7 +44,7 @@ class RuleViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         serializer = self.get_serializer(data=json_body)
-        serializer.is_valid(raise_exception=True)
+        #serializer.is_valid(raise_exception=True)
         rule = serializer.save()
 
         return Response({'errors': None, 'records': [serializer.data], 'count': len(rule)}, status=status.HTTP_201_CREATED)

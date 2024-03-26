@@ -17,8 +17,8 @@ class RuleSerializer(serializers.HyperlinkedModelSerializer):
         says to use the Rules model and the fields to return
         """
         model = Rules
-        fields = ['id', 'name', 'status', 'growth', 'profit', 'created', 'updated']
-        read_only_field = ['growth', 'profit', 'created', 'updated']
+        fields = ['id', 'name', 'status', 'growth', 'profit', 'create_date', 'updated_date', 'rule']
+        read_only_field = ['growth', 'profit', 'create_date', 'updated_date']
 
     def __init__(self, instance=None, data=serializers.empty, **kwargs):
         """_summary_
@@ -29,3 +29,8 @@ class RuleSerializer(serializers.HyperlinkedModelSerializer):
         """
         kwargs['context'] = {'request': kwargs.get('request')}
         super().__init__(instance, data, **kwargs)
+
+    def create(self, validated_data):
+
+        rule = Rules.objects.create(**validated_data)
+        return rule
