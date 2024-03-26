@@ -10,6 +10,7 @@ import SHOW_TICKER from './pages/show_ticker';
 //import Dashboard from './pages/dashboard';
 import SHOW_TICKER_NEWS from './pages/news';
 import LIST_RULES from './pages/rules';
+import SHOW_RULE from './pages/rule';
 
 
 class App extends React.Component {
@@ -32,7 +33,9 @@ class App extends React.Component {
           </Route>
           <Route path="/rules/" element={<AuthedLayout />}>
             <Route index element={<LIST_RULES />} />
-            {/* <Route path="rules/:rule_id" element={<SHOW_RULE />} /> */}
+          </Route>
+          <Route path="/rule/" element={<AuthedLayout />}>
+            <Route path=":rule" element={<SHOW_RULE />} />
           </Route>
           <Route path="*" element={<UnauthedLayout />}>
             <Route index element={<NoPage />} />
