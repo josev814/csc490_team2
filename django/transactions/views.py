@@ -7,6 +7,7 @@ from rest_framework import viewsets
 #from rest_framework.decorators import action
 #from rest_framework.decorators import api_view
 #from rest_framework.response import Response
+from transactions.models import Transactions
 
 # Create your views here.
 class TransactionViewSet(viewsets.ModelViewSet):
@@ -17,3 +18,4 @@ class TransactionViewSet(viewsets.ModelViewSet):
     :return: Returns the Viewset for stocks
     :rtype: viewset
     """
+    queryset = Transactions.objects.all()
