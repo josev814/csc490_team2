@@ -2,16 +2,15 @@
 The routes needed for the rules endpoints
 """
 from rest_framework.routers import DefaultRouter
-from django.urls import path, include
+from django.urls import path
 
-from .views import RuleViewSet
+from . import views
 
 routes = DefaultRouter()
 
 # RULES
-routes.register(r'', RuleViewSet)
-
-
 urlpatterns = [
-    path('', include(routes.urls))
+    path('', views.CreateAPIView.as_view()),
+    path('list/', views.ListAPIView.as_view()),
+    path('<int:pk>/', views.DetailAPIView.as_view())
 ]

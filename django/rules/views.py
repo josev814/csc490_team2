@@ -1,101 +1,96 @@
-# Create your views here.
 """ 
-viewset for setting the rules
+Viewset for Rules
 """
 
-import json
-
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from datetime import datetime
-
-from rest_framework import viewsets, status, filters
-
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import AllowAny
-from rules.models import Rules
-from rules.serializers import RuleSerializer
-from rest_framework.decorators import action
-from rest_framework_simplejwt.views import TokenObtainPairView
+from .models import Rules
+from .serializers import RuleSerializer
 
 
-class RuleViewSet(ModelViewSet, TokenObtainPairView):
-
+class CreateAPIView(generics.CreateAPIView):
     """
-    The view set for the rules
+    Class for Creating a rule
     """
-    permission_classes = (AllowAny,)
-    http_method_names = ['post']
-    kwargs = {}
+    permission_classes = (IsAuthenticated,)
+    queryset = Rules.objects.all()
     serializer_class = RuleSerializer
-    queryset = Rules.objects.all().order_by('-id')
-    request = None
-    format_kwarg = None
 
-    def create(self, request, *args, **kwargs):
+    def perform_create(self, serializer):
         """
-        endpoint for creating new rules
+        Overriding the default perform_create so we can assign the user
+        Creates a rule for a user
         """
-        try:
-            json_body = json.loads(request.body.decode(encoding='utf-8'))
-        except Exception:
+        user = self.request.user
+        serializer.save(user=user)
+
+
+class ListAPIView(generics.ListAPIView):
+    """
+    API Endpoint for listing rules for a user
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = Rules.objects.order_by('-pk').all()
+    serializer_class = RuleSerializer
+
+    def list(self, request, *args, **kwargs):
+        """
+        Overriding the default list so we can reformat the Response
+        Lists the rules for an authenticated user
+        """
+        print(request)
+        user = self.request.user
+        parent_qs = super().get_queryset(*args, **kwargs)
+        qs = self.filter_queryset(parent_qs).filter(user=user)
+        if not qs.exists():
             return Response(
-                {'errors': ['Invalid Request']},
-                status=status.HTTP_400_BAD_REQUEST
+                {'errors': ['No rules found for the user']},
+                status=status.HTTP_404_NOT_FOUND
             )
-        serializer = self.get_serializer(data=json_body)
-        #serializer.is_valid(raise_exception=True)
-        rule = serializer.save()
 
-        return Response({'errors': None, 'records': [serializer.data], 'count': len(rule)}, status=status.HTTP_201_CREATED)
-
-    
-    
-
-#     #list all rules
-
-
-#     def set_status(self, status):
-#         """
-#         setting the rule to inactive (0)
-#         """
-
-#         if status not in (0, 1):
-#             raise ValueError("Status must be 0 (inactive) or 1 (active).")
-#         self.status = status
-
-
-# # allow to update rule
-#     def update_rule(self, rule_name:str, **kwargs):
-#         """
-#         Update elements of the rule
-#         """
-
-#         rule = self.get_rule_by_name(rule_name)
-#         if rule:
-#             for key, value in kwargs.items():
-#                 if hasattr(rule, key):
-#                     setattr(rule, key, value)
-#                 else:
-#                     raise AttributeError(f"Rule has no attribute '{key}'.")
-#         else:
-#             raise ValueError("Rule not found.")
-
-
-#     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
-#     def get_rule_by_name(self, rule_name: str):
-#         """
-#         Get rule by name
-#         """
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         
-#         return self.rules.get(rule_name, None)
-    
+        serializer = self.get_serializer(qs, many=True)
+        data = serializer.data
+        return Response(
+            {
+                'errors': None,
+                'records': data,
+                'count': len(data)
+            },
+            status=status.HTTP_200_OK
+        )
+        
 
+class DetailAPIView(generics.RetrieveAPIView):
+    """
+    API View to list details for a specific rule
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = RuleSerializer
+    queryset = Rules.objects.all()
+    lookup_field = 'pk'
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Overriding the default retrieval so we can reformat the Response
+        """
+        print(request)
+        print(args)
+        print(kwargs)
+        instance = self.get_object()
+        if instance is None:
+            return Response(
+                {'errors': ['Record does not exist']},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
-        
-#     #json object of a python dict
-#     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
-#     def json_object(self, request):
-#         """
-#         json object of a python dict
-#         """
+        serializer = self.get_serializer(instance)
+        return Response(
+            {'errors': None, 'record': serializer.data},
+            status=status.HTTP_200_OK
+        )

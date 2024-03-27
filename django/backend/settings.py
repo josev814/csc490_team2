@@ -149,6 +149,7 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'stocks',
     'users',
     'rules',
+    'transactions',
     'corsheaders',
     'django_extensions'
 ]
@@ -193,17 +194,17 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'backend.pagination.PaginationWithLinks',
+    'PAGE_SIZE': 10
 }
 
 AUTH_USER_MODEL = 'users.Users'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'ROTATE_REFRESH_TOKENS': True
 }
 
 """
