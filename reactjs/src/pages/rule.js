@@ -1,7 +1,6 @@
 import React from 'react';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
-import Form from 'react-bootstrap/Form';
+import { useNavigate } from 'react-router-dom';
 import ShowRuleTransactionChart from '../components/rules/rule_chart';
 
 export default function SHOW_RULE() {
@@ -188,7 +187,7 @@ export default function SHOW_RULE() {
 
     function DisplayStatus(data){
         let status = data.status
-        if (status == 0){
+        if (status === 0){
             return (
                 <span className='text-danger'>Disabled</span>
             )
