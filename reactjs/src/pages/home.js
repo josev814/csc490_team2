@@ -44,7 +44,7 @@ export default function Home(){
                 <TeamCards img='dr-mingxian-jin-150.png' name="Dr. Mingxian Jin " position='Advisor' linkedin='mingxian-jin-3a135024' />
                 <TeamCards img='jose-vargas-150.png' name="Jose' Vargas" position='Team Lead' linkedin='josevargas814' />
                 <TeamCards img='caileb-carter.jpg' name="Caileb Carter" position='Lead Frontend Developer' linkedin='caileb-carter-940150180' />
-                <TeamCards img='stathis-jones.jpg' name="Stathis Jones" position='Lead Backend Developer' linkedin='stathis-jones-a69973271' />
+                <TeamCards img='stathis-jones-150.png' name="Stathis Jones" position='Lead Backend Developer' linkedin='stathis-jones-a69973271' />
             </div>
         </div>
         </>
