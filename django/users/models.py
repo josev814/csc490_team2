@@ -2,6 +2,7 @@
 Models for the users application are stored here
 """
 import logging
+import json
 from random import randint
 from django.db import models
 
@@ -86,4 +87,9 @@ class Users(AbstractBaseUser, PermissionsMixin):
         :return: _description_
         :rtype: _type_
         """
-        return f"{'email': self.email, 'is_active': self.is_active, 'last_login': self.last_login}"
+        return json.dumps({
+            'user_id': self.id,
+            'email': self.email,
+            'is_active': self.is_active,
+            'last_login': str(self.last_login)
+        })
