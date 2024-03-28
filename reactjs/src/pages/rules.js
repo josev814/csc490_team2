@@ -37,29 +37,29 @@ export default function LIST_RULES() {
         for (let number = 1; number <= 5; number++) {
             if (number !== 1 && first_pagination){
                 pagination_items.push(
-                    <>
-                    <Pagination.First />
-                    <Pagination.Prev />
-                    </>
+                    <React.Fragment key={number + "_first"}>
+                        <Pagination.First key="first" />
+                        <Pagination.Prev key="prev" />
+                    </React.Fragment>
                 )
                 first_pagination = true
             }
             pagination_items.push(
                 <Pagination.Item key={number} active={number === active}>
-                {number}
+                    {number}
                 </Pagination.Item>,
             );
         }
         if (active !== max_page){
             pagination_items.push(
-                <>
-                <Pagination.Next />
-                <Pagination.Last />
-                </>
+                <React.Fragment key="next_last">
+                    <Pagination.Next key="next" />
+                    <Pagination.Last key="last" />
+                </React.Fragment>
             )
             first_pagination = true
         }
-
+    
         return (
             <div className='container-fluid'>
                 <Pagination>
@@ -68,7 +68,7 @@ export default function LIST_RULES() {
             </div>
         );
     }
-
+    
     function GetRuleLinkRoute(rule){
         let rule_route = '/rules/' + rule.rule.id + '/' + encodeURIComponent(rule.rule.name)
         return (
@@ -128,26 +128,26 @@ export default function LIST_RULES() {
                 </div>
                 <div className='row mb-5'>
                     <div className='col-auto'>
-                        <label for='filter' className='col-form-label fw-bold'>Filters:</label>
+                        <label htmlFor='filter' className='col-form-label fw-bold'>Filters:</label>
                     </div>
                     <div className='col-auto ps-0'>
-                        <select className='form-select form-control' name='filter' id='filter'>
-                            <option selected value='all'>All</option>
+                        <select className='form-select form-control' name='filter' id='filter' defaultValue='all'>
+                            <option value='all'>All</option>
                             <option value='active'>Active</option>
                             <option value='inactive'>Paused</option>
                         </select>
                     </div>
                     <div className='col-auto'>
-                        <label for='sort' className='col-form-label fw-bold'>Sort:</label>
+                        <label htmlFor='sort' className='col-form-label fw-bold'>Sort:</label>
                     </div>
                     <div className='col-auto ps-0'>
-                        <select name='sort' className='form-select form-control' id='sort'>
-                            <option value={'created_asc'} selected>Created - &#9650;</option>
-                            <option value={'created_desc'}>Created - &#9660;</option>
-                            <option value={'return_asc'}>Return - &#9650;</option>
-                            <option value={'return_desc'}>Return - &#9660;</option>
-                            <option value={'return_asc'}>Growth - &#9650;</option>
-                            <option value={'growth_desc'}>Growth - &#9660;</option>
+                        <select name='sort' className='form-select form-control' id='sort' defaultValue='created_asc'>
+                            <option value='created_asc'>Created - &#9650;</option>
+                            <option value='created_desc'>Created - &#9660;</option>
+                            <option value='return_asc'>Return - &#9650;</option>
+                            <option value='return_desc'>Return - &#9660;</option>
+                            <option value='return_asc'>Growth - &#9650;</option>
+                            <option value='growth_desc'>Growth - &#9660;</option>
                         </select>
                     </div>
                 </div>
@@ -156,6 +156,6 @@ export default function LIST_RULES() {
                     <GetPagination />
                 </div>
             </div>
-      </>
+        </>
     )
-  };
+};
