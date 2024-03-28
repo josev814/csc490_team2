@@ -12,9 +12,6 @@ import SHOW_TICKER_NEWS from './pages/news';
 import LIST_RULES from './pages/rules';
 import SHOW_RULE from './pages/rule';
 
-const {sitename} = 'Stock Strategiesss'
-const {tagline} = 'Test trading Strategies'
-
 
 class App extends React.Component {
   constructor(props){

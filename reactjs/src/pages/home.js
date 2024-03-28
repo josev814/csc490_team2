@@ -1,5 +1,5 @@
 import TeamCards from '../components/cards/people';
-import { Link, NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function Home(){
     return (
@@ -25,14 +25,14 @@ export default function Home(){
                 </div>
             </div>
             <div className='col-md-6 d-flex justify-content-end align-items-center h-100 p-0 overflow-hidden'>
-                <img src='/images/ui-screenshot.png' className='img-fluid shadow-sm mb-5 rounded-start' />
+                <img src='/images/ui-screenshot.png' alt='UI Screenshot' className='img-fluid shadow-sm mb-5 rounded-start' />
             </div>
         </div>
         <div className='container-fluid'>
             <div className='d-flex justify-content-center'>
                 <div className='row p-5'>
                     <span className='pb-3'>Developed by Seniors at</span>
-                    <img src='/images/FSULogo.svg' />
+                    <img src='/images/FSULogo.svg' alt='Fayetteville State University Logo' />
                 </div>
             </div>
         </div>
