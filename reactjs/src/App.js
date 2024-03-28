@@ -13,11 +13,19 @@ import LIST_RULES from './pages/rules';
 import SHOW_RULE from './pages/rule';
 
 
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './App.css'
+import Auth from './components/Auth'
+
+import Settings from './components/nav/Settings'
+
 class App extends React.Component {
   render() {
     return (
       <BrowserRouter>
         <Routes>
+
+        <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<UnauthedLayout />}>
             <Route index element={<Home />} />
             <Route path="login" element={<></>} />
@@ -39,6 +47,9 @@ class App extends React.Component {
           </Route>
           <Route path="*" element={<UnauthedLayout />}>
             <Route index element={<NoPage />} />
+          </Route>
+          <Route path="/settings" element={<AuthedLayout />}>
+            <Route path="/settings" element={<Settings />}></Route>
           </Route>
         </Routes>
       </BrowserRouter>
