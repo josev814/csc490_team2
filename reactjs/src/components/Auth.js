@@ -30,13 +30,21 @@ export default function LoginRegister(props) {
       }
       const response = await axios.post(url, formData);
       if (response.status === 200 || response.status === 201) {
-        // Handle successful authentication or registration
+        //Store return from response of the user into user cookie / expiration = 1 day
+
+        //cookie(login status) / vailid: 30 minutes
+          //status(onLogin | onRegistration) = true
+
+        //local storage: store access token and refresh token from response
+
+        //onLogout: destroy 2 cookies
+
         document.cookie = `user=${formData.email}`; // Save user email as a cookie
         navigate('/rules'); // Redirect to dashboard or any other desired route
       } 
     } 
     catch {
-      setErrorMessage("Please use valid login.");
+      setErrorMessage("Invalid Credentials, Try again");
     }
   };
 
