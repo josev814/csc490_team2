@@ -31,6 +31,7 @@ export default function LoginRegister(props) {
       const response = await axios.post(url, formData);
       if (response.status === 200 || response.status === 201) {
         // Handle successful authentication or registration
+        document.cookie = `user=${formData.email}`; // Save user email as a cookie
         navigate('/rules'); // Redirect to dashboard or any other desired route
       } 
     } 
