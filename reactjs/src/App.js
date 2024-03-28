@@ -14,30 +14,46 @@ import SHOW_RULE from './pages/rule';
 
 
 class App extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      sitedetails: {},
+    };
+  }
+
+  componentDidMount() {
+    this.setState({
+      sitedetails:{
+        'sitename': 'Stock Strategies',
+        'tagline': 'Test Trading Strategies'
+      }
+    });
+  }
+
   render() {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<UnauthedLayout />}>
+          <Route path="/" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<Home />} />
             <Route path="login" element={<></>} />
             <Route path="logout" element={<></>} />
           </Route>
-          <Route path="/user/" element={<AuthedLayout />}>
+          <Route path="/user/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route path=":user_id/profile" element={<></>} />
           </Route>
-          <Route path="/stocks/" element={<AuthedLayout />}>
+          <Route path="/stocks/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<FIND_STOCK />} />
             <Route path=":ticker" element={<SHOW_TICKER />} />
             <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
           </Route>
-          <Route path="/rules/" element={<AuthedLayout />}>
+          <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<LIST_RULES />} />
           </Route>
-          <Route path="/rule/" element={<AuthedLayout />}>
+          <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route path=":rule" element={<SHOW_RULE />} />
           </Route>
-          <Route path="*" element={<UnauthedLayout />}>
+          <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<NoPage />} />
           </Route>
         </Routes>

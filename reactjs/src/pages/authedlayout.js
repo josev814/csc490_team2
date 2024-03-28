@@ -3,10 +3,10 @@ import Header from './blocks/header';
 import Footer from './blocks/footer';
 import LeftNav from './blocks/leftnav';
 
-export default function AuthedLayout() {
+export default function AuthedLayout(props) {
     return (
       <>
-      <Header />
+      <Header sitename={props.sitename} tagline={props.tagline} />
       <div className='container-fluid'>
         <div className='row'>
           <LeftNav />
@@ -18,7 +18,7 @@ export default function AuthedLayout() {
               </div>
               <Outlet />
           </main>
-        <Footer />
+        <Footer sitename={props.sitename} />
         </div>
       </div>
       </>
