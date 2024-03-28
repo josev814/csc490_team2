@@ -60,6 +60,13 @@ LABEL project="STOCKS" \
 
 COPY ./BuildTools/supervisord/supervisord.conf /etc/supervisord/conf.d/supervisord.conf
 
+COPY ./BuildTools/crontab /tmp/crontab
+
+RUN apt-get update \
+    && apt-get install -y cron \
+    && cat /tmp/crontab | crontab - \
+    && rm /tmp/crontab
+
 RUN apt-get update \
     && apt-get install -y vim
 
