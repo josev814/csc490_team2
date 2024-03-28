@@ -8,12 +8,15 @@ export default function LoginRegister(props) {
     email: "",
     password: ""
   });
+  const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
   const navigate = useNavigate(); // Access the history object for navigation
 
   const base_url = 'http://localhost:8889'; // Define your base URL here
 
   const changeAuthMode = () => {
     setAuthMode(authMode === "signin" ? "signup" : "signin");
+    // Clear the error message when switching authentication mode
+    setErrorMessage("");
   };
 
   const handleSubmit = async (e) => {
@@ -29,11 +32,10 @@ export default function LoginRegister(props) {
       if (response.status === 200 || response.status === 201) {
         // Handle successful authentication or registration
         navigate('/rules'); // Redirect to dashboard or any other desired route
-      } else {
-        // Handle authentication or registration failure
-      }
-    } catch (error) {
-      console.error('Error:', error);
+      } 
+    } 
+    catch {
+      setErrorMessage("Please use valid login.");
     }
   };
 
@@ -89,6 +91,11 @@ export default function LoginRegister(props) {
                 <p className="text-center mt-2">
                   <a href="/forgot-password">Forgot password?</a>
                 </p>
+              )}
+              {errorMessage && (
+                <div className="alert alert-danger mt-3" role="alert">
+                  {errorMessage}
+                </div>
               )}
             </div>
           </div>
