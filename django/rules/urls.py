@@ -12,5 +12,6 @@ routes = DefaultRouter()
 urlpatterns = [
     path('', views.CreateAPIView.as_view()),
     path('list/', views.ListAPIView.as_view()),
-    path('<int:pk>/', views.DetailAPIView.as_view())
+    path('<int:pk>/', views.DetailAPIView.as_view()),
+    path('<int:pk>', views.DestroyAPIView.as_view())
 ]

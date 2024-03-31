@@ -9,6 +9,7 @@ from .models import Rules
 from .serializers import RuleSerializer
 
 
+
 class CreateAPIView(generics.CreateAPIView):
     """
     Class for Creating a rule
@@ -93,4 +94,25 @@ class DetailAPIView(generics.RetrieveAPIView):
         return Response(
             {'errors': None, 'record': serializer.data},
             status=status.HTTP_200_OK
+        )
+
+class DestroyAPIView(generics.DestroyAPIView):
+    """
+    Class for Deleting a rule
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = Rules.objects.all()
+    serializer_class = RuleSerializer
+    lookup_field = "id"
+
+    def perform_delete(self, request, *args, **kwargs):
+        """
+        deleting a rule
+        """
+        user = self.request.user
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(
+            {'errors': None, 'record': serializer.data},
+            status=status.HTTP_204_NO_CONTENT
         )
