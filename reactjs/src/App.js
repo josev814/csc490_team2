@@ -1,7 +1,7 @@
 import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Auth, {Logout} from './components/Auth';
+import {LoginRegister, Logout} from './components/Auth';
 import AuthedLayout from './pages/authedlayout';
 import UnauthedLayout from './pages/unauthedlayout';
 import NoPage from './pages/nopage';
@@ -39,8 +39,8 @@ class App extends React.Component {
         <Routes>
           <Route path="/" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<Home />} />
-            <Route path="login" element={<Auth mode="signin" />} />
-            <Route path="register" element={<Auth mode="signup" />} />
+            <Route path="login" element={<LoginRegister mode="signin" />} />
+            <Route path="register" element={<LoginRegister mode="signup" />} />
             <Route path="logout" element={<Logout />} />
           </Route>
 

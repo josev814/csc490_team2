@@ -7,7 +7,7 @@ import Cookies from 'universal-cookie';
 
 const cookies = new Cookies();
 
-export default function LoginRegister({ mode }) {
+export function LoginRegister({ mode }) {
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -64,7 +64,7 @@ export default function LoginRegister({ mode }) {
 
   return (
     <div className="container-fluid d-flex justify-content-center vh-100 align-items-center">
-      <div className="col-12 col-md-3">
+      <div className="col-12 col-md-4">
         {mode === "signin" ? (
           <LoginForm
             formData={formData}
@@ -89,7 +89,6 @@ export function Logout(){
   const navigate = useNavigate()
 
   useEffect(() => {
-    const cookies = new Cookies()
     const cookieNames = ['is_active', 'user']
 
     cookieNames.forEach(cookieName => {
