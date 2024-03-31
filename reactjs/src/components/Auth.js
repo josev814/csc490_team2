@@ -48,9 +48,14 @@ export default function LoginRegister({ mode }) {
         throw new Error('Failed to register user');
       }
     } 
-    catch {
-      setErrorMessage("Invalid Credentials, Try again");
+    catch (error) {
+      if (error.response && error.response.status === 409) {
+        setErrorMessage("User already exists");
+      } else {
+        setErrorMessage("Invalid Credentials, Try again");
+      }
     }
+    
   };
 
   const handleChange = (e) => {
