@@ -110,20 +110,31 @@ class RegistrationViewSet(ModelViewSet, TokenObtainPairView):
         serializer = self.get_serializer(data=json_body)
 
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        refresh = RefreshToken.for_user(user)
-        res = {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }
+        try:
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+            res = {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
 
-        return Response(
-            {
-                "user": serializer.data,
-                "refresh": res["refresh"],
-                "token": res["access"]
-            }, status=status.HTTP_201_CREATED
-        )
+            return Response(
+                {
+                    "user": serializer.data,
+                    "refresh": res["refresh"],
+                    "token": res["access"]
+                }, status=status.HTTP_201_CREATED
+            )
+        except Exception as err:
+            print(err)
+            return Response(
+                    {
+                        "errors": [
+                            'User already exists'
+                        ],
+                    }, status=status.HTTP_409_CONFLICT
+                )
+
 
 
 class RefreshViewSet(ViewSet, TokenRefreshView):
