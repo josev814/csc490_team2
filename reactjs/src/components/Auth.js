@@ -86,10 +86,10 @@ export default function LoginRegister({ mode }) {
 }
 
 export function Logout(){
-  const cookies = new Cookies()
   const navigate = useNavigate()
 
   useEffect(() => {
+    const cookies = new Cookies()
     const cookieNames = ['is_active', 'user']
 
     cookieNames.forEach(cookieName => {
@@ -99,7 +99,7 @@ export function Logout(){
     // removes access and refresh tokens
     localStorage.clear()
     navigate('/login');
-  }, [cookies, navigate])
+  }, [navigate])
 
   return null
 }
