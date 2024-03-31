@@ -6,7 +6,7 @@ export default function LeftNav() {
         {'pageName': 'Home', 'path': '/rules'},
         {'pageName': 'Stock Search', 'path': '/stocks'},
         {'pageName': 'Settings', 'path': '/settings'},
-        {'pageName': 'Logout', 'path': '/login'}
+        {'pageName': 'Logout', 'path': '/logout'}
     ]
     return (
         <nav className="col-md-2 d-none d-md-block bg-light sidebar">

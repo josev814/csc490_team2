@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import LoginForm from "./auth/LoginForm";
 import RegisterForm from "./auth/RegisterForm";
 import axios from 'axios';
@@ -83,4 +83,23 @@ export default function LoginRegister({ mode }) {
       </div>
     </div>
   );
+}
+
+export function Logout(){
+  const cookies = new Cookies()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const cookieNames = ['is_active', 'user']
+
+    cookieNames.forEach(cookieName => {
+      cookies.remove(cookieName)
+      //console.log(cookies.remove({cookieName}))
+    });
+    // removes access and refresh tokens
+    localStorage.clear()
+    navigate('/login');
+  }, [cookies, navigate])
+
+  return null
 }
