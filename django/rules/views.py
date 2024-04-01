@@ -117,3 +117,29 @@ class DeleteAPIView(generics.DestroyAPIView):
                 {'errors': ['Record Not Found']},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+class UpdateAPIView(generics.UpdateAPIView):
+    """
+    Class for Updating a rule
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = RuleSerializer
+    queryset = Rules.objects.all()
+    lookup_field = 'pk'
+
+    # def perform_update(self, serializer):
+
+    #     return super().perform_update(serializer)
+    
+    def update(self, request, *args, **kwargs):
+        try:
+            super().update(request, *args, **kwargs)
+            return Response(
+                {'errors': None, 'message': 'Record Updated'},
+                status=status.HTTP_200_OK
+            )
+        except Http404:
+            return Response(
+                {'errors': ['Record Not Found']},
+                status=status.HTTP_404_NOT_FOUND
+            )
