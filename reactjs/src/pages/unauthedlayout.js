@@ -1,19 +1,17 @@
 import { Outlet } from "react-router-dom";
-import Header from './blocks/header';
+import UnAuthedHeader from './blocks/unauthed_header';
 import Footer from './blocks/footer';
 
-export default function UnauthedLayout() {
-    return (
-      <>
-      <Header />
-      <div className='container-fluid'>
-        <div className='row'>
-          <main role='main' className='col-md-9 ml-sm-auto col-lg-10 pt-3 px-4'>
-              <Outlet />
-          </main>
-        <Footer />
-        </div>
-      </div>
-      </>
-    )
-  };
+export default function UnauthedLayout(props) {
+  return (
+    <>
+    <UnAuthedHeader sitename={props.sitename} tagline={props.tagline} />
+    <div className='container-fluid px-0 mx-0'>
+      <main role='main' className='col-12'>
+          <Outlet />
+      </main>
+      <Footer sitename={props.sitename} />
+    </div>
+    </>
+  )
+};

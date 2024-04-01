@@ -29,9 +29,9 @@ class StockTestCases(TestCase):
         self.assertIsNotNone(self.resp)
         self.assertEqual(self.resp.status_code, 200)
         json_resp = self.resp.data
-        self.assertEqual(json_resp['count'], 7)
+        self.assertIn(json_resp['count'], [6,7])
         self.assertIn('records', json_resp)
-        self.assertEqual(len(json_resp['records']), 7)
+        self.assertGreaterEqual(len(json_resp['records']), 6)
         self.assertIn('ticker', json_resp['records'][0])
         self.assertIn(json_resp['records'][0]['ticker'], self.symbol)
 

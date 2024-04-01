@@ -10,7 +10,7 @@ export default function LeftNav() {
     ]
     return (
         <nav className="col-md-2 d-none d-md-block bg-light sidebar">
-            <div className="sidebar-sticky">
+            <div className="sidebar-sticky d-flex vh-100">
                 <ul className="nav flex-column">
                 {links.map(link => (
                     <li key={link.pageName}>
