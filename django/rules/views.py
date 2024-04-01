@@ -118,3 +118,4 @@ class DeleteAPIView(generics.DestroyAPIView):
             {'errors': None, 'record': serializer.data},
             status=status.HTTP_204_NO_CONTENT
         )
+    
