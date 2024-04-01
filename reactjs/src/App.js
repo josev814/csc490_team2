@@ -59,7 +59,7 @@ class App extends React.Component {
           </Route>
 
           <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
-            <Route path=":rule" element={<SHOW_RULE />} />
+            <Route path=":rule/:rule_name" element={<SHOW_RULE />} />
           </Route>
 
           <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
