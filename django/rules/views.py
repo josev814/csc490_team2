@@ -2,12 +2,12 @@
 Viewset for Rules
 """
 
+from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Rules
 from .serializers import RuleSerializer
-
 
 
 class CreateAPIView(generics.CreateAPIView):
@@ -106,9 +106,14 @@ class DeleteAPIView(generics.DestroyAPIView):
     lookup_field = "id"
 
     def destroy(self, request, *args, **kwargs):
-        super().destroy(request, *args, **kwargs)
-        return Response(
-            {'errors': None, 'message': 'Record Deleted'},
-            status=status.HTTP_204_NO_CONTENT
-        )
-    
+        try:
+            super().destroy(request, *args, **kwargs)
+            return Response(
+                {'errors': None, 'message': 'Record Deleted'},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        except Http404:
+            return Response(
+                {'errors': ['Record Not Found']},
+                status=status.HTTP_404_NOT_FOUND
+            )
