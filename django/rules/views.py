@@ -3,7 +3,7 @@ Viewset for Rules
 """
 
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Rules
 from .serializers import RuleSerializer
@@ -100,22 +100,15 @@ class DeleteAPIView(generics.DestroyAPIView):
     """
     Class for Deleting a rule
     """
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     queryset = Rules.objects.all()
     serializer_class = RuleSerializer
     lookup_field = "id"
 
-    def perform_destroy(self, instance):
-        """
-        deleting a rule
-        """
-        # user = self.request.user
-        # instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        super().perform_destroy(instance)
+    def destroy(self, request, *args, **kwargs):
+        super().destroy(request, *args, **kwargs)
         return Response(
-            {'errors': None, 'record': serializer.data},
+            {'errors': None, 'message': 'Record Deleted'},
             status=status.HTTP_204_NO_CONTENT
         )
     
