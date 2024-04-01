@@ -43,7 +43,7 @@ class RegisterSerializer(UserSerializer):
     :rtype: _type_
     """
     password = serializers.CharField(max_length=128, min_length=8, write_only=True, required=True)
-    email = serializers.EmailField(required=True, write_only=True, max_length=128)
+    email = serializers.EmailField(required=True, max_length=128)
 
     class Meta:
         """database information for this class

@@ -18,7 +18,7 @@ export default function AuthedLayout(props) {
               <div className="justify-content-end d-flex container-fluid">
                 User:
                 <a className="ps-1" href={'/users/' + userData.id + '/'}>
-                  {userData.id}
+                  {userData.email}
                 </a>
               </div>
               <Outlet />
