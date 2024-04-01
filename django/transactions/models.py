@@ -37,3 +37,23 @@ class Transactions(models.Model):
                 fields=['rule']
             )
         ]
+
+    def __str__(self):
+        """
+        Default return of the class
+
+        :return: Returns the ticker, rule, action, quantity, price and timestamp
+        :rtype: str
+        """
+        return f'{self.ticker, self.rule, self.action, self.quantity, self.price, self.timestamp}'
+
+    def add_transaction(self, ticker_id, rule_id, action, qty, price, trx_timestamp):
+        record = {
+            'ticker': ticker_id,
+            'rule': rule_id,
+            'action': action,
+            'quantity': qty,
+            'price': price,
+            'timestamp': trx_timestamp
+        }
+        self.objects.create(**record)

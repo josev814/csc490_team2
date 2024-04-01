@@ -1,22 +1,44 @@
 """
 The viewsets for Transactions
 """
-from rest_framework import viewsets
-#from rest_framework import viewsets, status, filters
-#from rest_framework.permissions import IsAuthenticated
-#from rest_framework.decorators import action
-#from rest_framework.decorators import api_view
-#from rest_framework.response import Response
-from transactions.models import Transactions
+from rest_framework import generics, status, filters
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
 
 from .models import Transactions
-# Create your views here.
-class TransactionViewSet(viewsets.ModelViewSet):
-    """The Transaction ViewSet that queries the Transaction table
+from .serializer import TransactionSerializer
 
-    :param viewsets: The ModelViewSet, so we can access the db
-    :type viewsets: class
-    :return: Returns the Viewset for stocks
-    :rtype: viewset
+# Create your views here.
+class ListAPIView(generics.ListAPIView):
     """
-    queryset = Transactions.objects.all().order_by('-timestamp')
+    The Transaction ViewSet that queries the Transaction table
+    """
+    permission_classes = (AllowAny,)
+    queryset = Transactions.objects.all().order_by('-timestamp').order_by('-pk').all()
+    serializer_class = TransactionSerializer
+    lookup_field = 'pk'
+
+    def list(self, request, *args, **kwargs):
+        rule = kwargs['rule']
+        parent_qs = super().get_queryset()
+        qs = self.filter_queryset(parent_qs).filter(rule=rule)
+        if not qs.exists():
+            return Response(
+                {'errors': ['No Transactions found']},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(qs, many=True)
+        data = serializer.data
+        return Response(
+            {
+                'errors': None,
+                'records': data,
+                'count': len(data)
+            },
+            status = status.HTTP_200_OK
+        )
