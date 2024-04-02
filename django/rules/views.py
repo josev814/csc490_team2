@@ -103,9 +103,17 @@ class DeleteAPIView(generics.DestroyAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = Rules.objects.all()
     serializer_class = RuleSerializer
-    lookup_field = "id"
+    lookup_field = "pk"
 
     def destroy(self, request, *args, **kwargs):
+        user = self.request.user.id
+        parent_qs = super().get_queryset()
+        qs = self.filter_queryset(parent_qs).filter(user=user).filter(pk=kwargs.get('pk'))
+        if not qs.exists():
+            return Response(
+                {'errors': ['You do not have permission to delete this rule.']},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         try:
             super().destroy(request, *args, **kwargs)
             return Response(
