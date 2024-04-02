@@ -12,6 +12,7 @@ routes = DefaultRouter()
 urlpatterns = [
     path('', views.CreateAPIView.as_view()),
     path('list/', views.ListAPIView.as_view()),
-    path('delete/<int:id>/', views.DeleteAPIView.as_view()),
+    path('update/<int:pk>/', views.UpdateAPIView.as_view()),
+    path('delete/<int:pk>/', views.DeleteAPIView.as_view()),
     path('<int:pk>/', views.DetailAPIView.as_view())
 ]
