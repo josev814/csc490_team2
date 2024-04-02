@@ -126,12 +126,16 @@ class UpdateAPIView(generics.UpdateAPIView):
     serializer_class = RuleSerializer
     queryset = Rules.objects.all()
     lookup_field = 'pk'
-
-    # def perform_update(self, serializer):
-
-    #     return super().perform_update(serializer)
     
     def update(self, request, *args, **kwargs):
+        user = self.request.user.id
+        parent_qs = super().get_queryset()
+        qs = self.filter_queryset(parent_qs).filter(user=user).filter(pk=kwargs.get('pk'))
+        if not qs.exists():
+            return Response(
+                {'errors': ['You do not have permission to update this rule.']},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         try:
             super().update(request, *args, **kwargs)
             return Response(
