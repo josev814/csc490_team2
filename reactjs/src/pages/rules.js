@@ -120,9 +120,11 @@ export default function LIST_RULES() {
                             </button>
                         </div>
                         <div className='col-md-6 d-flex align-items-center justify-content-end'>
-                            <button className="btn btn-info btn-lg">
-                                Create Rule <AddCircleOutlineOutlined />
-                            </button>
+                            <Link to='/rule/create/'>
+                                <button className="btn btn-info btn-lg">
+                                    Create Rule <AddCircleOutlineOutlined />
+                                </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

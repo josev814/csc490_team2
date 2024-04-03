@@ -5,7 +5,7 @@ import LeftNav from './blocks/leftnav';
 import Cookies from 'universal-cookie';
 
 export default function AuthedLayout(props) {
-    const cookies = new Cookies();
+    const cookies = new Cookies(null, { path: '/' });
     const userData = cookies.get('user');
 
     return (

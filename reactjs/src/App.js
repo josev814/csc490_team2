@@ -10,12 +10,11 @@ import FIND_STOCK from './pages/stocks';
 import SHOW_TICKER from './pages/show_ticker';
 import SHOW_TICKER_NEWS from './pages/news';
 import LIST_RULES from './pages/rules';
-import SHOW_RULE from './pages/rule';
-import CreateRule from './components/rules/CreateRule';
-
+import {SHOW_RULE, CREATE_RULE} from './pages/rule';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
+
 
 class App extends React.Component {
   constructor(props) {
@@ -30,6 +29,7 @@ class App extends React.Component {
       sitedetails: {
         sitename: 'Stock Strategies',
         tagline: 'Test Trading Strategies',
+        django_url: 'http://localhost:8889'
       },
     });
   }
@@ -57,15 +57,16 @@ class App extends React.Component {
 
           <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<LIST_RULES />} />
-            <Route path="CreateRule" element={<CreateRule />} />
           </Route>
 
           <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
+            <Route path="create" element={<CREATE_RULE django_url={this.state.sitedetails.django_url} />} />
             <Route path=":rule/:rule_name" element={<SHOW_RULE />} />
           </Route>
 
           <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<NoPage />} />
+            <Route path='*' element={<NoPage />} />
           </Route>
 
         </Routes>
