@@ -10,12 +10,12 @@ export default function CreateRuleForm({handleSubmit, handleChange}) {
                     <input type="text" className="form-control" name="name" id="name" placeholder="Enter rule name" onChange={handleChange} />
                 </div>
                 <div className="row mb-3">
-                    <label htmlFor="investment" className="form-label">Initial Investment:</label>
+                    <label htmlFor="initial_investment" className="form-label">Initial Investment:</label>
                     <div className=" input-group">
                         <div className="input-group-prepend">
                             <span className='input-group-text'>$</span>
                         </div>
-                        <input type="text" className="form-control" name="investment" id="investment" placeholder="Enter your initial investment" onChange={handleChange} />
+                        <input type="text" className="form-control" name="initial_investment" id="initial_investment" placeholder="Enter your initial investment" onChange={handleChange} />
                         <div className="input-group-append">
                             <span className='input-group-text'>.00</span>
                         </div>
