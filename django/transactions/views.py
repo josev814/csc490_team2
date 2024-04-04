@@ -1,8 +1,8 @@
 """
 The viewsets for Transactions
 """
-from rest_framework import generics, status, filters
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Transactions
@@ -13,7 +13,7 @@ class ListAPIView(generics.ListAPIView):
     """
     The Transaction ViewSet that queries the Transaction table
     """
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     queryset = Transactions.objects.all().order_by('-timestamp').order_by('-pk').all()
     serializer_class = TransactionSerializer
     lookup_field = 'pk'

@@ -48,6 +48,21 @@ class Transactions(models.Model):
         return f'{self.ticker, self.rule, self.action, self.quantity, self.price, self.timestamp}'
 
     def add_transaction(self, ticker_id, rule_id, action, qty, price, trx_timestamp):
+        """Adds a transaction to the database
+
+        :param ticker_id: 
+        :type ticker_id: int
+        :param rule_id: 
+        :type rule_id: int
+        :param action: Whether we buy or sell a stock
+        :type action: str
+        :param qty: 
+        :type qty: (int|float)
+        :param price: The price the transaction occurred at
+        :type price: float
+        :param trx_timestamp: Time that the transaction took place
+        :type trx_timestamp: datetime
+        """
         record = {
             'ticker': ticker_id,
             'rule': rule_id,
