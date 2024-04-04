@@ -24,7 +24,7 @@ export function SHOW_RULE(props) {
     const handleShow = () => setShow(true);
 
     async function handleDelete() {
-        const delete_url = `${props.sitedetails.django_url}/rule/delete/${rule}`
+        const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
         try {
             const response = await axios.delete(delete_url, { headers: get_auth_header() });
             switch (response.status) {
