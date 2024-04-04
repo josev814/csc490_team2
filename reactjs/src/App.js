@@ -15,10 +15,6 @@ import {SHOW_RULE, CREATE_RULE} from './pages/rule';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
-
 class App extends React.Component {
   constructor(props) {
     super(props);
