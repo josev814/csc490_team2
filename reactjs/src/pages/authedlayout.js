@@ -11,6 +11,8 @@ export default function AuthedLayout(props) {
     return (
       <>
       <Header sitename={props.sitename} tagline={props.tagline} />
+      <div id='toastContainer' className="position-fixed bottom-0 end-0 p-3" style={{ zIndex: 9999 }}>
+      </div>
       <div className='container-fluid'>
         <div className='row'>
           <LeftNav />

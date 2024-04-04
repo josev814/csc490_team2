@@ -61,7 +61,7 @@ class App extends React.Component {
 
           <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route path="create" element={<CREATE_RULE django_url={this.state.sitedetails.django_url} />} />
-            <Route path=":rule/:rule_name" element={<SHOW_RULE />} />
+            <Route path=":rule/:rule_name" element={<SHOW_RULE sitedetails={this.state.sitedetails} />} />
           </Route>
 
           <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
