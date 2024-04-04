@@ -18,9 +18,7 @@ export default function AuthedLayout(props) {
           <LeftNav />
           <main role='main' className='col-md-9 ml-sm-auto col-lg-10 pt-3 px-4'>
               <div className="justify-content-end d-flex container-fluid">
-                User:
-                <a className="ps-1" href={'/users/' + userData.id + '/'}>
-                  {userData.email}
+               
                 User:
                 <a className="ps-1" href={'/users/' + userData.id + '/'}>
                   {userData.email}
@@ -28,7 +26,6 @@ export default function AuthedLayout(props) {
               </div>
               <Outlet />
           </main>
-        <Footer sitename={props.sitename} />
         <Footer sitename={props.sitename} />
         </div>
       </div>
