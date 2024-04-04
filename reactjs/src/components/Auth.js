@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
-const cookies = new Cookies(null, {path: '/'});
+const cookies = new Cookies();
 
 export function LoginRegister({ mode }) {
   const [formData, setFormData] = useState({
@@ -40,7 +40,7 @@ export function LoginRegister({ mode }) {
         cookies.set('is_active', userData.is_active, { expires: loginStatusExpiration });
   
         //local storage: store access token and refresh token from response
-        localStorage.setItem('accessToken', response.data.access);
+        localStorage.setItem('accessToken', response.data.token);
         localStorage.setItem('refreshToken', response.data.refresh);
   
         navigate('/rules');

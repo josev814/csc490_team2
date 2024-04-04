@@ -2,6 +2,8 @@ import './App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import {LoginRegister, Logout} from './components/Auth';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {LoginRegister, Logout} from './components/Auth';
 import AuthedLayout from './pages/authedlayout';
 import UnauthedLayout from './pages/unauthedlayout';
 import NoPage from './pages/nopage';
@@ -15,6 +17,9 @@ import {SHOW_RULE, CREATE_RULE} from './pages/rule';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
 
 class App extends React.Component {
   constructor(props) {
@@ -39,21 +44,31 @@ class App extends React.Component {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
+          <Route path="/" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<Home />} />
+            <Route path="login" element={<LoginRegister mode="signin" />} />
+            <Route path="register" element={<LoginRegister mode="signup" />} />
+            <Route path="logout" element={<Logout />} />
             <Route path="login" element={<LoginRegister mode="signin" />} />
             <Route path="register" element={<LoginRegister mode="signup" />} />
             <Route path="logout" element={<Logout />} />
           </Route>
 
           <Route path="/user/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
+
+          <Route path="/user/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route path=":user_id/profile" element={<></>} />
           </Route>
+
+          <Route path="/stocks/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
 
           <Route path="/stocks/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<FIND_STOCK />} />
             <Route path=":ticker" element={<SHOW_TICKER />} />
             <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
           </Route>
+
+          <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
 
           <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<LIST_RULES />} />
@@ -65,9 +80,12 @@ class App extends React.Component {
           </Route>
 
           <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
+
+          <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
             <Route index element={<NoPage />} />
             <Route path='*' element={<NoPage />} />
           </Route>
+
 
         </Routes>
       </BrowserRouter>

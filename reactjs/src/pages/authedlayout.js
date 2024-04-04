@@ -21,10 +21,14 @@ export default function AuthedLayout(props) {
                 User:
                 <a className="ps-1" href={'/users/' + userData.id + '/'}>
                   {userData.email}
+                User:
+                <a className="ps-1" href={'/users/' + userData.id + '/'}>
+                  {userData.email}
                 </a>
               </div>
               <Outlet />
           </main>
+        <Footer sitename={props.sitename} />
         <Footer sitename={props.sitename} />
         </div>
       </div>
