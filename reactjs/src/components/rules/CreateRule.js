@@ -6,8 +6,20 @@ export default function CreateRuleForm({handleSubmit, handleChange}) {
             <h2 className="mb-4">Add Rule</h2>
             <form className="form" onSubmit={handleSubmit}>
                 <div className="row mb-3">
-                    <label htmlFor="name" className="form-label">Rule Name</label>
+                    <label htmlFor="name" className="form-label">Name:</label>
                     <input type="text" className="form-control" name="name" id="name" placeholder="Enter rule name" onChange={handleChange} />
+                </div>
+                <div className="row mb-3">
+                    <label htmlFor="initial_investment" className="form-label">Initial Investment:</label>
+                    <div className=" input-group">
+                        <div className="input-group-prepend">
+                            <span className='input-group-text'>$</span>
+                        </div>
+                        <input type="text" className="form-control" name="initial_investment" id="initial_investment" placeholder="Enter your initial investment" onChange={handleChange} />
+                        <div className="input-group-append">
+                            <span className='input-group-text'>.00</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="row shadow px-2 py-3 mb-3">
                     <label className="col-md-1">
@@ -52,6 +64,9 @@ export default function CreateRuleForm({handleSubmit, handleChange}) {
                 </div>
                 <div className="row shadow px-2 py-3">
                     <div className="col-md-1">
+                        <span className="h4">THEN:</span>
+                    </div>
+                    <div className="col-md-1">
                         <select name='then_clause' className="form-select">
                             <option value={'buy'}>Buy</option>
                             <option value={'sell'}>Sell</option>
@@ -64,7 +79,7 @@ export default function CreateRuleForm({handleSubmit, handleChange}) {
                     <div className="col-md-2">
                         <select name='then_value2' className="form-select">
                             <option value={'usd'}>USD</option>
-                            <option value={'percentage'}>%</option>
+                            {/* <option value={'percentage'}>%</option> */}
                             <option value={'shares'}>Share(s)</option>
                         </select>
                     </div>
