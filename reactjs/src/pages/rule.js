@@ -357,6 +357,7 @@ export function CREATE_RULE(props){
     const [formData, setFormData] = useState({
         user: "",
         name: "",
+        initial_investment: 0.0,
         rule: {},
     });
     const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
@@ -468,6 +469,8 @@ export function CREATE_RULE(props){
         console.log(e.target.name)
         if (['name'].indexOf(e.target.name) != -1 ){
             setFormData({ ...formData, [e.target.name]: e.target.value });
+        } else if (['initial_investment'].indexOf(e.target.name) != -1 ){
+            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
         } else {
             // parse the rule to a json rule
         }
