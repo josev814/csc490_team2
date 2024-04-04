@@ -43,7 +43,7 @@ class RegisterSerializer(UserSerializer):
     :rtype: _type_
     """
     password = serializers.CharField(max_length=128, min_length=8, write_only=True, required=True)
-    email = serializers.EmailField(required=True, write_only=True, max_length=128)
+    email = serializers.EmailField(required=True, max_length=128)
 
     class Meta:
         """database information for this class
@@ -61,7 +61,10 @@ class RegisterSerializer(UserSerializer):
         :rtype: _type_
         """
         try:
-            user = Users.objects.filter(**{'email':validated_data['email']}).get()
+            user = Users.objects.filter(**{'email':validated_data['email']})
+            if not user.get().check_password(validated_data['password']):
+                user = None
+            user = user.get()
         except ObjectDoesNotExist:
             user = Users.objects.create_user(**validated_data)
         return user
