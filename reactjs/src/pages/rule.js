@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ShowRuleTransactionChart from '../components/rules/rule_chart';
 
 export default function SHOW_RULE() {
+    const navigate = useNavigate()
     
     const return_data = {
         'errors': null,
@@ -203,7 +204,7 @@ export default function SHOW_RULE() {
             <div className="container-fluid">
                 <div className='row'>
                     <div className='col-1'>
-                        <button className="btn btn-warning btn-md" onClick={useNavigate(-1)}>
+                        <button className="btn btn-warning btn-md" onClick={() => navigate(-1)}>
                             <ArrowBackIosOutlined />
                         </button>
                     </div>
