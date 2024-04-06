@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import axios from 'axios';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -359,7 +359,11 @@ export function CREATE_RULE(props){
         name: "",
         initial_investment: 0.0,
         rule: {},
+        start_date: "",
+        is_active: true
     });
+    const [action, setAction] = useState({}); // State to manage the action
+    const [conditions, setConditions] = useState([]); // State to manage rule conditions
     const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
       
     const navigate = useNavigate()
@@ -465,15 +469,95 @@ export function CREATE_RULE(props){
         }
     };
 
+    
+    const parse_form_rule_action = (event) => {
+        const then_fields = ['method', 'quantity', 'quantity_type', 'symbol']
+        let form_action = {}
+        let symbol_info = undefined
+        let field_prefix = 'then_'
+        console.group('action')
+        for (let i = 0; i < then_fields.length; i++){
+            let form_fields = document.getElementsByName(field_prefix + then_fields[i])
+            if (!form_fields || form_fields.length > 1){
+                break
+            }
+            let form_field = form_fields[0]
+            let value = form_field.value
+            // @caileb The symbol isn't always getting set properly here for some reason
+            if (then_fields[i] === 'symbol' && event.target.name.startsWith(field_prefix)){
+                console.group('action symbol')
+                console.log(event.target.name + ': ' + event.target.value)
+                symbol_info = event.target.value.split('|');
+                console.log(symbol_info)
+                value = {'id': symbol_info[0], 'ticker': symbol_info[1]}
+                console.log(value)
+                form_action[then_fields[i]] = value
+                console.log(form_action)
+                console.groupEnd()
+            } else {
+                form_action[then_fields[i]] = value
+            }
+        }
+        console.log(form_action)
+        setAction(form_action)
+        console.log(action)
+        console.groupEnd()
+    }
+
+    const parse_form_rule_events = (event) => {
+        const event_fields = ['condition', 'symbol', 'data', 'operator', 'value']
+        
+        // parse the rule to a json rule
+        let form_conditions = []
+        let symbol_info = undefined
+        let field_prefix = 'event_'
+        outerLoop:
+        for (let i = 1; i < 99; i++){
+            let condition = {}
+            for (let j = 0; j < event_fields.length; j++){
+                let form_fields = document.getElementsByName(field_prefix + event_fields[j] + '_' + i)
+                if (!form_fields || form_fields.length != 1){
+                    break outerLoop;
+                }
+                let form_field = form_fields[0]
+                if (form_field.value === undefined){
+                    break outerLoop
+                }
+                let value = form_field.value
+                // @caileb The symbol isn't always getting set properly here for some reason
+                if (event_fields[j] === 'symbol' && event.target.name.startsWith(field_prefix)){
+                    console.group('condition symbol')
+                    console.log(event.target.name + ': ' + event.target.value)
+                    symbol_info = event.target.value.split('|');
+                    console.log(symbol_info)
+                    value = {'id': symbol_info[0], 'ticker': symbol_info[1]}
+                    console.log(value)
+                    condition[event_fields[j]] = value
+                    console.log(condition)
+                    console.groupEnd()
+                } else {
+                    condition[event_fields[j]] = value
+                }
+            }
+            form_conditions.push(condition)
+            console.log(form_conditions)
+        }
+        setConditions(form_conditions)
+    }
+
     const handleChange = (e) => {
-        console.log(e.target.name)
-        if (['name'].indexOf(e.target.name) != -1 ){
+        if (['name', 'start_date'].indexOf(e.target.name) !== -1 ){
             setFormData({ ...formData, [e.target.name]: e.target.value });
-        } else if (['initial_investment'].indexOf(e.target.name) != -1 ){
+        } else if ('initial_investment' === e.target.name ){
             setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
         } else {
-            // parse the rule to a json rule
+            parse_form_rule_events(e)
+            parse_form_rule_action(e)
+            console.log(action)
+            let json_rule = {'conditions': conditions, 'action': action}
+            setFormData({ ...formData, 'rule': json_rule });
         }
+        console.log(formData)
     };
     
     return (
