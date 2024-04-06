@@ -5,7 +5,8 @@ import Pagination from 'react-bootstrap/Pagination';
 import Form from 'react-bootstrap/Form';
 
 export default function LIST_RULES() {
-    
+    // update to pull rules from backend 
+    // {{base_url}}/rules/list/
     const rules = {
         'errors': null,
         'count': 2,

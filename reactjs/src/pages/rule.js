@@ -324,6 +324,7 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
                     <ShowRuleTransactionChart />
+                    {/* ^ pass symbol and transactions that are loaded from request */}
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
@@ -473,6 +474,8 @@ export function CREATE_RULE(props){
             setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
         } else {
             // parse the rule to a json rule
+
+            //TODO: wire rule input into json object, that goes to rule state, commit  
         }
     };
     
