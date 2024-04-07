@@ -2,14 +2,12 @@
 URL configuration for Transactions
 """
 from rest_framework.routers import DefaultRouter
-from django.urls import path, include
+from django.urls import path
 
-from .views import TransactionViewSet
+from . import views
 
 routes = DefaultRouter()
 
-routes.register(r'', TransactionViewSet)
-
 urlpatterns = [
-    path('', include(routes.urls))
+    path('<int:rule>/', views.ListAPIView.as_view())
 ]
