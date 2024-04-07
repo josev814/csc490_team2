@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState, useEffect } from 'react';
 import axios from 'axios';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -545,6 +545,21 @@ export function CREATE_RULE(props){
         setConditions(form_conditions)
     }
 
+    // const handleChange = (e) => {
+    //     if (['name', 'start_date'].indexOf(e.target.name) !== -1 ){
+    //         setFormData({ ...formData, [e.target.name]: e.target.value });
+    //     } else if ('initial_investment' === e.target.name ){
+    //         setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
+    //     } else {
+    //         parse_form_rule_events(e)
+    //         parse_form_rule_action(e)
+    //         console.log(action)
+    //         let json_rule = {'conditions': conditions, 'action': action}
+    //         setFormData({ ...formData, 'rule': json_rule });
+    //     }
+    //     console.log(formData)
+    // };
+    
     const handleChange = (e) => {
         if (['name', 'start_date'].indexOf(e.target.name) !== -1 ){
             setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -554,11 +569,16 @@ export function CREATE_RULE(props){
             parse_form_rule_events(e)
             parse_form_rule_action(e)
             console.log(action)
-            let json_rule = {'conditions': conditions, 'action': action}
-            setFormData({ ...formData, 'rule': json_rule });
         }
         console.log(formData)
+
     };
+    
+    useEffect(() => {
+        const json_rule = {'conditions': conditions, 'action': action};
+        setFormData({ ...formData, 'rule': json_rule });
+    }, [conditions, action]);
+    console.log(formData)
     
     return (
         <CreateRuleForm 
