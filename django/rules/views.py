@@ -155,3 +155,69 @@ class UpdateAPIView(generics.UpdateAPIView):
                 {'errors': ['Record Not Found']},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+    def checkout(rule):
+        """parsing through the rule logic
+
+        :param rule: 
+        :type rule: 
+        """
+
+        symbol = rule['ticker']
+
+        # if symbol price > value then perform action
+        if rule['condition'] == 'if':
+            if symbol[rule['price']] > rule['value']:
+                perform(rule['action'])
+            
+            #continues with condition == 'and' and greater than
+            if rule['condition'] == 'and':
+                if symbol[rule['price']] > rule['value']:
+                    perform(rule['action'])
+
+            #continues with condition == 'and' and less than
+            if rule['condition'] == 'and':
+                if symbol[rule['price']] < rule['value']:
+                    perform(rule['action'])
+
+
+        # if symbol price < value then perform action
+        if rule['condition'] == 'if':
+            if symbol[rule['price']] < rule['value']:
+                perform(rule['action'])
+            
+            #continues with condition == 'and' and greater than
+            if rule['condition'] == 'and':
+                if symbol[rule['price']] > rule['value']:
+                    perform(rule['action'])
+
+            #continues with condition == 'and' and less than
+            if rule['condition'] == 'and':
+                if symbol[rule['price']] < rule['value']:
+                    perform(rule['action'])
+
+
+    def calculate_rule(rule, checkout):
+        """function to calculate the action of the rule
+
+        :param rule: _description_
+        :type rule: _type_
+        :param checkout: _description_
+        :type checkout: _type_
+        """
+        # if method == buy then "amount" needs to go UP by quantity
+        if rule['method'] == 'buy':
+            amount += rule['quantity']
+            
+        
+        # if method == sell then "amount" needs to go DOWN by quantity
+        # this would always sell the available amount of "quantity",
+            # but raises an error when "amount" goes below 0 (into the negatives)
+        if rule['method'] == 'sell':
+            try:
+                amount -= rule['quantity']
+                if amount < 0:
+                    raise ValueError("Selling quantity exceeds available amount.")
+            except ValueError as e:
+                print(e)
+                return 0
