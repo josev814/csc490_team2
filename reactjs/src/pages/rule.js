@@ -290,7 +290,7 @@ export function SHOW_RULE(props) {
                 </Modal>
                 <div className='row'>
                     <div className='col-1'>
-                        <button className="btn btn-warning btn-md" onClick={useNavigate(-1)}>
+                        <button className="btn btn-warning btn-md" onClick={() => navigate(-1)}>
                             <ArrowBackIosOutlined />
                         </button>
                     </div>
