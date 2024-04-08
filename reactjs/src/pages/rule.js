@@ -33,6 +33,7 @@ export function SHOW_RULE(props) {
                     break;
                 case 404:
                     showToastError('Record not found to delete')
+                    break;
                 default:
                     break;
             }
@@ -41,7 +42,6 @@ export function SHOW_RULE(props) {
         }
     }
     const toastContainer = document.getElementById('toastContainer')
-        
 
     function showToastError(message) {    
         // Create the toast element
