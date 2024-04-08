@@ -157,8 +157,8 @@ export default function CreateRuleForm(props) {
     
     useEffect(() => {
         const json_rule = {'conditions': conditions, 'action': action};
-        setFormData({ ...formData, 'rule': json_rule });
-    }, [conditions, action, formData]);
+        setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule }));
+    }, [conditions, action, setFormData]);
 
     return(
         <div className="container">
