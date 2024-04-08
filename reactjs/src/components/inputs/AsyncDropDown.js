@@ -6,11 +6,10 @@ export function AsyncDropDown(props) {
     const [selectedOption, setSelectedOption] = useState(null);
 
     const loadOptions = async (inputValue, callback) => {
-        const django_url = 'http://localhost:8889'
         //axios.get(`${django_url}/stocks/find_ticker?ticker=${inputValue}`)
         let records = {}
         await axios.get(
-            django_url + '/stocks/find_ticker/?ticker=' + inputValue
+            `${props.django_url}/stocks/find_ticker/?ticker=${inputValue}`
         ).then(res => {
             records = res.data['records']
         }).catch(error => {
@@ -24,18 +23,28 @@ export function AsyncDropDown(props) {
     
     const handleSelect = (selectedOption) => {
          setSelectedOption(selectedOption);
+         console.group('handleSelect')
          console.log(selectedOption)
          if (selectedOption && selectedOption !== null && props.handleChange){
-            console.log('selectedOption: ' + selectedOption)
-             props.handleChange({'target': {'value': selectedOption.value, 'name': props.name}} )
+            const event = {'target': {'value': selectedOption.value, 'name': props.name}}
+            try {
+                console.log('Handling change')
+                props.handleChange(event)
+                console.log('Done handling change')
+            } catch (err) {
+                console.log(err)
+            }
+            console.group('event')
+            console.log(event)
+            console.groupEnd()
          }
+         console.groupEnd()
     };
 
     return(
         <>
             <AsyncSelect
                 name={props.name}
-                cacheOptions
                 value={selectedOption}
                 onChange={handleSelect}
                 loadOptions={loadOptions}

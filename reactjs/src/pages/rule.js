@@ -1,9 +1,9 @@
-import React, { useLayoutEffect, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import Cookies from 'universal-cookie'
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
-import Cookies from 'universal-cookie'
 import ShowRuleTransactionChart from '../components/rules/rule_chart';
 import CreateRuleForm from '../components/rules/CreateRule'
 
@@ -128,19 +128,25 @@ export function SHOW_RULE(props) {
     }
 
     function GetOperator(operator){
+        let value = undefined
         switch (operator.operator) {
             case 'gt':
-                return ('>')
+                value = '>'
+                break
             case 'gte':
-                return ('>=')
+                value = '>='
+                break
             case 'lt':
-                return ('<')
+                value = '<'
+                break
             case 'lte':
-                return ('<=')
+                value = '<='
+                break
             default:
-                return ('=')
-                break;
+                value = '='
+                break
         }
+        return value
     }
 
     function DisplayCondition(content){
@@ -353,20 +359,8 @@ export function SHOW_RULE(props) {
 
 
 export function CREATE_RULE(props){
-    const cookies = new Cookies(null, { path: '/' })
-    const [formData, setFormData] = useState({
-        user: "",
-        name: "",
-        initial_investment: 0.0,
-        rule: {},
-        start_date: "",
-        is_active: true
-    });
-    const [action, setAction] = useState({}); // State to manage the action
-    const [conditions, setConditions] = useState([]); // State to manage rule conditions
-    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
-      
     const navigate = useNavigate()
+    const cookies = new Cookies(null, { path: '/' })
 
     function get_auth_header(){
         const token = localStorage.getItem('accessToken')
@@ -422,168 +416,7 @@ export function CREATE_RULE(props){
         }
     }
     
-
-    function get_user_from_cookie(){
-        const userCookie = cookies.get('user');
-        if (!userCookie || !userCookie.id) {
-            console.error("User cookie or user ID not found.");
-            return null; // or handle the error appropriately
-        }
-    
-        // Construct user URL based on user ID
-        const user_id = userCookie.id;
-        const user_url = `${props.django_url}/users/${user_id}/`;
-        return user_url;
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const url = `${props.django_url}/rules/`
-        await refresh_token()
-
-        const updatedFormData = {
-            ...formData,
-            user: get_user_from_cookie(),
-        };
-
-        setFormData(updatedFormData);
-        try {
-            const headers = get_auth_header()
-            const response = await axios.post(url, updatedFormData, {headers})
-            console.log(response)
-            if (response.status === 200 || response.status === 201) {
-                const rule_id = response.data.id
-                const rule_name = response.data.name
-                navigate(`/rule/${rule_id}/${rule_name}/`);
-            } else {
-                console.log('Failed to create rule')
-                throw new Error('Failed to create rule');
-            }
-        }
-        catch (error) {
-            if (error.response && error.response.status === 409) {
-                setErrorMessage("Rule already exists");
-            } else {
-                setErrorMessage(`${error.response.status}: ${error}`);
-            }
-        }
-    };
-
-    
-    const parse_form_rule_action = (event) => {
-        const then_fields = ['method', 'quantity', 'quantity_type', 'symbol']
-        let form_action = {}
-        let symbol_info = undefined
-        let field_prefix = 'then_'
-        console.group('action')
-        for (let i = 0; i < then_fields.length; i++){
-            let form_fields = document.getElementsByName(field_prefix + then_fields[i])
-            if (!form_fields || form_fields.length > 1){
-                break
-            }
-            let form_field = form_fields[0]
-            let value = form_field.value
-            // @caileb The symbol isn't always getting set properly here for some reason
-            if (then_fields[i] === 'symbol' && event.target.name.startsWith(field_prefix)){
-                console.group('action symbol')
-                console.log(event.target.name + ': ' + event.target.value)
-                symbol_info = event.target.value.split('|');
-                console.log(symbol_info)
-                value = {'id': symbol_info[0], 'ticker': symbol_info[1]}
-                console.log(value)
-                form_action[then_fields[i]] = value
-                console.log(form_action)
-                console.groupEnd()
-            } else {
-                form_action[then_fields[i]] = value
-            }
-        }
-        console.log(form_action)
-        setAction(form_action)
-        console.log(action)
-        console.groupEnd()
-    }
-
-    const parse_form_rule_events = (event) => {
-        const event_fields = ['condition', 'symbol', 'data', 'operator', 'value']
-        
-        // parse the rule to a json rule
-        let form_conditions = []
-        let symbol_info = undefined
-        let field_prefix = 'event_'
-        outerLoop:
-        for (let i = 1; i < 99; i++){
-            let condition = {}
-            for (let j = 0; j < event_fields.length; j++){
-                let form_fields = document.getElementsByName(field_prefix + event_fields[j] + '_' + i)
-                if (!form_fields || form_fields.length != 1){
-                    break outerLoop;
-                }
-                let form_field = form_fields[0]
-                if (form_field.value === undefined){
-                    break outerLoop
-                }
-                let value = form_field.value
-                // @caileb The symbol isn't always getting set properly here for some reason
-                if (event_fields[j] === 'symbol' && event.target.name.startsWith(field_prefix)){
-                    console.group('condition symbol')
-                    console.log(event.target.name + ': ' + event.target.value)
-                    symbol_info = event.target.value.split('|');
-                    console.log(symbol_info)
-                    value = {'id': symbol_info[0], 'ticker': symbol_info[1]}
-                    console.log(value)
-                    condition[event_fields[j]] = value
-                    console.log(condition)
-                    console.groupEnd()
-                } else {
-                    condition[event_fields[j]] = value
-                }
-            }
-            form_conditions.push(condition)
-            console.log(form_conditions)
-        }
-        setConditions(form_conditions)
-    }
-
-    // const handleChange = (e) => {
-    //     if (['name', 'start_date'].indexOf(e.target.name) !== -1 ){
-    //         setFormData({ ...formData, [e.target.name]: e.target.value });
-    //     } else if ('initial_investment' === e.target.name ){
-    //         setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
-    //     } else {
-    //         parse_form_rule_events(e)
-    //         parse_form_rule_action(e)
-    //         console.log(action)
-    //         let json_rule = {'conditions': conditions, 'action': action}
-    //         setFormData({ ...formData, 'rule': json_rule });
-    //     }
-    //     console.log(formData)
-    // };
-    
-    const handleChange = (e) => {
-        if (['name', 'start_date'].indexOf(e.target.name) !== -1 ){
-            setFormData({ ...formData, [e.target.name]: e.target.value });
-        } else if ('initial_investment' === e.target.name ){
-            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
-        } else {
-            parse_form_rule_events(e)
-            parse_form_rule_action(e)
-            console.log(action)
-        }
-        console.log(formData)
-
-    };
-    
-    useEffect(() => {
-        const json_rule = {'conditions': conditions, 'action': action};
-        setFormData({ ...formData, 'rule': json_rule });
-    }, [conditions, action]);
-    console.log(formData)
-    
     return (
-        <CreateRuleForm 
-            handleSubmit={(e) => handleSubmit(e)}
-            handleChange={(e) => handleChange(e)}
-        />
+        <CreateRuleForm refresh_token={refresh_token} get_auth_header={get_auth_header} django_url={props.django_url} />
     )
 }
