@@ -56,6 +56,7 @@ class Rules(models.Model):
     profit = models.FloatField(max_length=20, default=0.0)
     create_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    last_ran_timestamp = models.DateTimeField(blank=True, null=True)
     rule = models.JSONField()
 
     objects = RuleManager()
