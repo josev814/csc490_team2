@@ -34,7 +34,12 @@ export default function LeftNav() {
                 <div>Here you can:</div>
                 <div>1. Create new rules that impose</div>
                 <div>conditions* on a specific stock**</div>
+                <div>*Think of it as you telling the</div>               
+                <div>the tool "If X happens for Y </div>
+                <div>stock, then I want you to do X</div>                
+                <div>for Y stock." and then</div>
                 <div>*Think of it as you telling the</div>
+
                 </>
             );
         } else if (url === '/stocks') {
@@ -74,7 +79,7 @@ export default function LeftNav() {
                 ))}
 
                 <div>
-                    <div style={{ fontStyle: 'italic' }}>
+                    <div class="fst-italic">
                         {displayText}
                     </div>
                 </div>
