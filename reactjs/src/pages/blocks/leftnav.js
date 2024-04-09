@@ -65,6 +65,18 @@ export default function LeftNav() {
                     ]
                 }
             );
+        } else if (url === '/rule/:rule_id/:rule_name') {
+            setDisplayText(
+                {
+                    'header': 'This is the Individual Rule Page',
+                    'description': [
+                        'Here you can:',
+                        '1. View information about your specific rule',
+                        '2. Edit information and conditions regarding the rule',
+                        '3. Delete your rule'
+                    ]
+                }
+            );
         } else {
             setDisplayText(
                 {
