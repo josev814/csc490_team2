@@ -37,7 +37,7 @@ export default function LeftNav() {
                         'Here you can:',
                         '1. Create new rules that impose conditions',
                         '* on a specific stock**',
-                        '*Think of it as you telling the'
+                        '*Think of it as you telling the tool "If X happens for Y stock, then I want you to do X for Y stock."'
                     ]
                 }
             );
