@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Cookies from 'universal-cookie'
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
-import Cookies from 'universal-cookie'
 import ShowRuleTransactionChart from '../components/rules/rule_chart';
 import CreateRuleForm from '../components/rules/CreateRule'
 
@@ -33,6 +33,7 @@ export function SHOW_RULE(props) {
                     break;
                 case 404:
                     showToastError('Record not found to delete')
+                    break;
                 default:
                     break;
             }
@@ -41,7 +42,6 @@ export function SHOW_RULE(props) {
         }
     }
     const toastContainer = document.getElementById('toastContainer')
-        
 
     function showToastError(message) {    
         // Create the toast element
@@ -128,19 +128,25 @@ export function SHOW_RULE(props) {
     }
 
     function GetOperator(operator){
+        let value = undefined
         switch (operator.operator) {
             case 'gt':
-                return ('>')
+                value = '>'
+                break
             case 'gte':
-                return ('>=')
+                value = '>='
+                break
             case 'lt':
-                return ('<')
+                value = '<'
+                break
             case 'lte':
-                return ('<=')
+                value = '<='
+                break
             default:
-                return ('=')
-                break;
+                value = '='
+                break
         }
+        return value
     }
 
     function DisplayCondition(content){
@@ -290,7 +296,7 @@ export function SHOW_RULE(props) {
                 </Modal>
                 <div className='row'>
                     <div className='col-1'>
-                        <button className="btn btn-warning btn-md" onClick={useNavigate(-1)}>
+                        <button className="btn btn-warning btn-md" onClick={() => navigate(-1)}>
                             <ArrowBackIosOutlined />
                         </button>
                     </div>
@@ -353,16 +359,8 @@ export function SHOW_RULE(props) {
 
 
 export function CREATE_RULE(props){
-    const cookies = new Cookies(null, { path: '/' })
-    const [formData, setFormData] = useState({
-        user: "",
-        name: "",
-        initial_investment: 0.0,
-        rule: {},
-    });
-    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
-      
     const navigate = useNavigate()
+    const cookies = new Cookies(null, { path: '/' })
 
     function get_auth_header(){
         const token = localStorage.getItem('accessToken')
@@ -418,68 +416,7 @@ export function CREATE_RULE(props){
         }
     }
     
-
-    function get_user_from_cookie(){
-        const userCookie = cookies.get('user');
-        if (!userCookie || !userCookie.id) {
-            console.error("User cookie or user ID not found.");
-            return null; // or handle the error appropriately
-        }
-    
-        // Construct user URL based on user ID
-        const user_id = userCookie.id;
-        const user_url = `${props.django_url}/users/${user_id}/`;
-        return user_url;
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const url = `${props.django_url}/rules/`
-        await refresh_token()
-
-        const updatedFormData = {
-            ...formData,
-            user: get_user_from_cookie(),
-        };
-
-        setFormData(updatedFormData);
-        try {
-            const headers = get_auth_header()
-            const response = await axios.post(url, updatedFormData, {headers})
-            console.log(response)
-            if (response.status === 200 || response.status === 201) {
-                const rule_id = response.data.id
-                const rule_name = response.data.name
-                navigate(`/rule/${rule_id}/${rule_name}/`);
-            } else {
-                console.log('Failed to create rule')
-                throw new Error('Failed to create rule');
-            }
-        }
-        catch (error) {
-            if (error.response && error.response.status === 409) {
-                setErrorMessage("Rule already exists");
-            } else {
-                setErrorMessage(`${error.response.status}: ${error}`);
-            }
-        }
-    };
-
-    const handleChange = (e) => {
-        console.log(e.target.name)
-        if (['name'].indexOf(e.target.name) != -1 ){
-            setFormData({ ...formData, [e.target.name]: e.target.value });
-        } else if (['initial_investment'].indexOf(e.target.name) != -1 ){
-            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
-        } else {
-            // parse the rule to a json rule
-        }
-    };
-    
     return (
-        <CreateRuleForm 
-            handleSubmit={(e) => handleSubmit(e)}
-            handleChange={(e) => handleChange(e)}
-        />
+        <CreateRuleForm refresh_token={refresh_token} get_auth_header={get_auth_header} django_url={props.django_url} />
     )
 }
