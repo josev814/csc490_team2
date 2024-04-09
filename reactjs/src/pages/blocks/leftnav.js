@@ -65,7 +65,7 @@ export default function LeftNav() {
                     ]
                 }
             );
-        } else if (url === '/rule/:rule_id/:rule_name') {
+        } else if (url.match('^/rule/[0-9]+/')) {
             setDisplayText(
                 {
                     'header': 'This is the Individual Rule Page',
@@ -85,7 +85,6 @@ export default function LeftNav() {
                 }
             )
         }
-        console.log(displayText.description)
     }, [location]);
 
     return (
