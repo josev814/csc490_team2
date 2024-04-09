@@ -2,13 +2,14 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import {CandlestickChartOutlined, RuleOutlined, SettingsOutlined, ExitToAppOutlined} from '@mui/icons-material';
 
 export default function LeftNav() {
     const links = [
-        {'pageName': 'Home', 'path': '/rules'},
-        {'pageName': 'Stock Search', 'path': '/stocks'},
-        {'pageName': 'Settings', 'path': '/settings'},
-        {'pageName': 'Logout', 'path': '/logout'}
+        {'pageName': 'Home', 'path': '/rules', 'icon': <RuleOutlined />},
+        {'pageName': 'Stock Search', 'path': '/stocks', 'icon': <CandlestickChartOutlined />},
+        {'pageName': 'Settings', 'path': '/settings', 'icon': <SettingsOutlined />},
+        {'pageName': 'Logout', 'path': '/logout', 'icon': <ExitToAppOutlined />}
     ]
 
     const location = useLocation();
@@ -54,12 +55,15 @@ export default function LeftNav() {
         }
     }, [location]);
     return (
-        <nav className="col-md-2 d-none d-md-block bg-light sidebar">
-            <div className="sidebar-sticky d-flex vh-100">
-                <ul className="nav flex-column">
+        <nav className="col-md-2 d-none d-md-block bg-light sidebar vh-100">
+            <div className="sidebar-sticky d-flex">
+                <ul className="nav flex-column pt-3">
                 {links.map(link => (
-                    <li key={link.pageName}>
-                        <NavLink to={link.path}>{link.pageName}</NavLink>
+                    <li key={link.pageName} className="d-flex align-items-center">
+                        <NavLink to={link.path} className={"text-decoration-none"}>
+                            {link.icon !== undefined && link.icon} {" "}
+                            {link.pageName}
+                        </NavLink>
                     </li>
                 ))}
 
