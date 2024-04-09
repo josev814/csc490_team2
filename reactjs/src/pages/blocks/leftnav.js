@@ -28,6 +28,16 @@ export default function LeftNav() {
                 <div>3. Go to Create Rule form to add new rules</div>
                 </>
             );
+        } else if (url === '/rule/create') {
+            setDisplayText(
+                <>
+                <div>This is the Rule Creation Page</div>
+                <div>Here you can:</div>
+                <div>1. Create new rules that impose</div>
+                <div>conditions* on a specific stock**</div>
+                <div>*Think of it as you telling the</div>
+                </>
+            );
         } else if (url === '/stocks') {
             setDisplayText(
                 <>
@@ -67,9 +77,9 @@ export default function LeftNav() {
                     </li>
                 ))}
 
-                <div style={{ position: 'relative', width: '600px', height: '800px' }}>    
-                    <div style={{ position: 'absolute', bottom: '33%', fontStyle: 'italic' }}>
-                        <div>{displayText}</div>
+                <div>
+                    <div style={{ fontStyle: 'italic' }}>
+                        {displayText}
                     </div>
                 </div>
 
