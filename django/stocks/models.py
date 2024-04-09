@@ -145,6 +145,29 @@ class StockData(models.Model):
             return {'status': False, 'errors': [f'{ex_type}: Failed to save record: {ex}']}
         return {'status': True, 'errors': None}
 
+    def get_stock_data(self, ticker_id: int, column, operator, value, timestamp, condition, data=None):
+        if column == 'price':
+            column == 'low'
+        
+        if condition == 'if':
+            if operator == 'eq':
+                data = StockData.objects.filter(**{ticker_id: ticker_id, f'{column}': value})
+            else:
+                data = StockData.objects.filter(**{ticker_id: ticker_id, f'{column}__{operator}': value})
+        elif condition == 'and':
+            if operator == 'eq':
+                data = data.filter(**{ticker_id: ticker_id, f'{column}': value})
+            else:
+                data = data.filter(**{ticker_id: ticker_id, f'{column}__{operator}': value})
+        data.filter(**{timestamp__gte: timestamp})
+
+        print(data.query)
+
+        if data.count > 0:
+            return data
+        return []
+
+
 
 
 class StockSearch(models.Model):
