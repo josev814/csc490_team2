@@ -5,6 +5,8 @@ from django.core.management.base import BaseCommand, CommandError
 from rules.models import Rules
 from stocks.models import StockData
 from transactions.models import Transactions
+from users.models import Users
+from django.core.exceptions import ValidationError
 
 class Command(BaseCommand):
     """
@@ -50,69 +52,56 @@ class Command(BaseCommand):
         """
         Run the action portion of the rule to log the transactions
         """
-        # Transactions.add_transaction()
+        query = None
+        for actions in action:
+            if not query:
+                query = StockData.get_stock_data(
+                    actions['method'],              # for buy or sell
+                    actions['quantity'],            # quantity 
+                    actions['quantity_type'],       # quantity type
+                    actions['ticker_id'],
+                    timestamp
+                )
+            else:
+                query = StockData.get_stock_data(
+                    actions['method'],
+                    actions['quantity'],
+                    actions['quantity_type'],
+                    actions['ticker_id'],
+                    data=query
+                )
+        # return query
 
-    def parse_rule(self, rule, timestamp):
-        """parsing through the rule logic
+        Transactions.add_transaction()
 
-        :param rule: 
-        :type rule: 
+    def update_balance(self, request, rule, action):
         """
-        symbol = rule['ticker']
-
-        # if symbol price > value then perform action
-        if rule['condition'] == 'if':
-            if symbol[rule['price']] > rule['value']:
-                perform(rule['action'])
-            
-            #continues with condition == 'and' and greater than
-            if rule['condition'] == 'and':
-                if symbol[rule['price']] > rule['value']:
-                    perform(rule['action'])
-
-            #continues with condition == 'and' and less than
-            if rule['condition'] == 'and':
-                if symbol[rule['price']] < rule['value']:
-                    perform(rule['action'])
-
-
-        # if symbol price < value then perform action
-        if rule['condition'] == 'if':
-            if symbol[rule['price']] < rule['value']:
-                perform(rule['action'])
-            
-            #continues with condition == 'and' and greater than
-            if rule['condition'] == 'and':
-                if symbol[rule['price']] > rule['value']:
-                    perform(rule['action'])
-
-            #continues with condition == 'and' and less than
-            if rule['condition'] == 'and':
-                if symbol[rule['price']] < rule['value']:
-                    perform(rule['action'])
-
-
-    def calculate_rule(self, rule, checkout):
-        """function to calculate the action of the rule
-
-        :param rule: _description_
-        :type rule: _type_
-        :param checkout: _description_
-        :type checkout: _type_
+        Update user balance after each transaction
         """
-        # if method == buy then "amount" needs to go UP by quantity
-        if rule['method'] == 'buy':
-            amount += rule['quantity']
-            
+        user = self.request.user.id
+        user_obj = Users.objects.filter(user=user)
+        transaction = Transactions.objects.filter(user=user)
+        balance = user_obj.balance
+        number_of_shares = user_obj.number_of_shares
+        current_price = (rule['quantity'] * rule['value'])
         
-        # if method == sell then "amount" needs to go DOWN by quantity
-        # this would always sell the available amount of "quantity",
-            # but raises an error when "amount" goes below 0 (into the negatives)
-        if rule['method'] == 'sell':
+
+        # Calculate the change in balance based on transactions
+        for transaction in action:
             try:
-                amount -= rule['quantity']
-                if amount < 0:
-                    raise ValueError("Selling quantity exceeds available amount.")
-            except ValueError as e:
+                if transaction.rule[action['method']] == 'buy':
+                    if balance < current_price:
+                        raise ValidationError("Insufficient balance to make the purchase")
+                    balance -= current_price
+                    number_of_shares += rule['quantity']
+                elif transaction.rule[action['method']] == 'sell':
+                    if number_of_shares < rule['quantity']:
+                        raise ValidationError("Insufficient quantity to make the sale")
+                    balance += current_price
+                    number_of_shares -= rule['quantity']
+            except ValidationError as e:
                 print(e)
-                return 0
+
+        # Update user's balance in the database
+        user_obj.balance = balance
+        user_obj.save()
