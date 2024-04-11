@@ -5,21 +5,18 @@ import Cookies from 'universal-cookie'
 import { AsyncDropDown } from "../inputs/AsyncDropDown";
 import { DateInput } from "../inputs/DateInput";
 
-export default function CreateRuleForm(props) {
-    const navigate = useNavigate();
-    const cookies = new Cookies(null, { path: '/' })
+function Remove_Row(props){
+    if (props.event !== 1 ) {
+        return (
+            <button onClick={() => props.removeRowCondition({'event':props.event})}>
+                Remove Condition
+            </button>
+        )
+    }
+    return null;
+}
 
-    const [formData, setFormData] = useState({
-        user: "",
-        name: "",
-        initial_investment: 0.0,
-        rule: {},
-        start_date: "",
-        is_active: true
-    });
-    const [action, setAction] = useState({}); // State to manage the action
-    const [conditions, setConditions] = useState([]); // State to manage rule conditions
-    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+function AddRowCondition(props){
     const event_data = [
         {value:'price', label: 'Current Price'},
         {value:'open', label: 'Open Price'},
@@ -34,6 +31,61 @@ export default function CreateRuleForm(props) {
         {value:'lte', label: 'less than or equal to'},
         {value:'eq', label: 'equal to'},
     ]
+
+    return (
+        <div className={"row shadow px-2 py-3 mb-3"} id={"condition_" + props.event}>
+            <label className="col-md-1">
+                <span className="h5">{props.event === 1 ? 'IF' : 'AND'}:</span>
+                <input type='hidden' name={'event_condition_' + props.event} aria-hidden aria-readonly value={props.event === 1 ? 'if' : 'and'} />
+            </label>
+            <div className="col-md-3">
+                <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.django_url} />
+            </div>
+            <div className="col-md-1">
+                HAS 
+            </div>
+            <div className="col-md-2">
+                <select required aria-required name={'event_data_' + props.event} className="form-select" onChange={props.handleChange}>
+                    <option value=''>---</option>
+                    {event_data.map((item, index) =>
+                        <option key={index} value={item.value}>{item.label}</option>
+                    )}
+                </select>
+            </div>
+            <div className="col-md-3">
+                <select required aria-required name={'event_operator_' + props.event} className="form-select" onChange={props.handleChange}>
+                    <option value=''>---</option>
+                    {event_operators.map((item, index) =>
+                        <option key={index} value={item.value}>{item.label}</option>
+                    )}
+                </select>
+            </div>
+            <div className="col-md-2">
+                <input required aria-required type="text" pattern='^\d+(\.\d{2})?$' name={'event_value_' + props.event} className="form-control" placeholder="Comparison Value $"  onChange={props.handleChange} />
+                <Remove_Row event={props.event} removeRowCondition={props.removeRowCondition} />
+            </div>
+        </div>
+    )
+}
+
+
+export default function CreateRuleForm(props) {
+    const navigate = useNavigate();
+    const cookies = new Cookies(null, { path: '/' })
+
+    const [formData, setFormData] = useState({
+        user: "",
+        name: "",
+        initial_investment: 0.0,
+        rule: {},
+        start_date: "",
+        is_active: true
+    });
+    const [action, setAction] = useState({}); // State to manage the action
+    const [conditions, setConditions] = useState([]); // State to manage rule conditions
+    const [conditionCount, addConditionCount] = useState(1); // State to manage rule conditions
+    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+    
     const then_methods = [
         {value:'buy', label: 'Buy'},
         {value: 'sell', label: 'Sell'},
@@ -89,6 +141,20 @@ export default function CreateRuleForm(props) {
             console.log(errorMessage)
         }
     };
+
+    const addRowCondition = () => {
+        addConditionCount(conditionCount + 1)
+    }
+
+    const removeRowCondition = (params) => {
+        console.log(params)
+        console.log('condition_' + params.event)
+        const element = document.getElementById('condition_' + params.event)
+        console.log(element)
+        if (element) {
+            element.remove()
+        }
+    }
 
     const parse_form_rule_action = (event) => {
         let field_prefix = 'then_'
@@ -158,6 +224,7 @@ export default function CreateRuleForm(props) {
     useEffect(() => {
         const json_rule = {'conditions': conditions, 'action': action};
         setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule }));
+        console.log(formData)
     }, [conditions, action, setFormData]);
 
     return(
@@ -183,36 +250,13 @@ export default function CreateRuleForm(props) {
                 <div className="row mb-3">
                     <DateInput label='Start Date' id='start_date' name='start_date' handleChange={handleChange} />
                 </div>
-                <div className="row shadow px-2 py-3 mb-3">
-                    <label className="col-md-1">
-                        <span className="h5">IF:</span>
-                        <input type='hidden' name="event_condition_1" aria-hidden aria-readonly value='if' />
-                    </label>
-                    <div className="col-md-3">
-                        <AsyncDropDown name='event_symbol_1' handleChange={handleChange} django_url={props.django_url} />
-                    </div>
-                    <div className="col-md-1">
-                        HAS 
-                    </div>
-                    <div className="col-md-2">
-                        <select required aria-required name="event_data_1" className="form-select" onChange={handleChange}>
-                            <option value=''>---</option>
-                            {event_data.map((item, index) =>
-                                <option key={index} value={item.value}>{item.label}</option>
-                            )}
-                        </select>
-                    </div>
-                    <div className="col-md-3">
-                        <select required aria-required name="event_operator_1" className="form-select" onChange={handleChange}>
-                            <option value=''>---</option>
-                            {event_operators.map((item, index) =>
-                                <option key={index} value={item.value}>{item.label}</option>
-                            )}
-                        </select>
-                    </div>
-                    <div className="col-md-2">
-                        <input required aria-required type="text" pattern='^\d+(\.\d{2})?$' name="event_value_1" className="form-control" placeholder="Comparison Value $"  onChange={handleChange} />
-                    </div>
+                <div className="conditions">
+                    {Array.from({ length: conditionCount }).map((_, index) => (
+                        <AddRowCondition key={index} event={index + 1} handleChange={handleChange} django_url={props.django_url} removeRowCondition={removeRowCondition} />
+                    ))}
+                </div>
+                <div className="row mb-3">
+                    <button onClick={() => addRowCondition()}>Add Another Condition</button>
                 </div>
                 <div className="row shadow px-2 py-3">
                     <div className="col-md-1">
