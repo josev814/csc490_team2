@@ -1,34 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AddCircleOutlineOutlined, NotificationsNoneOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import Pagination from 'react-bootstrap/Pagination';
 import Form from 'react-bootstrap/Form';
+import axios from 'axios';
 
-export default function LIST_RULES() {
+
+export default function LIST_RULES(props) {
     // update to pull rules from backend 
     // {{base_url}}/rules/list/
-    const rules = {
-        'errors': null,
-        'count': 2,
-        'total': 2,
-        'records':
-        [
-            {
-                'id': 1,
-                'name': 'Amazon Buy The Dips',
-                'status': 0,
-                'growth': 0.25,
-                'return': 0.13
-            },
-            {
-                'id': 2,
-                'name': 'Apple Buy The Dips',
-                'status': 1,
-                'growth': 11.78,
-                'return': 11.78
+    // const rules = {
+    //     'errors': null,
+    //     'count': 2,
+    //     'total': 2,
+    //     'records':
+    //     [
+    //         {
+    //             'id': 1,
+    //             'name': 'Amazon Buy The Dips',
+    //             'status': 0,
+    //             'growth': 0.25,
+    //             'return': 0.13
+    //         },
+    //         {
+    //             'id': 2,
+    //             'name': 'Apple Buy The Dips',
+    //             'status': 1,
+    //             'growth': 11.78,
+    //             'return': 11.78
+    //         }
+    //     ]
+    // }
+    
+    const [rules, setRules] = useState(null);
+    useEffect(() => {
+        async function fetchRules() {
+            try {
+                const response = await axios.get(`${props.django_url}/rules/list/`);
+                setRules(response.data.records);
+            } catch (error) {
+                console.error('Error fetching rules:', error);
             }
-        ]
-    }
+        }
+
+        fetchRules();
+    }, [props]);
 
     function GetPagination(){
         let active = 2;
@@ -70,14 +86,26 @@ export default function LIST_RULES() {
         );
     }
     
-    function GetRuleLinkRoute(rule){
-        let rule_route = '/rule/' + rule.rule.id + '/' + encodeURIComponent(rule.rule.name)
+    // function GetRuleLinkRoute(rule){
+    //     let rule_route = '/rule/' + rule.rule.id + '/' + encodeURIComponent(rule.rule.name)
+    //     return (
+    //         <Link to={rule_route}>{rule.rule.name}</Link>
+    //     )
+    // }
+    function GetRuleLinkRoute(rule) {
+        let rule_route = `/rule/${rule.id}/${encodeURIComponent(rule.name)}`;
         return (
-            <Link to={rule_route}>{rule.rule.name}</Link>
-        )
+            <Link to={rule_route}>{rule.name}</Link>
+        );
     }
+    
 
     function DisplayRule(){
+
+        if (!rules || !rules.records || rules.records.length === 0) {
+            return <div>No rules found.</div>;
+        }
+
         return (
             rules.records.map(rule => (
                 <div className='row border border-light border-2 shadow-sm mb-5' key={rule.name}>
@@ -99,7 +127,7 @@ export default function LIST_RULES() {
                     <div className='col-md-3'>
                         Net Profit
                         <br />
-                        ${rule.name}
+                        ${rule.return}
                     </div>
                 </div> 
             ))
@@ -121,7 +149,7 @@ export default function LIST_RULES() {
                             </button>
                         </div>
                         <div className='col-md-6 d-flex align-items-center justify-content-end'>
-                            <Link to='/rule/create/'>
+                            <Link to='/rule/create'>
                                 <button className="btn btn-info btn-lg">
                                     Create Rule <AddCircleOutlineOutlined />
                                 </button>

@@ -60,8 +60,8 @@ class App extends React.Component {
           </Route>
 
 
-          <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
-            <Route index element={<LIST_RULES />} />
+          <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} django_url={this.state.sitedetails.django_url}/>}>
+            <Route index element={<LIST_RULES django_url={this.state.sitedetails.django_url} />} />
           </Route>
 
           <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
