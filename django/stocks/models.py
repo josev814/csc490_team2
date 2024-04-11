@@ -12,11 +12,12 @@ class Stocks(models.Model):
     """
     Model for a Stocks table
     """
+    SKIP_STOCK_TYPES = ['option', 'futures', 'cryptocurrency']
     ticker = models.CharField(max_length=12)
     name = models.CharField(max_length=75)
     exchange_name = models.CharField(max_length=50)
     exchange = models.CharField(max_length=10)
-    stock_type = models.CharField(max_length=12)
+    stock_type = models.CharField(max_length=25)
     create_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -48,7 +49,7 @@ class Stocks(models.Model):
         records = []
         try:
             for entry in yahoo_data:
-                if entry['typeDisp'].lower() in ['option']: # skip options
+                if entry['typeDisp'].lower() in self.SKIP_STOCK_TYPES:
                     continue
                 if 'longname' not in entry:
                     if 'shortname' not in entry:
