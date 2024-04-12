@@ -8,6 +8,63 @@ from transactions.models import Transactions
 from users.models import Users
 from django.core.exceptions import ValidationError
 
+"""
+Get Rules
+- for rule in rules
+  - matched_records = check_rule_conditions(rule['conditions'])
+  - if matched_records.count > 0
+    - perform_action(rule['action'], matched_records)
+
+- def check_rule_conditions(conditions)
+  - for condition in conditions
+    - query the stock data for the condition
+    return records that match
+
+- def perform_action(action, matched_records)
+  - get action method (buy vs sell)
+  - in the rules table check how many stocks we have and our rule balance (shares_available and balance should be new column in the rules table)
+  - shares_avail = rules['shares_available']
+  - bal = rules['balance']
+  - income = 0
+  - for matched_record in matched_records:
+    - if action method == buy
+      - documenting only the sell action, the buy action is the reverse
+    - else //sell action
+      - if action['data'] == 'shares'
+        - if shares_available > action['qty']
+          - sell action['qty'] shares at matched_record['low'] // this would be the current price at the timestamp
+          - income += action['qty'] * matched_record['low']
+          - bal += sale_income
+          - shares_avail -= action['qty']
+          - log transaction in the transactions table
+        - elif shares_available > 0 //sell all the stocks we have left
+          - sell action['qty'] shares at matched_record['low'] // this would be the current price at the timestamp
+          - income += action['qty'] * matched_record['low']
+          - bal += sale_income
+          - shares_avail -= action['qty']
+          - log transaction in the transactions table
+        - else
+          //no shares available, do not perform the transaction
+    - elif action['data'] == 'price'
+      - if bal > action['qty']
+        - sell floor(action['qty']/matched_record['low']) gives share qty to sell // this would be the current price at the timestamp
+        - income += action['qty'] * matched_record['low']
+        - bal += sale_income
+        - shares_avail -= action['qty']
+        - log transaction in the transactions table
+      - elif .... pretty much same logic as in the shares actions
+    - update rules balance and shares
+    - update the rule return by doing adding the initial balance with bal
+    - update the rule growth
+      - ex:
+        - initial investment = 100
+        - sale_income = 25
+        - growth = (1 - (100/(100 + 25))) * 100
+    
+We'll need another job under the users app that will sum up the balance, growth and initial investment columns to that will update that information for the user
+
+"""
+
 class Command(BaseCommand):
     """
     The command that executes when this job is ran
