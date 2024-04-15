@@ -40,10 +40,17 @@ export default function LIST_RULES(props) {
                 const headers = props.get_auth_header();
                 const response = await axios.post(props.url, props.updatedFormData, { headers });
                 
+                // Log the response data to see its structure
+                console.log('Response data:', response.data);
+        
                 // Check if response status is OK (200)
                 if (response.status === 200) {
-                    // Assuming the response data is an array of rules
-                    setRules(response.data);
+                    // Assuming the response data is an object with a 'records' property
+                    if (response.data && response.data.records) {
+                        setRules(response.data.records);
+                    } else {
+                        console.error('Response data is missing or in unexpected format');
+                    }
                 } else {
                     console.error('Unexpected response status:', response.status);
                 }
@@ -52,10 +59,11 @@ export default function LIST_RULES(props) {
                 console.error('Error fetching rules:', error);
             }
         }
+        
      
         fetchRules();
     }, [props]);
-    
+
     function GetPagination(){
         let active = 2;
         let max_page = 5;
