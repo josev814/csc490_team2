@@ -33,19 +33,29 @@ export default function LIST_RULES(props) {
     // }
     
     const [rules, setRules] = useState(null);
+
     useEffect(() => {
         async function fetchRules() {
             try {
-                const response = await axios.get(`${props.django_url}/rules/list/`);
-                setRules(response.data.records);
+                const headers = props.get_auth_header();
+                const response = await axios.post(props.url, props.updatedFormData, { headers });
+                
+                // Check if response status is OK (200)
+                if (response.status === 200) {
+                    // Assuming the response data is an array of rules
+                    setRules(response.data);
+                } else {
+                    console.error('Unexpected response status:', response.status);
+                }
             } catch (error) {
+                // Log and handle errors
                 console.error('Error fetching rules:', error);
             }
         }
-
+     
         fetchRules();
     }, [props]);
-
+    
     function GetPagination(){
         let active = 2;
         let max_page = 5;
