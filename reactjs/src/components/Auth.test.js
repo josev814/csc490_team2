@@ -1,10 +1,10 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react";
-import AuthForm from "./Auth";
+import {LoginRegister} from "./Auth";
 
-describe("AuthForm component", () => {
+describe("LoginRegister component", () => {
   test("renders login form by default", () => {
-    const { getByText, getByLabelText } = render(<AuthForm />);
+    const { getByText, getByLabelText } = render(<LoginRegister />);
     
     expect(getByText("Account Login")).toBeInTheDocument();
     expect(getByText("Register")).toBeInTheDocument();
@@ -13,7 +13,7 @@ describe("AuthForm component", () => {
   });
 
   test("switches to registration form when 'Register' link is clicked", () => {
-    const { getByText, getByLabelText } = render(<AuthForm />);
+    const { getByText, getByLabelText } = render(<LoginRegister />);
     const registerLink = getByText("Register");
 
     fireEvent.click(registerLink);
@@ -25,7 +25,7 @@ describe("AuthForm component", () => {
   });
 
   test("switches back to login form when 'Log In' link is clicked", () => {
-    const { getByText, getByLabelText } = render(<AuthForm />);
+    const { getByText, getByLabelText } = render(<LoginRegister />);
     const registerLink = getByText("Register");
     fireEvent.click(registerLink);
 
@@ -39,7 +39,7 @@ describe("AuthForm component", () => {
   });
 
 //   test("submits login form with correct data", () => {
-//     const { getByLabelText, getByText, getByTestId } = render(<AuthForm />);
+//     const { getByLabelText, getByText, getByTestId } = render(<LoginRegister />);
   
 //     // Fill in the form fields
 //     fireEvent.change(getByLabelText("Email address"), { target: { value: "test@example.com" } });
@@ -53,7 +53,7 @@ describe("AuthForm component", () => {
 //   });
 
 //   test("displays error message on login form submission failure", () => {
-//     const { getByLabelText, getByText, getByTestId } = render(<AuthForm />);
+//     const { getByLabelText, getByText, getByTestId } = render(<LoginRegister />);
   
 //     // Fill in the form fields with invalid data
 //     fireEvent.change(getByLabelText("Email address"), { target: { value: "invalid-email" } });
@@ -67,7 +67,7 @@ describe("AuthForm component", () => {
 //   });
 
 //   test("prevents login form submission with invalid input", () => {
-//     const { getByLabelText, getByText, queryByTestId } = render(<AuthForm />);
+//     const { getByLabelText, getByText, queryByTestId } = render(<LoginRegister />);
   
 //     // Fill in the form fields with invalid data
 //     fireEvent.change(getByLabelText("Email address"), { target: { value: "invalid-email" } });

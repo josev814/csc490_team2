@@ -1,103 +1,104 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react";
+import LoginForm from "./auth/LoginForm";
+import RegisterForm from "./auth/RegisterForm";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
-export default function LoginRegister (props) {
-  let [authMode, setAuthMode] = useState("signin")
+const cookies = new Cookies();
 
-  const changeAuthMode = () => {
-    setAuthMode(authMode === "signin" ? "signup" : "signin")
-  }
+export function LoginRegister({ mode }) {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+  const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+  const navigate = useNavigate(); // Access the history object for navigation
 
-  if (authMode === "signin") {
-    return (
-      <div className="Auth-form-container">
-        <form className="Auth-form">
-          <div className="Auth-form-content">
-            <h3 className="Auth-form-title">Account Login</h3>
-            <div className="text-center">
-              Not registered yet?{" "}
-              <span className="link-primary" onClick={changeAuthMode}>
-                Register
-              </span>
-            </div>
-            <div className="form-group mt-3">
-              <label htmlFor='email_address'>Email address</label>
-              <input
-                id='email_address'
-                type="email"
-                className="form-control mt-1"
-                placeholder="Enter email"
-              />
-            </div>
-            <div className="form-group mt-3">
-              <label htmlFor='password'>Password</label>
-              <input
-                id='password'
-                type="password"
-                className="form-control mt-1"
-                placeholder="Enter password"
-              />
-            </div>
-            <div className="d-grid gap-2 mt-3">
-              <button type="submit" className="btn btn-primary">
-                Login
-              </button>
-            </div>
-            <p className="text-center mt-2">
-              <a href="/Logout">Forgot password?</a>
-            </p>
-          </div>
-        </form>
-      </div>
-    )
-  }
+  const base_url = 'http://localhost:8889'; // Define your base URL here
+
+  const handleSubmit = async (e, isLoginPage) => {
+    e.preventDefault();
+    try {
+      let url = '';
+      if (isLoginPage) {
+        url = `${base_url}/auth/login/`;
+      } else {
+        url = `${base_url}/auth/register/`;
+      }
+      const response = await axios.post(url, formData);
+      if (response.status === 200 || response.status === 201) {
+        //Store return from response of the user into user cookie / expiration = 1 day
+        const userData = response.data.user;
+        const cookieExpiration = new Date();
+        cookieExpiration.setDate(cookieExpiration.getDate() + 1);
+        cookies.set('user', userData, { expires: cookieExpiration });
+        //cookie(login status) / vailid: 30 minutes
+          //status(onLogin | onRegistration) = true
+        const loginStatusExpiration = new Date();
+        loginStatusExpiration.setTime(loginStatusExpiration.getTime() + (0.5 * 60 * 60 * 1000));
+        cookies.set('is_active', userData.is_active, { expires: loginStatusExpiration });
+  
+        //local storage: store access token and refresh token from response
+        localStorage.setItem('accessToken', response.data.access);
+        localStorage.setItem('refreshToken', response.data.refresh);
+
+        navigate('/rules');
+      } else {
+        throw new Error('Failed to register user');
+      }
+    } 
+    catch (error) {
+      if (error.response && error.response.status === 409) {
+        setErrorMessage("User already exists");
+      } else {
+        setErrorMessage("Invalid Credentials, Try again");
+      }
+    }
+    
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   return (
-    <div className="Auth-form-container">
-      <form className="Auth-form">
-        <div className="Auth-form-content">
-          <h3 className="Auth-form-title">Account Registration</h3>
-          <div className="text-center">
-            Already registered?{" "}
-            <span className="link-primary" onClick={changeAuthMode}>
-              Log In
-            </span>
-          </div>
-          {/* <div className="form-group mt-3">
-            <label>Full Name</label>
-            <input
-              type="email"
-              className="form-control mt-1"
-              placeholder="e.g Jane Doe"
-            />
-          </div> */}
-          <div className="form-group mt-3">
-            <label htmlFor='email_address'>Email address</label>
-            <input
-              id='email_address'
-              type="email"
-              className="form-control mt-1"
-              placeholder="Email Address"
-            />
-          </div>
-          <div className="form-group mt-3">
-            <label htmlFor='password'>Password</label>
-            <input
-              id='password'
-              type="password"
-              className="form-control mt-1"
-              placeholder="Password"
-            />
-          </div>
-          <div className="d-grid gap-2 mt-3">
-            <button type="submit" className="btn btn-primary">
-              Register
-            </button>
-          </div>
-          {/* <p className="text-center mt-2">
-            <a href="#">Forgot password?</a>
-          </p> */}
-        </div>
-      </form>
+    <div className="container-fluid d-flex justify-content-center vh-100 align-items-center">
+      <div className="col-12 col-md-4">
+        {mode === "signin" ? (
+          <LoginForm
+            formData={formData}
+            handleChange={handleChange}
+            handleSubmit={(e) => handleSubmit(e, true)}
+            errorMessage={errorMessage}
+          />
+        ) : (
+          <RegisterForm
+            formData={formData}
+            handleChange={handleChange}
+            handleSubmit={(e) => handleSubmit(e, false)}
+            errorMessage={errorMessage}
+          />
+        )}
+      </div>
     </div>
-  )
+  );
+}
+
+export function Logout(){
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const cookieNames = ['is_active', 'user']
+
+    cookieNames.forEach(cookieName => {
+      cookies.remove(cookieName)
+      //console.log(cookies.remove({cookieName}))
+    });
+    // removes access and refresh tokens
+    localStorage.clear()
+    navigate('/login');
+  }, [navigate])
+
+  return null
 }

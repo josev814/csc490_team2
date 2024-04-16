@@ -1,32 +1,28 @@
 import React from 'react';
 import axios from 'axios';
+import Spinner from 'react-bootstrap/Spinner';
 import { useParams } from 'react-router-dom';
 
 function withParams(Component){
   return props => <Component {...props} params={useParams()} />;
 }
 class ShowTickerNews extends React.Component {
-  state = {
-    symbol: null,
-    news: [],
-    loading: false
-  };
+  constructor(props){
+    super(props);
+    this.state = {
+      symbol: null,
+      news: [],
+      loading: true
+    };
+  }
 
   componentDidMount() {
-    this.setState({loading: true});
     let { ticker } = this.props.params
     this.setState({symbol: ticker})
-    let url = 'http://localhost:8889/stocks/ticker/' + ticker + '/news/'
-    console.log(url)
+    let url = 'http://localhost:8889/stocks/get_ticker_news/?ticker=' + ticker    
     axios.get(url)
       .then(res => {
-          console.log(res.data); // Log the response data to understand its structure
-
-  //       const tickers = res.data['news'];
-  //       this.setState({ tickers });
-  //     })
-  //     .then(this.setState({loading: false}));
-  // }
+          //console.log(res.data); // Log the response data to understand its structure
           const news = res.data['news'];
           this.setState({ news: news, loading: false }); // Set loading to false here
         })
@@ -38,17 +34,22 @@ class ShowTickerNews extends React.Component {
 
   render(){  
     return (
-        <div class="container-fluid">
+        <div className="container-fluid">
           <div className="row py-3">
             <h3>News for {this.state.symbol}</h3>
           </div>
-        {this.state.news.map(news => (
-          <div class="row py-3">
-            <a href={news.link} target="_blank" rel='noreferrer'>
-              <h4 key={news.uuid}>{news.title}</h4>
-            </a>
-          </div>
-        ))}
+        {
+          this.state.loading ? (
+            <Spinner animation="border" variant="primary" />
+          ) : (
+          this.state.news.map(news => (
+            <div className="row py-3" key={news.uuid}>
+              <a href={news.link} target="_blank" rel='noreferrer'>
+                <h4>{news.title}</h4>
+              </a>
+            </div>
+          )))
+        }
         </div>
     );
   }
