@@ -8,7 +8,7 @@ export default function LeftNav() {
     const links = [
         {'pageName': 'Home', 'path': '/rules', 'icon': <RuleOutlined />},
         {'pageName': 'Stock Search', 'path': '/stocks', 'icon': <CandlestickChartOutlined />},
-        {'pageName': 'Settings', 'path': '/settings', 'icon': <SettingsOutlined />},
+        // {'pageName': 'Settings', 'path': '/settings', 'icon': <SettingsOutlined />},
         {'pageName': 'Logout', 'path': '/logout', 'icon': <ExitToAppOutlined />}
     ]
 
