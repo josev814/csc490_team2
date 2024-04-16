@@ -40,9 +40,9 @@ export function LoginRegister({ mode }) {
         cookies.set('is_active', userData.is_active, { expires: loginStatusExpiration });
   
         //local storage: store access token and refresh token from response
-        localStorage.setItem('accessToken', response.data.token);
+        localStorage.setItem('accessToken', response.data.access);
         localStorage.setItem('refreshToken', response.data.refresh);
-  
+
         navigate('/rules');
       } else {
         throw new Error('Failed to register user');
