@@ -127,7 +127,8 @@ class App extends React.Component {
           </Route>
 
           <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} django_url={this.state.sitedetails.django_url} />} >
-            <Route index element={<LIST_RULES get_auth_header={this.get_auth_header} />} />
+            <Route index element={<LIST_RULES get_auth_header={this.get_auth_header} django_url={this.state.sitedetails.django_url} />} />
+            
           </Route>
 
           <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >

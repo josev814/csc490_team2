@@ -35,11 +35,13 @@ export default function LIST_RULES(props) {
     const [rules, setRules] = useState(null);
 
     useEffect(() => {
-        async function fetchRules(props) {
+        async function fetchRules() {
             try {
                 const headers = props.get_auth_header();
                 console.log(headers);
-                const response = await axios.post(props.url, props.updatedFormData, { headers });
+                console.log(props.django_url)
+                const response = await axios.get(props.django_url + "/rules/list/", { headers });
+                
                 
                 // Log the response data to see its structure
                 console.log('Response data:', response.data);
@@ -47,8 +49,8 @@ export default function LIST_RULES(props) {
                 // Check if response status is OK (200)
                 if (response.status === 200) {
                     // Assuming the response data is an object with a 'records' property
-                    if (response.data && response.data.records) {
-                        setRules(response.data.records);
+                    if (response.data) {
+                        setRules(response.data);
                     } else {
                         console.error('Response data is missing or in unexpected format');
                     }
@@ -61,8 +63,8 @@ export default function LIST_RULES(props) {
             }
         }
         
-     
-        fetchRules(props);
+        console.log(props);
+        fetchRules();
     }, [props]);
 
     function GetPagination(){
@@ -111,23 +113,28 @@ export default function LIST_RULES(props) {
     //         <Link to={rule_route}>{rule.rule.name}</Link>
     //     )
     // }
-    function GetRuleLinkRoute(rule) {
-        let rule_route = `/rule/${rule.id}/${encodeURIComponent(rule.name)}`;
+    function GetRuleLinkRoute(props) {
+        let rule_route = `/rule/${props.rule.id}/${encodeURIComponent(props.rule.name)}`;
         return (
-            <Link to={rule_route}>{rule.name}</Link>
+            <Link to={rule_route}>{props.rule.name}</Link>
         );
     }
     
 
     function DisplayRule(){
 
-        if (!rules || !rules.records || rules.records.length === 0) {
+        if (!rules || !rules.errors === 0) {
             return <div>No rules found.</div>;
+        }
+        else if ( rules.count === 0) {
+            return <div>    </div>
+        }
+        else {
         }
 
         return (
             rules.records.map(rule => (
-                <div className='row border border-light border-2 shadow-sm mb-5' key={rule.name}>
+                <div className='row border border-light border-2 shadow-sm mb-5' key={rule.id}>
                     <div className='col-md-3'>
                         <h3>
                             <GetRuleLinkRoute rule={rule} />
@@ -136,17 +143,21 @@ export default function LIST_RULES(props) {
                     <div className='col-md-3'>
                         Status
                         <br />
-                        <Form.Check disabled type='switch' checked={rule.status} />
+                        {rule.status ? (
+                            <Form.Check disabled type='switch' checked={rule.status} />
+                        ) : (
+                            <Form.Check disabled type='switch' /> 
+                        )}
                     </div>
                     <div className='col-md-3'>
                         Growth
                         <br />
-                        {rule.growth}
+                        {rule.growth}%
                     </div>
                     <div className='col-md-3'>
                         Net Profit
                         <br />
-                        ${rule.return}
+                        $ {rule.profit}
                     </div>
                 </div> 
             ))
@@ -162,11 +173,11 @@ export default function LIST_RULES(props) {
                         <h4 className='text-danger'>-$20</h4>
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
-                        <div className='col-md-6 d-flex me-3 align-items-center justify-content-end'>
+                        {/* <div className='col-md-6 d-flex me-3 align-items-center justify-content-end'>
                             <button className="btn btn-outline-dark btn-lg">
                                 <NotificationsNoneOutlined /> Notifications
                             </button>
-                        </div>
+                        </div> */}
                         <div className='col-md-6 d-flex align-items-center justify-content-end'>
                             <Link to='/rule/create'>
                                 <button className="btn btn-info btn-lg">
@@ -176,7 +187,7 @@ export default function LIST_RULES(props) {
                         </div>
                     </div>
                 </div>
-                <div className='row mb-5'>
+                {/* <div className='row mb-5'>
                     <div className='col-auto'>
                         <label htmlFor='filter' className='col-form-label fw-bold'>Filters:</label>
                     </div>
@@ -200,7 +211,7 @@ export default function LIST_RULES(props) {
                             <option value='growth_desc'>Growth - &#9660;</option>
                         </select>
                     </div>
-                </div>
+                </div> */}
                 <DisplayRule />
                 <div className='row'>
                     <GetPagination />

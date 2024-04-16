@@ -51,12 +51,7 @@ export default function AuthedLayout(props) {
                                 {userData ? userData.email : ''}
                             </a>
                         </div>
-                        <Outlet
-                            get_auth_header={props.get_auth_header} // Receive get_auth_header as a prop
-                            refresh_token={props.refresh_token} // Receive refresh_token as a prop
-                            get_user_from_cookie={props.get_user_from_cookie} // Receive get_user_from_cookie as a prop
-                            django_url={props.django_url}
-                        />
+                        <Outlet />
                     </main>
                     <Footer sitename={props.sitename} />
                 </div>
