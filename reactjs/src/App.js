@@ -72,6 +72,7 @@ class App extends React.Component {
       // Check if response is successful
       if (response.status === 200) {
         // Update tokens in local storage
+        console.log(response.data)
         localStorage.setItem('accessToken', response.data.access);
         localStorage.setItem('refreshToken', response.data.refresh);
 

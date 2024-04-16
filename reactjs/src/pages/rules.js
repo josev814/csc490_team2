@@ -35,9 +35,10 @@ export default function LIST_RULES(props) {
     const [rules, setRules] = useState(null);
 
     useEffect(() => {
-        async function fetchRules() {
+        async function fetchRules(props) {
             try {
                 const headers = props.get_auth_header();
+                console.log(headers);
                 const response = await axios.post(props.url, props.updatedFormData, { headers });
                 
                 // Log the response data to see its structure
@@ -61,7 +62,7 @@ export default function LIST_RULES(props) {
         }
         
      
-        fetchRules();
+        fetchRules(props);
     }, [props]);
 
     function GetPagination(){
