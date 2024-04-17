@@ -56,6 +56,8 @@ class Rules(models.Model):
     status = models.BooleanField(default=True)
     growth = models.FloatField(max_length=9, default=0.0)
     profit = models.FloatField(max_length=20, default=0.0)
+    shares = models.IntegerField(default=0)
+    balance = models.FloatField(max_length=20, default=0.0)
     create_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     last_ran_timestamp = models.DateTimeField(blank=True, null=True)
@@ -84,77 +86,25 @@ class Rules(models.Model):
         """
         return f"/rules/{self.pk}/"
 
-class RulesPayment(models.Model, Rules):
-    """
-    Model for a table that has any field related to a user's payment (balance, number of shares, initial_investment, etc)
-    """
-    ticker = models.ForeignKey(
-        Stocks,
-        on_delete=models.CASCADE,
-    )
-    ticker_id = ticker
-
-    # rule = models.ForeignKey(
-    #     Rules,
-    #     on_delete=models.CASCADE,
-    # )
-    # rule_id = rule
-
-    user = models.ForeignKey(
-        Users,
-        on_delete=models.CASCADE,
-    )
-    user_id = user
-
-    action = models.CharField(max_length=25)
-    quantity = models.IntegerField()
-    price = models.FloatField(max_length=28)
-    number_of_shares = models.IntegerField(max_length=28)
-    balance = models.FloatField(max_length=28)
-    timestamp = models.DateTimeField()
-
-    def get_object(self):
+    def update_balance(self, rule_id, shares, balance, growth, profit):
         """
-        Retrieves a data object from the database
+        Pull the record with the rule id
+        Then update the object's values that we need to update
+        Then save the record
         """
-        column_name = self.lookup_field
-        object_filter = {column_name: self.kwargs[column_name]}
-        try:
-            result = Users.objects.filter(**object_filter).get()
-        except ObjectDoesNotExist:
-            result = None
-        return result
-    class Meta:
+        rule = self.objects.filter(**{id:rule_id})
+        rule.shares = shares
+        rule.balance = balance
+        rule.growth = growth
+        rule.profit = profit
+        rule.save()
+    
+    def set_last_runtime(self, rule_id, last_runtime):
         """
-        Adding indexes for table
+        Pull the record with the rule id
+        Update the object's last runtime
+        Then save the record
         """
-        indexes = [
-            models.Index(
-                fields=['rule']
-            )
-        ]
-
-    def __str__(self):
-        """
-        Default return of the class
-
-        :return: Returns the    ticker_id, user_id, number_of_shares,
-                                growth, profit, initial_investment, 
-                                timestamp
-        :rtype: str
-        """
-        return f'{self.ticker_id, self.user_id, self.number_of_shares, self.growth, self.profit, self.initial_investment, self.timestamp}'
-
-    def update_balance(self, ticker_id, user_id, number_of_shares, balance, growth, profit, initial_investment, trx_timestamp):
-        
-        record = {
-            'ticker': ticker_id,
-            'user': user_id,
-            'number_of_shares': number_of_shares,
-            'balance': balance,
-            'growth': growth,
-            'profit': profit,
-            'initial_investment': initial_investment,
-            'timestamp': trx_timestamp
-        }
-        self.objects.create(**record)
+        rule = self.objects.filter(**{id:rule_id})
+        rule.last_ran_timestamp = last_runtime
+        rule.save()

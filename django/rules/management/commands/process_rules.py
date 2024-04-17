@@ -3,6 +3,7 @@ from math import floor
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 from rules.models import Rules, RulesPayment
 from stocks.models import StockData
 from transactions.models import Transactions
@@ -15,29 +16,44 @@ class Command(BaseCommand):
     The command that executes when this job is ran
     """
     help = 'Runs the rules against out database'
-    CUR_TIME = datetime.now()
+    START_TIME = datetime.now()
 
     def handle(self, *args: Any, **options: Any):
-        rules = self.get_rules()
+        # // Get last runtime
+        last_runtime = self.get_last_runtime()
+        rules = self.get_rules(last_runtime)
         for rule in rules:
-            self.perform_action(rule)
+            self.perform_action(rule, last_runtime)
+            # TODO update the individual rule's last runtime
+            Rules().set_last_runtime(
+                rule_id = rule['id'],
+                last_runtime
+            )
+        # update this jobs last runtime
+        self.set_last_runtime(self.START_TIME)
+    
+    def get_last_runtime(self):
+        """
+        Get the last time this job ran
+        """
+        # If never ran use the current time
 
-    def get_rules(self):
+    def set_last_runtime(self, last_runtime):
+        """
+        Set the last time this job ran
+        """
+    
+    def get_rules(self, last_runtime):
         """
         Get all rules that haven't ran OR are gte the current time
         """
-        rules = Rules.objects.filter(**{last_ran__gte: self.CUR_TIME}) # add filters here to get rules
+        rule_filter = Q(last_ran_timestamp__lte=last_runtime) | Q(last_run=None)
     
-        for rule in rules:
-            matched_records = run_conditions(rule['conditions'])
-            if matched_records.count > 0:
-                perform_action(rule['action'])
-            return rules
+        rules = Rules.objects.filter(rule_filter) # add filters here to get rules
+    
+        return rules
 
-
-
-
-    def run_conditions(self, conditions):
+    def run_conditions(self, conditions, last_runtime):
         qs = None
         for condition in conditions:
             if not qs:
@@ -46,7 +62,7 @@ class Command(BaseCommand):
                     condition['column_name'],
                     condition['operator'],
                     condition['value'],
-                    timestamp
+                    timestamp=last_runtime
                 )
             else:
                 qs = StockData.get_stock_data(
@@ -58,92 +74,175 @@ class Command(BaseCommand):
                 )
         return qs
 
-    def perform_action(self, action, matched_records):
+    def perform_action(self, rule, last_runtime):
         """
         Run the action portion of the rule to log the transactions
         """
-        cond = self.run_conditions(rule['conditions'])
-        if cond is None or cond.count == 0:
+        matched_records = self.run_conditions(rule['conditions'], last_runtime)
+        if matched_records is None or matched_records.count == 0:
             return
 
-        
+        action = rule['action']
 
-        number_of_shares = RulesPayment['shares_available']
-        balance = RulesPayment['balance']
-        income = 0
-        initial_investment = 0
-        current_price = (action['quantity'] * action['value'])  
-        sale_income = (action['quantity'] * action['value'])
-        transaction = Transactions.objects.filter(timestamp)
+        number_of_shares = rule['shares']
+        balance = rule['balance']
 
-        for matched_records in matched_records:
-            if transaction.action['action'['method']] == 'buy':
+        profit_loss = 0
+        # initial_investment = 0 
+        #current_price = (action['quantity'] * action['value'])  
+        # sale_income = (action['quantity'] * action['value'])
+        # transaction = Transactions.objects.filter(timestamp)
+
+        for matched_record in matched_records:
+            if action['method'] == 'buy':
+                if balance == 0: # we can't buy anything at this point
+                    break
                 if action['data'] == 'shares':
-                    if balance > current_price:
-                        income -= (action['qty'] * matched_records['low'])
-                        balance -= sale_income 
-                        number_of_shares += action['qty']
-                        
-                        Transactions.add_transaction(
-                        ticker_id=action['ticker_id'],
-                        rule_id='rule',
-                        action=action['action'['method']],
-                        qty=action['action'['qty']],
-                        price=action['condition'['value']],
-                        trx_timestamp=row.timestamp
-                        )
-                else:
-                    raise ValidationError("Insufficient balance to make the purchase")
-                
-            if transaction.action['action'['method']] == 'sell':
+                    balance, profit_loss, number_of_shares = self.purchase_by_shares(
+                        rule, action, matched_record, balance, profit_loss, number_of_shares
+                    )
+                elif action['data'] == 'price':
+                    # TODO: create the purchase_by_price method and logic
+                    # return balance, profit_loss, number_of_shares
+                    balance, profit_loss, number_of_shares = self.purchase_by_price(
+                        rule, action, matched_record, balance, profit_loss, number_of_shares
+                    )
+            elif action['method'] == 'sell':
+                if number_of_shares < 1:
+                    break
                 if action['data'] == 'shares':
-                    if number_of_shares > action['qty']:
-                        income += action['qty'] * matched_records['low']
-                        balance += sale_income 
-                        number_of_shares -= action['qty']
-                        
-                        Transactions.add_transaction(
-                        ticker_id=action['ticker_id'],
-                        rule_id='rule',
-                        action=action['action'['method']],
-                        qty=action['action'['qty']],
-                        price=action['condition'['value']],
-                        trx_timestamp=row.timestamp
-                        )
-                        
-                else:
-                    raise ValidationError("Insufficient quantity to make the sale")
-            
-            if action['data'] == 'price':
-                if balance > action['qty']:
-                    floor(action['qty']/matched_records['low'])
-                    income += action['qty'] * matched_records['low']
-                    balance += sale_income
-                    number_of_shares -= action['qty']
+                    balance, profit_loss, number_of_shares = self.sell_by_shares(
+                        rule, action, matched_record, balance, profit_loss, number_of_shares
+                    )
+                elif action['data'] == 'price':
+                    # TODO port to a function of sell_by_price
+                    # finish the logic for this and verify it
+                    balance, profit_loss, number_of_shares = self.sell_by_price(
 
-                    Transactions.add_transaction(
-                        ticker_id=action['ticker_id'],
-                        rule_id='rule',
-                        action=action['action'['method']],
-                        qty=action['action'['qty']],
-                        price=action['condition'['value']],
-                        trx_timestamp=row.timestamp
-                        )
+                    )
+            else:
+                self.output_error('Unsupported action: ', action)
+                        
 
-        growth = ((balance-initial_investment)/initial_investment)*100
-        #growth = (1 - (100/(initial_investment + sale_income))) * 100
-        RulesPayment.update_balance(
-            ticker= ['ticker_id'],
-            number_of_shares=  number_of_shares,
-            balance= balance,
+        growth = ((balance - rule['initial_investment'])/rule['initial_investment'])*100
+        profit_loss = (balance - rule['initial_investment'])
+        Rules().update_balance(
+            rule_id = rule['id'],
+            shares = number_of_shares,
+            balance = balance,
             growth = growth,
-            trx_timestamp= row_timestamp
+            profit = profit_loss
+        )
+    
+    def purchase_by_price(): # needs finished
+        pass
+    
+    def sell_by_shares(self, rule, action, matched_record, balance, profit_loss, number_of_shares):
+        """
+        Sells the number of shares we have or qty requested when we have a matched record
+        """
+        if number_of_shares > action['qty']: # sell what was asked
+            profit_loss += action['qty'] * matched_record['low']
+            number_of_shares -= action['qty']
+            Transactions.add_transaction(
+                ticker_id=action['ticker_id'],
+                rule_id=rule['rule_id'],
+                action=action['method'],
+                qty=action['qty'],
+                price=action['value'],
+                trx_timestamp=matched_record['timestamp']
+            )
+        elif number_of_shares >= 1: # sell our remaining shares
+            sellable_shares = int( number_of_shares // 1 )
+            profit_loss += sellable_shares * matched_record['low']
+            Transactions.add_transaction(
+                ticker_id=action['ticker_id'],
+                rule_id=rule['rule_id'],
+                action=action['method'],
+                qty=number_of_shares,
+                price=action['value'],
+                trx_timestamp=matched_record['timestamp']
+            )
+            number_of_shares -= sellable_shares
+        else:
+            self.output_error("Insufficient quantity to make the sale")
+        balance += profit_loss
+        return [balance, profit_loss, number_of_shares]
+    
+    def purchase_by_shares(self, rule, action, matched_record, balance, profit_loss, number_of_shares):
+        current_share_price = matched_record['low']
+        total_shares_cost = action['qty'] * current_share_price
+        if balance >= total_shares_cost: # make full purchase
+            profit_loss -= total_shares_cost
+            # balance -= sale_income
+            number_of_shares += action['qty']
+            
+            Transactions.add_transaction(
+                ticker_id = action['ticker_id'],
+                rule_id = rule['id'],
+                action = action['method'],
+                qty = action['qty'],
+                price = matched_record['low'],
+                trx_timestamp = matched_record['timestamp']
+            )
+        elif balance >= current_share_price: # buy what we can
+            number_of_affordable_shares = int( current_share_price // balance )
+            total_shares_cost =  current_share_price * number_of_affordable_shares
+            profit_loss -= total_shares_cost
+            # balance -= sale_income
+            number_of_shares += number_of_affordable_shares
+            
+            Transactions.add_transaction(
+                ticker_id = action['ticker_id'],
+                rule_id = rule['id'],
+                action = action['method'],
+                qty = number_of_affordable_shares,
+                price = matched_record['low'],
+                trx_timestamp = matched_record['timestamp']
+            )
+        else:
+            self.output_error("Insufficient balance to make the purchase")
+        return [balance, profit_loss, number_of_shares]
+
+    def sell_by_price(): # needs finished
+        if balance > action['qty']:
+            floor(action['qty']/matched_record['low'])
+            income += action['qty'] * matched_record['low']
+            balance += sale_income
+            number_of_shares -= action['qty']
+
+            Transactions.add_transaction(
+                ticker_id=action['ticker_id'],
+                rule_id='rule',
+                action=action['action'['method']],
+                qty=action['action'['qty']],
+                price=action['condition'['value']],
+                trx_timestamp=row.timestamp
             )
 
+    def output_error(self, error_msg) -> None:
+        """Outputs an error message
 
-                        
+        :param error_msg: the error message to output
+        :type error_msg: str
+        """
+        self.stdout.write(
+            self.style.ERROR(
+                error_msg
+            )
+        )
+    
+    def output_success(self, success_msg) -> None:
+        """Outputs a success message
 
-
+        :param success_msg: the message to output
+        :type success_msg: str
+        """
+        self.stdout.write(
+            self.style.SUCCESS(
+                success_msg
+            )
+        )
 
         # initial_investment = 0
         # transaction = Transactions.objects.filter(timestamp)
