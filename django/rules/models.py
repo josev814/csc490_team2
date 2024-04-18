@@ -108,3 +108,21 @@ class Rules(models.Model):
         rule = self.objects.filter(**{id:rule_id})
         rule.last_ran_timestamp = last_runtime
         rule.save()
+
+class RuleJobs(models.Model):
+    
+    last_ran_timestamp = models.DateTimeField(blank=True, null=True)
+    objects = RuleManager()
+
+    def set_last_runtime(self, last_runtime):
+        """
+        Table that keeps track of when this job last ran
+        """
+        job = RuleJobs.objects.first()
+        if job is not None:
+            job.last_ran_timestamp = last_runtime
+            job.save()
+        
+        else:
+            kwargs = {'last_ran_timestamp': last_runtime}
+            RuleJobs.objects.create(**kwargs)

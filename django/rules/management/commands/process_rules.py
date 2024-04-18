@@ -4,7 +4,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
-from rules.models import Rules, RulesPayment
+from rules.models import Rules, RuleJobs
 from stocks.models import StockData
 from transactions.models import Transactions
 from users.models import Users
@@ -25,9 +25,9 @@ class Command(BaseCommand):
         for rule in rules:
             self.perform_action(rule, last_runtime)
             # TODO update the individual rule's last runtime
-            Rules().set_last_runtime(
+            Rules.set_last_runtime(
                 rule_id = rule['id'],
-                last_runtime
+                last_runtime = last_runtime
             )
         # update this jobs last runtime
         self.set_last_runtime(self.START_TIME)
@@ -36,18 +36,23 @@ class Command(BaseCommand):
         """
         Get the last time this job ran
         """
-        # If never ran use the current time
+        job = RuleJobs.objects.first()
+        if job is not None and job.last_ran_timestamp is not None:
+            return job.last_ran_timestamp
+        return self.START_TIME
 
     def set_last_runtime(self, last_runtime):
         """
         Set the last time this job ran
         """
-    
+        job = RuleJobs()
+        job.set_last_runtime(last_runtime)
+
     def get_rules(self, last_runtime):
         """
         Get all rules that haven't ran OR are gte the current time
         """
-        rule_filter = Q(last_ran_timestamp__lte=last_runtime) | Q(last_run=None)
+        rule_filter = Q(last_ran_timestamp__lte=last_runtime) | Q(last_ran_timestamp=None)
     
         rules = Rules.objects.filter(rule_filter) # add filters here to get rules
     
@@ -134,8 +139,49 @@ class Command(BaseCommand):
             profit = profit_loss
         )
     
-    def purchase_by_price(): # needs finished
-        pass
+    def purchase_by_price(self, rule, action, matched_record, balance, profit_loss, number_of_shares):
+        """
+        """
+
+        wanted_price = action['qty']
+        current_share_price = matched_record['low']
+        wanted_shares = int ( wanted_price // current_share_price )
+
+        if balance > wanted_price and wanted_shares > 0: # filling full order
+            total_shares_cost = wanted_shares * current_share_price
+
+            Transactions.add_transaction(
+                ticker_id = action['ticker_id'],
+                rule_id = rule['id'],
+                action = action['method'],
+                qty = action['qty'],
+                price = matched_record['low'],
+                trx_timestamp = matched_record['timestamp']
+            )
+            number_of_shares += wanted_shares
+            profit_loss -= total_shares_cost
+
+        elif balance >= current_share_price: # filling partial order
+            number_of_affordable_shares = int( wanted_price // current_share_price )
+            total_shares_cost =  current_share_price * number_of_affordable_shares
+
+            Transactions.add_transaction(
+                ticker_id = action['ticker_id'],
+                rule_id = rule['id'],
+                action = action['method'],
+                qty = number_of_affordable_shares,
+                price = matched_record['low'],
+                trx_timestamp = matched_record['timestamp']
+            )
+            profit_loss -= total_shares_cost
+            number_of_shares += number_of_affordable_shares
+
+        else:
+            self.output_error("Insufficient balance to make the purchase")
+        balance += profit_loss
+        return [balance, profit_loss, number_of_shares]
+    
+        
     
     def sell_by_shares(self, rule, action, matched_record, balance, profit_loss, number_of_shares):
         """
@@ -204,21 +250,51 @@ class Command(BaseCommand):
             self.output_error("Insufficient balance to make the purchase")
         return [balance, profit_loss, number_of_shares]
 
-    def sell_by_price(): # needs finished
-        if balance > action['qty']:
-            floor(action['qty']/matched_record['low'])
-            income += action['qty'] * matched_record['low']
-            balance += sale_income
-            number_of_shares -= action['qty']
+    def sell_by_price(self, rule, action, matched_record, balance, profit_loss, number_of_shares):
+        """
+        
+        """
+        wanted_price = action['qty']
+        sellable_shares = int (wanted_price // matched_record['low']) # gets the floor whole number of sellable_shares 
 
+        if number_of_shares > 0 and sellable_shares > 0: # has to have at least 1 share
+            
+            if sellable_shares > number_of_shares: # ERROR, trying to sell more shares than you own
+                sellable_shares = number_of_shares # sets sellable_shares = number_of_shares so you can not oversell
+            
             Transactions.add_transaction(
                 ticker_id=action['ticker_id'],
-                rule_id='rule',
-                action=action['action'['method']],
-                qty=action['action'['qty']],
-                price=action['condition'['value']],
-                trx_timestamp=row.timestamp
+                rule_id=rule['rule_id'],
+                action=action['method'],
+                qty=action['qty'],
+                price=action['value'],
+                trx_timestamp=matched_record['timestamp']
             )
+            number_of_shares -= sellable_shares # sells shares
+            profit_loss += (sellable_shares * matched_record['low']) # adds the profit_loss
+
+        elif number_of_shares > 0:
+            self.output_error("Insufficient quantity to make the sale")
+        else:
+            self.output_error("Not enough shares to sell at the price specified")
+        balance += profit_loss
+        return [balance, profit_loss, number_of_shares]
+
+
+        # if balance > action['qty']:
+        #     floor(action['qty']/matched_record['low'])
+        #     income += action['qty'] * matched_record['low']
+        #     balance += sale_income
+        #     number_of_shares -= action['qty']
+
+        #     Transactions.add_transaction(
+        #         ticker_id=action['ticker_id'],
+        #         rule_id='rule',
+        #         action=action['action'['method']],
+        #         qty=action['action'['qty']],
+        #         price=action['condition'['value']],
+        #         trx_timestamp=row.timestamp
+        #     )
 
     def output_error(self, error_msg) -> None:
         """Outputs an error message
