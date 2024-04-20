@@ -1,31 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AddCircleOutlineOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Form } from 'react-bootstrap';
+import { Form, Spinner } from 'react-bootstrap';
+import { AddCircleOutlineOutlined } from '@mui/icons-material';
 import Pagination from '../components/Pagination'; // Import the Pagination component
 
 export default function LIST_RULES(props) {
-    const { get_auth_header, django_url = 'http://localhost:8889' } = props;
+    const { get_auth_header, django_url } = props;
 
     // State variables
     const [rules, setRules] = useState(null); // State for storing rules data
+    const [links, setLinks] = useState(null); // Sets the prev/next links
     const [loading, setLoading] = useState(true); // State for loading status
     const [error, setError] = useState(null); // State for error handling
-    const [currentPage, setCurrentPage] = useState(1); // State for current page number
-    const [totalPages, setTotalPages] = useState(1); // State for total number of pages
 
     // Function to fetch rules data
-    const fetchRules = useCallback(async () => {
+    const fetchRules = useCallback(async (link) => {
         try {
+            if (link === undefined){
+                link = `${django_url}/rules/list/`
+            }
             const headers = get_auth_header();
             // Fetch rules data from the server based on current page
-            const response = await axios.get(`${django_url}/rules/list/?page=${currentPage}`, { headers });
+            const response = await axios.get(link, { headers });
 
             // Check response status
             if (response.status === 200) {
                 setRules(response.data.records); // Set rules data
-                setTotalPages(response.data.total_pages); // Set total number of pages
+                setLinks(response.data.links);
             } else {
                 setError('Unexpected response status'); // Handle unexpected response status
             }
@@ -34,16 +36,20 @@ export default function LIST_RULES(props) {
         } finally {
             setLoading(false); // Update loading status
         }
-    }, [get_auth_header, django_url, currentPage]);
+    }, [get_auth_header, django_url]);
 
     // Effect to fetch rules data when currentPage changes
     useEffect(() => {
-        fetchRules();
-    }, [fetchRules, currentPage]);
+        if (django_url === undefined){
+            setLoading(true);
+        } else {
+            fetchRules();
+        }
+    }, [fetchRules, django_url]);
 
     // Function to handle page change
-    const handlePageChange = (page) => {
-        setCurrentPage(page); // Update currentPage
+    const handlePageChange = (link) => {
+        fetchRules(link); // Update currentPage
     };
 
     // Component to render individual rule
@@ -56,12 +62,12 @@ export default function LIST_RULES(props) {
     }
 
     // Component to display rules
-    function DisplayRule({ rules }) {
+    function DisplayRules({ rules }) {
         // Check if rules exist or empty
         if (!rules || rules.length === 0) return <div>No rules found.</div>;
 
         return (
-            <div>
+            <>
                 {rules.map(rule => (
                     <div className='row border border-light border-2 shadow-sm mb-5' key={rule.id}>
                         <div className='col-md-3'>
@@ -93,13 +99,26 @@ export default function LIST_RULES(props) {
                         </div>
                     </div> 
                 ))}
-            </div>
+            </>
         );
-    }    
+    }
 
-    // Slice rules based on currentPage
-    const slicedRules = rules ? rules.slice((currentPage - 1) * 8, currentPage * 8) : null;
+    if (loading) {
+        return (
+            <div>
+                <Spinner animation="border" variant="primary" />
+            </div>
+        )
+    }
 
+    // Component to render error state
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+
+    // // Slice rules based on currentPage
+    // const slicedRules = rules ? rules.slice((currentPage - 1) * 8, currentPage * 8) : null;
     // Render component
     return (
         <>
@@ -122,13 +141,14 @@ export default function LIST_RULES(props) {
                         </div>
                     </div>
                 </div>
-                {/* Display sliced rules */}
-                <DisplayRule rules={slicedRules} />
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange} // Pass the handlePageChange function as prop
-                />
+                <div id='displayRules'>
+                    <DisplayRules rules={rules} />
+                    <Pagination
+                        onPageChange={handlePageChange} // Pass the handlePageChange function as prop
+                        links={links}
+                        target_element='displayRules'
+                    />
+                </div>
             </div>
         </>
     );
