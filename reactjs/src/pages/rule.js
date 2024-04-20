@@ -33,6 +33,7 @@ export function SHOW_RULE(props) {
                     break;
                 case 404:
                     showToastError('Record not found to delete')
+                    break;
                 default:
                     break;
             }
@@ -139,7 +140,6 @@ export function SHOW_RULE(props) {
                 return ('<=')
             default:
                 return ('=')
-                break;
         }
     }
 
@@ -460,17 +460,19 @@ export function CREATE_RULE(props){
         catch (error) {
             if (error.response && error.response.status === 409) {
                 setErrorMessage("Rule already exists");
+                console.log(errorMessage);
             } else {
                 setErrorMessage(`${error.response.status}: ${error}`);
+                console.log(errorMessage);
             }
         }
     };
 
     const handleChange = (e) => {
         console.log(e.target.name)
-        if (['name'].indexOf(e.target.name) != -1 ){
+        if (['name'].indexOf(e.target.name) !== -1 ){
             setFormData({ ...formData, [e.target.name]: e.target.value });
-        } else if (['initial_investment'].indexOf(e.target.name) != -1 ){
+        } else if (['initial_investment'].indexOf(e.target.name) !== -1 ){
             setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
         } else {
             // parse the rule to a json rule

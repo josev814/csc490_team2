@@ -45,7 +45,7 @@ export default function LIST_RULES(props) {
         } else {
             fetchRules();
         }
-    }, [fetchRules]);
+    }, [fetchRules, django_url]);
 
     // Function to handle page change
     const handlePageChange = (link) => {
