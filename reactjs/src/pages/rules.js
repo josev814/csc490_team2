@@ -158,6 +158,7 @@ export default function LIST_RULES(props) {
     return (
         <>
             <div className="container-fluid">
+                <DisplayBalCreate />
                 <div id='displayRules'>
                     <DisplayRules rules={rules} />
                     <Pagination
