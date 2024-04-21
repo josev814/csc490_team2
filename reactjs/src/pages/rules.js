@@ -32,10 +32,17 @@ export default function LIST_RULES(props) {
                 setError('Unexpected response status'); // Handle unexpected response status
             }
         } catch (error) {
-            setError('Error fetching rules'); // Handle error while fetching rules
+            let errorMessage = 'An error occurred, try again later'; // Default error message
+        
+            if (error.response && error.response.data && error.response.data.errors && error.response.data.errors.length > 0) {
+                // Use the first error message from the response
+                errorMessage = error.response.data.errors[0];
+            }
+        
+            setError(errorMessage); // Set error message
         } finally {
             setLoading(false); // Update loading status
-        }
+        }               
     }, [get_auth_header, django_url]);
 
     // Effect to fetch rules data when currentPage changes
@@ -103,44 +110,54 @@ export default function LIST_RULES(props) {
         );
     }
 
+    function DisplayBalCreate() {
+        return (
+            <div className="row mb-3">
+                <div className="col-md-8">
+                    <h3>Total Balance:</h3>
+                    {/* Display total balance */}
+                    <h4 className='text-success'>$0</h4>
+                    <h4 className='text-danger'>-$20</h4>
+                </div>
+                <div className='col-md-4 d-flex justify-content-end'>
+                    <div className='col-md-6 d-flex align-items-center justify-content-end'>
+                        {/* Link to create new rule */}
+                        <Link to='/rule/create'>
+                            <button className="btn btn-info btn-lg">
+                                Create Rule <AddCircleOutlineOutlined />
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
+          <div className="container-fluid">
+            <DisplayBalCreate />
             <div>
-                <Spinner animation="border" variant="primary" />
+              <Spinner animation="border" variant="primary" />
             </div>
+          </div>
         )
-    }
+      }
 
     // Component to render error state
     if (error) {
-        return <div>Error: {error}</div>;
+        return (
+          <div className="container-fluid">
+            <DisplayBalCreate />
+            <div>{error}</div>
+          </div>
+        )
     }
 
-
-    // // Slice rules based on currentPage
-    // const slicedRules = rules ? rules.slice((currentPage - 1) * 8, currentPage * 8) : null;
     // Render component
     return (
         <>
             <div className="container-fluid">
-                <div className="row mb-3">
-                    <div className="col-md-8">
-                        <h3>Total Balance:</h3>
-                        {/* Display total balance */}
-                        <h4 className='text-success'>$0</h4>
-                        <h4 className='text-danger'>-$20</h4>
-                    </div>
-                    <div className='col-md-4 d-flex justify-content-end'>
-                        <div className='col-md-6 d-flex align-items-center justify-content-end'>
-                            {/* Link to create new rule */}
-                            <Link to='/rule/create'>
-                                <button className="btn btn-info btn-lg">
-                                    Create Rule <AddCircleOutlineOutlined />
-                                </button>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
                 <div id='displayRules'>
                     <DisplayRules rules={rules} />
                     <Pagination
