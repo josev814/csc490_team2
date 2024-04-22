@@ -7,8 +7,8 @@ from django.db.models import Q
 from rules.models import Rules, RuleJobs
 from stocks.models import StockData
 from transactions.models import Transactions
-from users.models import Users
-from django.core.exceptions import ValidationError
+#from users.models import Users
+#from django.core.exceptions import ValidationError
 
 
 class Command(BaseCommand):
@@ -23,12 +23,15 @@ class Command(BaseCommand):
         last_runtime = self.get_last_runtime()
         rules = self.get_rules(last_runtime)
         for rule in rules:
-            self.perform_action(rule, last_runtime)
-            # TODO update the individual rule's last runtime
-            Rules.set_last_runtime(
-                rule_id = rule['id'],
-                last_runtime = last_runtime
-            )
+            # only process rule if active and filled in
+            if rule.status and rule.rule is not None \
+                  and 'conditions' in rule.rule and 'action' in rule.rule \
+                  and rule.initial_investment > 0:
+                self.perform_action(rule, last_runtime)
+                Rules.set_last_runtime(
+                    rule_id = rule.id,
+                    last_runtime = last_runtime
+                )
         # update this jobs last runtime
         self.set_last_runtime(self.START_TIME)
     
@@ -61,20 +64,24 @@ class Command(BaseCommand):
     def run_conditions(self, conditions, last_runtime):
         qs = None
         for condition in conditions:
+            if condition['data'] == 'price':
+                condition['data'] = 'low'
             if not qs:
-                qs = StockData.get_stock_data(
-                    condition['ticker_id'],
-                    condition['column_name'],
-                    condition['operator'],
-                    condition['value'],
+                qs = StockData().get_stock_data(
+                    ticker_id = condition['symbol']['id'],
+                    column = condition['data'],
+                    operator = condition['operator'],
+                    value = condition['value'],
+                    condition = condition['condition'],
                     timestamp=last_runtime
                 )
             else:
-                qs = StockData.get_stock_data(
-                    condition['ticker_id'],
-                    condition['column_name'],
-                    condition['operator'],
-                    condition['value'],
+                qs = StockData().get_stock_data(
+                    ticker_id = condition['symbol']['id'],
+                    column = condition['data'],
+                    opertor = condition['operator'],
+                    value = condition['value'],
+                    condition = condition['condition'],
                     data=qs
                 )
         return qs
@@ -83,14 +90,14 @@ class Command(BaseCommand):
         """
         Run the action portion of the rule to log the transactions
         """
-        matched_records = self.run_conditions(rule['conditions'], last_runtime)
+        matched_records = self.run_conditions(rule.rule['conditions'], last_runtime)
         if matched_records is None or matched_records.count == 0:
             return
 
-        action = rule['action']
+        action = rule.rule['action']
 
-        number_of_shares = rule['shares']
-        balance = rule['balance']
+        number_of_shares = rule.shares
+        balance = rule.balance
 
         profit_loss = 0
         # initial_investment = 0 
@@ -127,12 +134,11 @@ class Command(BaseCommand):
                     )
             else:
                 self.output_error('Unsupported action: ', action)
-                        
-
-        growth = ((balance - rule['initial_investment'])/rule['initial_investment'])*100
-        profit_loss = (balance - rule['initial_investment'])
+        
+        growth = ((balance - rule.initial_investment)/rule.initial_investment)*100
+        profit_loss = (balance - rule.initial_investment)
         Rules().update_balance(
-            rule_id = rule['id'],
+            rule_id = rule.id,
             shares = number_of_shares,
             balance = balance,
             growth = growth,
@@ -151,8 +157,8 @@ class Command(BaseCommand):
             total_shares_cost = wanted_shares * current_share_price
 
             Transactions.add_transaction(
-                ticker_id = action['ticker_id'],
-                rule_id = rule['id'],
+                ticker_id = action['symbol']['id'],
+                rule_id = rule.id,
                 action = action['method'],
                 qty = action['qty'],
                 price = matched_record['low'],
@@ -166,8 +172,8 @@ class Command(BaseCommand):
             total_shares_cost =  current_share_price * number_of_affordable_shares
 
             Transactions.add_transaction(
-                ticker_id = action['ticker_id'],
-                rule_id = rule['id'],
+                ticker_id = action['symbol']['id'],
+                rule_id = rule.id,
                 action = action['method'],
                 qty = number_of_affordable_shares,
                 price = matched_record['low'],
@@ -192,7 +198,7 @@ class Command(BaseCommand):
             number_of_shares -= action['qty']
             Transactions.add_transaction(
                 ticker_id=action['ticker_id'],
-                rule_id=rule['rule_id'],
+                rule_id=rule.id,
                 action=action['method'],
                 qty=action['qty'],
                 price=action['value'],
@@ -203,7 +209,7 @@ class Command(BaseCommand):
             profit_loss += sellable_shares * matched_record['low']
             Transactions.add_transaction(
                 ticker_id=action['ticker_id'],
-                rule_id=rule['rule_id'],
+                rule_id=rule.id,
                 action=action['method'],
                 qty=number_of_shares,
                 price=action['value'],
@@ -225,7 +231,7 @@ class Command(BaseCommand):
             
             Transactions.add_transaction(
                 ticker_id = action['ticker_id'],
-                rule_id = rule['id'],
+                rule_id = rule.id,
                 action = action['method'],
                 qty = action['qty'],
                 price = matched_record['low'],
@@ -240,7 +246,7 @@ class Command(BaseCommand):
             
             Transactions.add_transaction(
                 ticker_id = action['ticker_id'],
-                rule_id = rule['id'],
+                rule_id = rule.id,
                 action = action['method'],
                 qty = number_of_affordable_shares,
                 price = matched_record['low'],
@@ -264,7 +270,7 @@ class Command(BaseCommand):
             
             Transactions.add_transaction(
                 ticker_id=action['ticker_id'],
-                rule_id=rule['rule_id'],
+                rule_id=rule.id,
                 action=action['method'],
                 qty=action['qty'],
                 price=action['value'],
