@@ -91,6 +91,7 @@ class Command(BaseCommand):
         Run the action portion of the rule to log the transactions
         """
         matched_records = self.run_conditions(rule.rule['conditions'], last_runtime)
+        print(matched_records)
         if matched_records is None or matched_records.count == 0:
             return
 
