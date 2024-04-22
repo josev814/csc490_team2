@@ -29,7 +29,7 @@ export default function LeftNav() {
                     ]
                 }
             );
-        } else if (url === '/rule/create') {
+        } else if (url === '/rule/create/') {
             setDisplayText(
                 {
                     'header': 'This is the Rule Creation Page',
