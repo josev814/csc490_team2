@@ -79,7 +79,7 @@ export default function LeftNav() {
         } else {
             setDisplayText(
                 {
-                    'header': [],
+                    'header': '',
                     'description': []
                 }
             )
