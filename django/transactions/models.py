@@ -10,6 +10,32 @@ from stocks.models import Stocks
 from rules.models import Rules
 #from django.db import IntegrityError
 
+class TransactionsManager(models.Manager):
+    def add_transaction(self, ticker, rule_id, action, qty, price, trx_timestamp):
+        """Adds a transaction to the database
+
+        :param ticker: 
+        :type ticker: ticker
+        :param rule_id: 
+        :type rule_id: int
+        :param action: Whether we buy or sell a stock
+        :type action: str
+        :param qty: 
+        :type qty: (int|float)
+        :param price: The price the transaction occurred at
+        :type price: float
+        :param trx_timestamp: Time that the transaction took place
+        :type trx_timestamp: datetime
+        """
+        record = {
+            'ticker': ticker,
+            'rule': rule_id,
+            'action': action,
+            'quantity': qty,
+            'price': price,
+            'timestamp': trx_timestamp
+        }
+        self.create(**record)
 
 class Transactions(models.Model):
     """
@@ -27,6 +53,8 @@ class Transactions(models.Model):
     timestamp = models.DateTimeField()
     quantity = models.IntegerField()
     price = models.FloatField(max_length=28)
+
+    objects = TransactionsManager()
 
     class Meta:
         """
@@ -46,29 +74,3 @@ class Transactions(models.Model):
         :rtype: str
         """
         return f'{self.ticker, self.rule, self.action, self.quantity, self.price, self.timestamp}'
-
-    def add_transaction(self, ticker_id, rule_id, action, qty, price, trx_timestamp):
-        """Adds a transaction to the database
-
-        :param ticker_id: 
-        :type ticker_id: int
-        :param rule_id: 
-        :type rule_id: int
-        :param action: Whether we buy or sell a stock
-        :type action: str
-        :param qty: 
-        :type qty: (int|float)
-        :param price: The price the transaction occurred at
-        :type price: float
-        :param trx_timestamp: Time that the transaction took place
-        :type trx_timestamp: datetime
-        """
-        record = {
-            'ticker': ticker_id,
-            'rule': rule_id,
-            'action': action,
-            'quantity': qty,
-            'price': price,
-            'timestamp': trx_timestamp
-        }
-        self.objects.create(**record)

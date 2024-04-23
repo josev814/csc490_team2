@@ -86,28 +86,25 @@ class Rules(models.Model):
         """
         return f"/rules/{self.pk}/"
 
-    def update_balance(self, rule_id, shares, balance, growth, profit):
+    def update_balance(self, shares, balance, growth, profit):
         """
-        Pull the record with the rule id
-        Then update the object's values that we need to update
+        Update the object's values that we need to update
         Then save the record
         """
-        rule = self.objects.filter(**{id:rule_id})
-        rule.shares = shares
-        rule.balance = balance
-        rule.growth = growth
-        rule.profit = profit
-        rule.save()
+        self.shares = shares
+        self.balance = balance
+        self.growth = growth
+        self.profit = profit
+        self.save()
     
-    def set_last_runtime(self, rule_id, last_runtime):
+    def set_last_runtime(self, last_runtime):
         """
         Pull the record with the rule id
         Update the object's last runtime
         Then save the record
         """
-        rule = self.objects.filter(**{id:rule_id})
-        rule.last_ran_timestamp = last_runtime
-        rule.save()
+        self.last_ran_timestamp = last_runtime
+        self.save()
 
 class RuleJobs(models.Model):
     

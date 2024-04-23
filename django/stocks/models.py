@@ -166,12 +166,7 @@ class StockData(models.Model):
         if timestamp:
             data.filter(**{'timestamp__gte': timestamp})
 
-        print(data.query)
-        if data.count() > 0:
-            return data
-        return []
-
-
+        return data
 
 
 class StockSearch(models.Model):
