@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'universal-cookie'
-import Cookies from 'universal-cookie'
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
