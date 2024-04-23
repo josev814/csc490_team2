@@ -7,7 +7,6 @@ import Cookies from 'universal-cookie';
 
 export default function AuthedLayout(props) {
     const cookies = useMemo(() => new Cookies(null, { path: '/' }), []);
-    const cookies = useMemo(() => new Cookies(null, { path: '/' }), []);
     const navigate = useNavigate();
 
     const [userData, setUserData] = useState(undefined);
