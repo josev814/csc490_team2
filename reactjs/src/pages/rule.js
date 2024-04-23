@@ -330,6 +330,7 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
                     <ShowRuleTransactionChart />
+                    {/* ^ pass symbol and transactions that are loaded from request */}
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
@@ -359,8 +360,16 @@ export function SHOW_RULE(props) {
 
 
 export function CREATE_RULE(props){
-    const navigate = useNavigate()
     const cookies = new Cookies(null, { path: '/' })
+    const [formData, setFormData] = useState({
+        user: "",
+        name: "",
+        initial_investment: 0.0,
+        rule: {},
+    });
+    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+      
+    const navigate = useNavigate()
 
     function get_auth_header(){
         const token = localStorage.getItem('accessToken')
@@ -416,7 +425,72 @@ export function CREATE_RULE(props){
         }
     }
     
+
+    function get_user_from_cookie(){
+        const userCookie = cookies.get('user');
+        if (!userCookie || !userCookie.id) {
+            console.error("User cookie or user ID not found.");
+            return null; // or handle the error appropriately
+        }
+    
+        // Construct user URL based on user ID
+        const user_id = userCookie.id;
+        const user_url = `${props.django_url}/users/${user_id}/`;
+        return user_url;
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const url = `${props.django_url}/rules/`
+        await refresh_token()
+
+        const updatedFormData = {
+            ...formData,
+            user: get_user_from_cookie(),
+        };
+
+        setFormData(updatedFormData);
+        try {
+            const headers = get_auth_header()
+            const response = await axios.post(url, updatedFormData, {headers})
+            console.log(response)
+            if (response.status === 200 || response.status === 201) {
+                const rule_id = response.data.id
+                const rule_name = response.data.name
+                navigate(`/rule/${rule_id}/${rule_name}/`);
+            } else {
+                console.log('Failed to create rule')
+                throw new Error('Failed to create rule');
+            }
+        }
+        catch (error) {
+            if (error.response && error.response.status === 409) {
+                setErrorMessage("Rule already exists");
+                console.log(errorMessage);
+            } else {
+                setErrorMessage(`${error.response.status}: ${error}`);
+                console.log(errorMessage);
+            }
+        }
+    };
+
+    const handleChange = (e) => {
+        console.log(e.target.name)
+        if (['name'].indexOf(e.target.name) !== -1 ){
+            setFormData({ ...formData, [e.target.name]: e.target.value });
+        } else if (['initial_investment'].indexOf(e.target.name) !== -1 ){
+            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
+        } else {
+            // parse the rule to a json rule
+
+            //TODO: wire rule input into json object, that goes to rule state, commit  
+        }
+    };
+    
     return (
-        <CreateRuleForm refresh_token={refresh_token} get_auth_header={get_auth_header} django_url={props.django_url} />
+        <CreateRuleForm 
+            handleSubmit={(e) => handleSubmit(e)}
+            handleChange={(e) => handleChange(e)}
+        />
     )
 }
