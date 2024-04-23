@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'universal-cookie'
+import Cookies from 'universal-cookie'
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
@@ -360,16 +361,8 @@ export function SHOW_RULE(props) {
 
 
 export function CREATE_RULE(props){
-    const cookies = new Cookies(null, { path: '/' })
-    const [formData, setFormData] = useState({
-        user: "",
-        name: "",
-        initial_investment: 0.0,
-        rule: {},
-    });
-    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
-      
     const navigate = useNavigate()
+    const cookies = new Cookies(null, { path: '/' })
 
     function get_auth_header(){
         const token = localStorage.getItem('accessToken')
