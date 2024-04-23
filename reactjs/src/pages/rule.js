@@ -491,6 +491,7 @@ export function CREATE_RULE(props){
         <CreateRuleForm 
             handleSubmit={(e) => handleSubmit(e)}
             handleChange={(e) => handleChange(e)}
+            django_url={props.django_url}
         />
     )
 }
