@@ -1,10 +1,78 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import Modal from 'react-bootstrap/Modal';
 import ShowRuleTransactionChart from '../components/rules/rule_chart';
+import CreateRuleForm from '../components/rules/CreateRule'
 
-export default function SHOW_RULE() {
+export function SHOW_RULE(props) {
+    const {rule, rule_name} = useParams()
     const navigate = useNavigate()
+
+    function get_auth_header(){
+        const token = localStorage.getItem('accessToken')
+        const headers = {
+            Authorization: `Bearer ${token}`,
+        }
+        return headers
+    }
+
+    const [showModal, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+    async function handleDelete() {
+        const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
+        try {
+            const response = await axios.delete(delete_url, { headers: get_auth_header() });
+            switch (response.status) {
+                case 204:
+                    navigate('/rules/')
+                    break;
+                case 404:
+                    showToastError('Record not found to delete')
+                    break;
+                default:
+                    break;
+            }
+        } catch(error){
+            showToastError(error)
+        }
+    }
+    const toastContainer = document.getElementById('toastContainer')
+
+    function showToastError(message) {    
+        // Create the toast element
+        const toastElement = document.createElement('div');
+        toastElement.className = 'toast show'; // Set the class name
+        toastElement.setAttribute('role', 'alert');
+        toastElement.setAttribute('aria-live', 'assertive');
+        toastElement.setAttribute('aria-atomic', 'true');
+        toastElement.setAttribute('data-bs-autohide', 'true');
+        toastElement.setAttribute('data-bs-delay', 5000);
+    
+        // Create the inner content of the toast element
+        const toastContent = document.createElement('div');
+        toastContent.className = 'toast-body bg-danger text-white';
+        toastContent.textContent = message;
+    
+        // Construct the inner HTML content
+        const toastHeader = `
+            <div class="toast-header">
+                <strong class="me-auto text-danger">Error</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+    
+        // Set the inner HTML content of the toast element
+        toastElement.innerHTML = toastHeader;
+        toastElement.appendChild(toastContent);
+    
+        // Append the toast element to the toast container
+        toastContainer.appendChild(toastElement);
+    }
+    
     
     const return_data = {
         'errors': null,
@@ -59,7 +127,7 @@ export default function SHOW_RULE() {
     }
 
     function GetOperator(operator){
-        switch (operator.operator) {
+                switch (operator.operator) {
             case 'gt':
                 return ('>')
             case 'gte':
@@ -69,7 +137,7 @@ export default function SHOW_RULE() {
             case 'lte':
                 return ('<=')
             default:
-                break;
+                return ('=')
         }
     }
 
@@ -202,6 +270,22 @@ export default function SHOW_RULE() {
     return (
         <>
             <div className="container-fluid">
+                <Modal show={showModal} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Delete Rule {rule_name} ({rule})</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Are you sure you want to delete this rule?
+                    </Modal.Body>
+                    <Modal.Footer>
+                    <button className='btn btn-secondary' onClick={handleClose}>
+                        Cancel
+                    </button>
+                    <button className="btn btn-danger" onClick={handleDelete}>
+                        Delete
+                    </button>
+                    </Modal.Footer>
+                </Modal>
                 <div className='row'>
                     <div className='col-1'>
                         <button className="btn btn-warning btn-md" onClick={() => navigate(-1)}>
@@ -209,7 +293,7 @@ export default function SHOW_RULE() {
                         </button>
                     </div>
                     <div className='col-11'>
-                        <h1>{return_data.rule.name}</h1>
+                        <h1>{rule_name}</h1>
                     </div>
                 </div>
                 <div className="row mb-3">
@@ -229,7 +313,7 @@ export default function SHOW_RULE() {
                             </button>
                         </div>
                         <div className='col-md-4 d-flex align-items-center justify-content-end'>
-                            <button className="btn btn-danger btn-md">
+                            <button className="btn btn-danger btn-md" onClick={handleShow}>
                                 <DeleteOutline /> Remove
                             </button>
                         </div>
@@ -238,6 +322,7 @@ export default function SHOW_RULE() {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
                     <ShowRuleTransactionChart />
+                    {/* ^ pass symbol and transactions that are loaded from request */}
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
@@ -264,3 +349,73 @@ export default function SHOW_RULE() {
       </>
     )
   };
+
+
+export function CREATE_RULE(props){
+    const [formData, setFormData] = useState({
+        user: "",
+        name: "",
+        initial_investment: 0.0,
+        rule: {},
+    });
+    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+      
+    const navigate = useNavigate()
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const url = `${props.django_url}/rules/`
+        await props.refresh_session()
+
+        const updatedFormData = {
+            ...formData,
+            user: props.get_user_from_cookie(),
+        };
+
+        setFormData(updatedFormData);
+        try {
+            const headers = props.get_auth_header()
+            const response = await axios.post(url, updatedFormData, {headers})
+            console.log(response)
+            if (response.status === 200 || response.status === 201) {
+                const rule_id = response.data.id
+                const rule_name = response.data.name
+                navigate(`/rule/${rule_id}/${rule_name}/`);
+            } else {
+                console.log('Failed to create rule')
+                throw new Error('Failed to create rule');
+            }
+        }
+        catch (error) {
+            if (error.response && error.response.status === 409) {
+                setErrorMessage("Rule already exists");
+                console.log(errorMessage);
+            } else {
+                setErrorMessage(`${error.response.status}: ${error}`);
+                console.log(errorMessage);
+            }
+        }
+    };
+
+    const handleChange = (e) => {
+        console.log(e.target.name)
+        if (['name'].indexOf(e.target.name) !== -1 ){
+            setFormData({ ...formData, [e.target.name]: e.target.value });
+        } else if (['initial_investment'].indexOf(e.target.name) !== -1 ){
+            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
+        } else {
+            // parse the rule to a json rule
+
+            //TODO: wire rule input into json object, that goes to rule state, commit  
+        }
+    };
+    
+    return (
+        <CreateRuleForm 
+            handleSubmit={(e) => handleSubmit(e)}
+            handleChange={(e) => handleChange(e)}
+            django_url={props.django_url}
+            get_auth_header={props.get_auth_header}
+        />
+    )
+}

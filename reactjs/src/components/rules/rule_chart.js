@@ -25,6 +25,10 @@ class ShowRuleTransactionChart extends React.Component {
     transactions = 'amzn'
     this.setState({symbol: transactions})
     let url = 'http://localhost:8889/stocks/get_ticker_metrics/?ticker=' + transactions
+
+    //pass data from rule.js via getrule endpoint {{base_url}}/rules/1/
+    //transactions from rule.js passed into here
+
     axios.get(url)
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure
