@@ -49,6 +49,15 @@ class App extends React.Component {
   }
 
   refresh_login_cookie() {
+    let currentPath = window.location.pathname;
+    if (!currentPath.endsWith('/')){
+      currentPath += '/'
+    }
+
+    //const navigation = useNavigate();
+    if (['/', '/login/', '/register/'].includes(currentPath)) {
+      return false
+    }
     // Calculate expiration time for the login status cookie (30 minutes)
     const loginStatusExpiration = new Date();
     loginStatusExpiration.setTime(loginStatusExpiration.getTime() + (0.5 * 60 * 60 * 1000));
@@ -62,22 +71,23 @@ class App extends React.Component {
       // Update the expiration time of the 'is_active' cookie
       console.log('Login Expiration: ', loginStatusExpiration)
       this.cookies.set('is_active', is_active, { expires: loginStatusExpiration });
+      return true
     } else {
       console.error("User is not logged in.");
-      this.props.history.push('/login'); // Navigate to the login page
+      window.location('/login')
     }
+    return false
   }
 
   async refresh_token() {
     const refresh_url = `${this.state.sitedetails.django_url}/auth/refresh/`;
     const data = {'refresh': localStorage.getItem('refreshToken')};
-    if (this.state.sitedetails.django_url === undefined){
+    if(data['refresh'] === undefined){
+      console.log('Refresh token is undefined')
       return
     }
+    console.log(data)
     try {
-      if(data['refresh'] === undefined){
-        throw new Error('Refresh token is undefined')
-      }
       // Send POST request to refresh URL
       const response = await axios.post(refresh_url, data, { headers: this.get_auth_header() });
 
@@ -101,12 +111,16 @@ class App extends React.Component {
   }
 
   async refresh_session(){
+    if (this.state.sitedetails.django_url === undefined){
+      return
+    }
     console.groupCollapsed('refresh_session')
     let user_url = this.get_user_from_cookie()
     console.log(user_url)
     if(user_url !== undefined){
-      this.refresh_token()
-      this.refresh_login_cookie()
+      if (this.refresh_login_cookie()){
+        this.refresh_token()
+      }
     }
     console.groupEnd()
   }
@@ -130,9 +144,6 @@ class App extends React.Component {
         <Routes>
           <Route path="/" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
             <Route index element={<Home />} />
-            <Route path="login" element={<LoginRegister mode="signin" />} />
-            <Route path="register" element={<LoginRegister mode="signup" />} />
-            <Route path="logout" element={<Logout />} />
             <Route path="login" element={<LoginRegister mode="signin" />} />
             <Route path="register" element={<LoginRegister mode="signup" />} />
             <Route path="logout" element={<Logout />} />

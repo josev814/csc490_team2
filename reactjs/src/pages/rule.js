@@ -351,69 +351,9 @@ export function SHOW_RULE(props) {
   };
 
 
-export function CREATE_RULE(props){
-    const [formData, setFormData] = useState({
-        user: "",
-        name: "",
-        initial_investment: 0.0,
-        rule: {},
-    });
-    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
-      
-    const navigate = useNavigate()
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const url = `${props.django_url}/rules/`
-        await props.refresh_session()
-
-        const updatedFormData = {
-            ...formData,
-            user: props.get_user_from_cookie(),
-        };
-
-        setFormData(updatedFormData);
-        try {
-            const headers = props.get_auth_header()
-            const response = await axios.post(url, updatedFormData, {headers})
-            console.log(response)
-            if (response.status === 200 || response.status === 201) {
-                const rule_id = response.data.id
-                const rule_name = response.data.name
-                navigate(`/rule/${rule_id}/${rule_name}/`);
-            } else {
-                console.log('Failed to create rule')
-                throw new Error('Failed to create rule');
-            }
-        }
-        catch (error) {
-            if (error.response && error.response.status === 409) {
-                setErrorMessage("Rule already exists");
-                console.log(errorMessage);
-            } else {
-                setErrorMessage(`${error.response.status}: ${error}`);
-                console.log(errorMessage);
-            }
-        }
-    };
-
-    const handleChange = (e) => {
-        console.log(e.target.name)
-        if (['name'].indexOf(e.target.name) !== -1 ){
-            setFormData({ ...formData, [e.target.name]: e.target.value });
-        } else if (['initial_investment'].indexOf(e.target.name) !== -1 ){
-            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
-        } else {
-            // parse the rule to a json rule
-
-            //TODO: wire rule input into json object, that goes to rule state, commit  
-        }
-    };
-    
+export function CREATE_RULE(props){    
     return (
         <CreateRuleForm 
-            handleSubmit={(e) => handleSubmit(e)}
-            handleChange={(e) => handleChange(e)}
             django_url={props.django_url}
             get_auth_header={props.get_auth_header}
         />
