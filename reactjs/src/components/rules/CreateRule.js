@@ -4,22 +4,20 @@ import axios from 'axios';
 import Cookies from 'universal-cookie'
 import { AsyncDropDown } from "../inputs/AsyncDropDown";
 import { DateInput } from "../inputs/DateInput";
+import Spinner from "react-bootstrap/Spinner";
 
-export default function CreateRuleForm(props) {
-    const navigate = useNavigate();
-    const cookies = new Cookies(null, { path: '/' })
+function Remove_Row(props){
+    if (props.event !== 1 ) {
+        return (
+            <button className="btn btn-danger" onClick={() => props.removeRowCondition({'event':props.event})}>
+                Remove Condition
+            </button>
+        )
+    }
+    return null;
+}
 
-    const [formData, setFormData] = useState({
-        user: "",
-        name: "",
-        initial_investment: 0.0,
-        rule: {},
-        start_date: "",
-        is_active: true
-    });
-    const [action, setAction] = useState({}); // State to manage the action
-    const [conditions, setConditions] = useState([]); // State to manage rule conditions
-    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+function AddRowCondition(props){
     const event_data = [
         {value:'price', label: 'Current Price'},
         {value:'open', label: 'Open Price'},
@@ -34,14 +32,83 @@ export default function CreateRuleForm(props) {
         {value:'lte', label: 'less than or equal to'},
         {value:'eq', label: 'equal to'},
     ]
+
+    return (
+        <div className="row px-2 py-3" id={"condition_" + props.event}>
+            <div className="col">
+                <div className="row">
+                    <span className="h5">{props.event === 1 ? 'IF' : 'AND'}:</span>
+                    <input type='hidden' name={'event_condition_' + props.event} aria-hidden aria-readonly value={props.event === 1 ? 'if' : 'and'} />
+                </div>
+                <div className="row shadow py-3 px-2">
+                    <div className="col-md-3">
+                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.django_url} />
+                    </div>
+                    <div className="col-auto">
+                        HAS 
+                    </div>
+                    <div className="col-auto">
+                        <select required aria-required name={'event_data_' + props.event} className="form-select" onChange={props.handleChange}>
+                            <option value=''>---</option>
+                            {event_data.map((item, index) =>
+                                <option key={index} value={item.value}>{item.label}</option>
+                            )}
+                        </select>
+                    </div>
+                    <div className="col-auto">
+                        <select required aria-required name={'event_operator_' + props.event} className="form-select" onChange={props.handleChange}>
+                            <option value=''>---</option>
+                            {event_operators.map((item, index) =>
+                                <option key={index} value={item.value}>{item.label}</option>
+                            )}
+                        </select>
+                    </div>
+                    <div className="col-auto">
+                        <input required aria-required type="text" pattern='^\d+(\.\d{2})?$' name={'event_value_' + props.event} className="form-control" placeholder="Comparison Value $"  onChange={props.handleChange} />
+                    </div>
+                    <div className="col-auto">
+                        <Remove_Row event={props.event} removeRowCondition={props.removeRowCondition} />
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+
+export default function CreateRuleForm(props) {
+    const navigate = useNavigate();
+    const cookies = new Cookies(null, { path: '/' })
+
+    const [formData, setFormData] = useState({
+        user: "",
+        name: "",
+        initial_investment: 0.0,
+        rule: {},
+        start_date: "",
+        is_active: true
+    });
+    const [loading, setLoading] = useState(true)
+    const [inputs, setInputs] = useState({})
+    const [action, setAction] = useState({}); // State to manage the action
+    const [conditions, setConditions] = useState([]); // State to manage rule conditions
+    const [conditionCount, addConditionCount] = useState(1); // State to manage rule conditions
+    const [trigger, setTrigger] = useState({}); // State to manage the action
+    const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+    
     const then_methods = [
         {value:'buy', label: 'Buy'},
         {value: 'sell', label: 'Sell'},
-        {value: 'notify', label: 'Notify'}
+        // {value: 'notify', label: 'Notify'}
     ]
     const then_qty_types = [
         {value:'usd', label: 'USD'},
         {value: 'shares', label: 'Share(s)'},
+    ]
+    const exec_frequencies = [
+        {value:'minutes', label: 'minutes(s)'},
+        {value:'hours', label: 'Hour(s)'},
+        {value:'days', label: 'Day(s)'}
     ]
 
     function get_user_from_cookie(){
@@ -60,7 +127,6 @@ export default function CreateRuleForm(props) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const url = `${props.django_url}/rules/`
-        await props.refresh_token()
 
         const updatedFormData = {
             ...formData,
@@ -89,6 +155,31 @@ export default function CreateRuleForm(props) {
             console.log(errorMessage)
         }
     };
+
+    const addRowCondition = () => {
+        addConditionCount(conditionCount + 1)
+    }
+
+    const removeRowCondition = (params) => {
+        console.groupCollapsed('removeRow')
+        console.log(params)
+        console.log('condition_' + params.event)
+        function remove_html_element(idx){
+            const element = document.getElementById('condition_' + idx)
+            console.log(element)
+            if (element) {
+                element.remove()
+            }
+        }
+        function empty_condition(idx){
+            let form_conditions = [...conditions]
+            form_conditions[(idx - 1)] =  {}
+            setConditions(form_conditions)
+        }
+        remove_html_element(params.event)
+        empty_condition(params.event)
+        console.groupEnd()
+    }
 
     const parse_form_rule_action = (event) => {
         let field_prefix = 'then_'
@@ -140,28 +231,66 @@ export default function CreateRuleForm(props) {
             setConditions(form_conditions)
         }
     }
+
+    const parse_form_rule_interval = (event) => {
+        let field_prefix = 'exec_'
+        if (event.target.name.startsWith(field_prefix)){
+            setTrigger({...trigger, [event.target.name.replace(field_prefix, '')]: event.target.value})
+        }
+    }
     
     const handleChange = (e) => {
         if (['name', 'start_date'].indexOf(e.target.name) !== -1 ){
-            setFormData({ ...formData, [e.target.name]: e.target.value });
+            setInputs({...inputs, [e.target.name]: e.target.value})
+            //setFormData({ ...formData, [e.target.name]: e.target.value });
         } else if ('initial_investment' === e.target.name ){
-            setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
+            setInputs({
+                ...inputs,
+                [e.target.name]: e.target.value + '.00',
+                'balance': e.target.value + '.00'
+            })
+            //setFormData({ ...formData, [e.target.name]: e.target.value + '.00' });
         } else if (e.target.name.startsWith('then_')){
             parse_form_rule_action(e)
         } else if (e.target.name.startsWith('event_')){
             parse_form_rule_events(e)
+        } else if (e.target.name.startsWith('exec_')){
+            parse_form_rule_interval(e)
         } else {
             console.warn('Unknown field that needs handling: ' + e.target.name)
         }
     };
-    
-    useEffect(() => {
-        const json_rule = {'conditions': conditions, 'action': action};
-        setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule }));
-    }, [conditions, action, setFormData]);
 
-    return(
-        <div className="container">
+    // Build the formData when the states change
+    useEffect(() => {
+        if(!loading){
+            console.group('Rule info:')
+            const validConditions = conditions.filter(condition => Object.keys(condition).length > 3);
+            const json_rule = {'conditions': validConditions, 'action': action, 'trigger': trigger};
+            setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule, ...inputs }));
+            console.log(formData)
+            console.groupEnd()
+        }
+        return () => {} // function cleanup
+    }, [loading, conditions, action, trigger, inputs]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 250);
+        return () => clearInterval(timer)
+    }, [])
+
+    if (loading){
+        return (
+            <div className="container-fluid">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        )
+    }
+
+    return (
+        <div className="container-fluid">
             <h2 className="mb-4">Add Rule</h2>
             <form className="form" onSubmit={handleSubmit}>
                 <div className="row mb-3">
@@ -183,65 +312,84 @@ export default function CreateRuleForm(props) {
                 <div className="row mb-3">
                     <DateInput label='Start Date' id='start_date' name='start_date' handleChange={handleChange} />
                 </div>
-                <div className="row shadow px-2 py-3 mb-3">
-                    <label className="col-md-1">
-                        <span className="h5">IF:</span>
-                        <input type='hidden' name="event_condition_1" aria-hidden aria-readonly value='if' />
-                    </label>
-                    <div className="col-md-3">
-                        <AsyncDropDown name='event_symbol_1' handleChange={handleChange} django_url={props.django_url} />
-                    </div>
-                    <div className="col-md-1">
-                        HAS 
-                    </div>
-                    <div className="col-md-2">
-                        <select required aria-required name="event_data_1" className="form-select" onChange={handleChange}>
-                            <option value=''>---</option>
-                            {event_data.map((item, index) =>
-                                <option key={index} value={item.value}>{item.label}</option>
-                            )}
-                        </select>
-                    </div>
-                    <div className="col-md-3">
-                        <select required aria-required name="event_operator_1" className="form-select" onChange={handleChange}>
-                            <option value=''>---</option>
-                            {event_operators.map((item, index) =>
-                                <option key={index} value={item.value}>{item.label}</option>
-                            )}
-                        </select>
-                    </div>
-                    <div className="col-md-2">
-                        <input required aria-required type="text" pattern='^\d+(\.\d{2})?$' name="event_value_1" className="form-control" placeholder="Comparison Value $"  onChange={handleChange} />
+                <div className="conditions">
+                    {Array.from({ length: conditionCount }).map((_, index) => (
+                        <AddRowCondition key={index} event={index + 1} handleChange={handleChange} django_url={props.django_url} removeRowCondition={removeRowCondition} />
+                    ))}
+                </div>
+                <div className="row mb-3">
+                    <button className="btn btn-success" onClick={() => addRowCondition()}>Add Another Condition</button>
+                </div>
+                <div className="row mb-3 px-2 py-3">
+                    <div className="col">
+                        <div className="row">
+                            <span className="h5">THEN: <span className="lead">
+                                    Perform the following action
+                                </span>
+                            </span>
+                        </div>
+                        <div className="row shadow px-2 py-3">
+                            <div className="col-auto">
+                                <select required aria-required name='then_method' className="form-select" onChange={handleChange}>
+                                    <option value=''>---</option>
+                                    {then_methods.map((item, index) =>
+                                        <option key={index} value={item.value}>{item.label}</option>
+                                    )}
+                                </select>
+                            </div>
+                            <div className="col-auto">
+                                <input type="text" name='then_quantity' className="form-control" placeholder="Quantity"  onChange={handleChange} />
+                            </div>
+                            <div className="col-auto">
+                                <select required aria-required name='then_quantity_type' className="form-select" onChange={handleChange}>
+                                    <option value=''>---</option>
+                                    {then_qty_types.map((item, index) =>
+                                        <option key={index} value={item.value}>{item.label}</option>
+                                    )}
+                                </select>
+                            </div>
+                            <div className="col-auto">
+                                OF
+                            </div>
+                            <div className="col-md-3">
+                                <AsyncDropDown name='then_symbol' handleChange={handleChange}  django_url={props.django_url}/>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="row shadow px-2 py-3">
-                    <div className="col-md-1">
-                        <span className="h5">THEN:</span>
-                    </div>
-                    <div className="col-md-1">
-                        <select required aria-required name='then_method' className="form-select" onChange={handleChange}>
-                            <option value=''>---</option>
-                            {then_methods.map((item, index) =>
-                                <option key={index} value={item.value}>{item.label}</option>
-                            )}
-                        </select>
-                    </div>
-                    <div className="col-md-2">
-                        <input type="text" name='then_quantity' className="form-control" placeholder="Quantity"  onChange={handleChange} />
-                    </div>
-                    <div className="col-md-2">
-                        <select required aria-required name='then_quantity_type' className="form-select" onChange={handleChange}>
-                            <option value=''>---</option>
-                            {then_qty_types.map((item, index) =>
-                                <option key={index} value={item.value}>{item.label}</option>
-                            )}
-                        </select>
-                    </div>
-                    <div className="col-md-1">
-                        OF
-                    </div>
-                    <div className="col-md-3">
-                        <AsyncDropDown name='then_symbol' handleChange={handleChange}  django_url={props.django_url}/>
+                <div className="row px-2 py-3">
+                    <div className="col">
+                        <div className="row">
+                            <span className="h5">
+                                EXECUTION: <span className="lead">
+                                    Execute the rule no more frequently than once every
+                                </span>
+                            </span>
+                        </div>
+                        <div className="row shadow px-2 py-3">
+                            <div className="col-auto">
+                                <label className="col-form-label">Interval Value</label>
+                            </div>
+                            <div className="col-auto">
+                                <select required aria-required name='exec_interval' className="form-select" onChange={handleChange}>
+                                    <option value=''>---</option>
+                                    {[...Array(60).keys()].map(index => (
+                                        <option key={index + 1} value={index + 1}>{index + 1}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-auto">
+                                <label className="col-form-label">Frequency</label>
+                            </div>
+                            <div className="col-auto">
+                                <select required aria-required name='exec_frequency' className="form-select" onChange={handleChange}>
+                                    <option value=''>---</option>
+                                    {exec_frequencies.map((item, index) =>
+                                        <option key={index} value={item.value}>{item.label}</option>
+                                    )}
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="row py-3">
@@ -253,6 +401,7 @@ export default function CreateRuleForm(props) {
                     </div>
                 </div>
             </form>
+            <div style={{display: 'None'}}>{JSON.stringify(formData)}</div>
         </div>
     )
 }

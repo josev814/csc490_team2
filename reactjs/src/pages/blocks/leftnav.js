@@ -8,7 +8,7 @@ export default function LeftNav() {
     const links = [
         {'pageName': 'Home', 'path': '/rules', 'icon': <RuleOutlined />},
         {'pageName': 'Stock Search', 'path': '/stocks', 'icon': <CandlestickChartOutlined />},
-        {'pageName': 'Settings', 'path': '/settings', 'icon': <SettingsOutlined />},
+        // {'pageName': 'Settings', 'path': '/settings', 'icon': <SettingsOutlined />},
         {'pageName': 'Logout', 'path': '/logout', 'icon': <ExitToAppOutlined />}
     ]
 
@@ -35,9 +35,8 @@ export default function LeftNav() {
                     'header': 'This is the Rule Creation Page',
                     'description': [
                         'Here you can:',
-                        '1. Create new rules that impose conditions',
-                        '* on a specific stock**',
-                        '*Think of it as you telling the tool "If X happens for Y stock, then I want you to do X for Y stock."'
+                        '1. Create new rules that impose conditions on a specific stock*',
+                        '*Think of it as you telling the tool "If X happens for this stock (IF condition to be met), then I want you to do Y for the balance invested in this stock (THEN condition(s) you want to be fulfiled)"'
                     ]
                 }
             );
@@ -80,7 +79,7 @@ export default function LeftNav() {
         } else {
             setDisplayText(
                 {
-                    'header': 'Default',
+                    'header': '',
                     'description': []
                 }
             )
