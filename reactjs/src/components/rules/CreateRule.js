@@ -6,7 +6,7 @@ import { AsyncDropDown } from "../inputs/AsyncDropDown";
 import { DateInput } from "../inputs/DateInput";
 import Spinner from "react-bootstrap/Spinner";
 
-function Remove_Row(props){
+function RemoveRow(props){
     if (props.event !== 1 ) {
         return (
             <button className="btn btn-danger" onClick={() => props.removeRowCondition({'event':props.event})}>
@@ -67,7 +67,7 @@ function AddRowCondition(props){
                         <input required aria-required type="text" pattern='^\d+(\.\d{2})?$' name={'event_value_' + props.event} className="form-control" placeholder="Comparison Value $"  onChange={props.handleChange} />
                     </div>
                     <div className="col-auto">
-                        <Remove_Row event={props.event} removeRowCondition={props.removeRowCondition} />
+                        <RemoveRow event={props.event} removeRowCondition={props.removeRowCondition} />
                     </div>
                 </div>
             </div>
@@ -264,12 +264,9 @@ export default function CreateRuleForm(props) {
     // Build the formData when the states change
     useEffect(() => {
         if(!loading){
-            console.group('Rule info:')
             const validConditions = conditions.filter(condition => Object.keys(condition).length > 3);
             const json_rule = {'conditions': validConditions, 'action': action, 'trigger': trigger};
             setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule, ...inputs }));
-            console.log(formData)
-            console.groupEnd()
         }
         return () => {} // function cleanup
     }, [loading, conditions, action, trigger, inputs]);
