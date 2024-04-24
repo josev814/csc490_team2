@@ -19,6 +19,7 @@ class RuleSerializer(serializers.HyperlinkedModelSerializer):
         
         fields = [
             'user','id', 'name', 
+            'initial_investment', 'balance',
             'status', 'growth', 'profit', 
             'create_date', 'updated_date',
             'rule'
