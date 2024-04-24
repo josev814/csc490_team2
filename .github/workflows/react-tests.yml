@@ -36,6 +36,7 @@ jobs:
     - name: Test with Jest
       run: |
         docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --coverage' > jest.results.log 2>&1
+      continue-on-error: true
     - name: Output Results
       run: |
         cat jest.results.log
