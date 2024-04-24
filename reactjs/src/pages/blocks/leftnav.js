@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import {CandlestickChartOutlined, RuleOutlined, SettingsOutlined, ExitToAppOutlined} from '@mui/icons-material';
+import {CandlestickChartOutlined, RuleOutlined, ExitToAppOutlined} from '@mui/icons-material';
 
 export default function LeftNav() {
     const links = [

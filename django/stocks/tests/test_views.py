@@ -105,8 +105,8 @@ class StockTestCases(TestCase):
         query_params = {
             'ticker': 'amzn',
             'interval': '5m',
-            'starttime': 1708114200,
-            'endtime': 1709517600
+            'starttime': 1708993126,
+            'endtime': 1709511820
         }
         request = self.__mock_get_request(f'/stocks/get_ticker_metrics/', query_params)
         stock_view = StockViewSet()
