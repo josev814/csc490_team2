@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
-const cookies = new Cookies();
+const cookies = new Cookies(null, { path: '/' });
 
 export function LoginRegister({ mode }) {
   const [formData, setFormData] = useState({

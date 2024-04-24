@@ -1,12 +1,12 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Header from './blocks/header';
 import Footer from './blocks/footer';
 import LeftNav from './blocks/leftnav';
 import Cookies from 'universal-cookie';
 
 export default function AuthedLayout(props) {
-    const cookies = useMemo(() => new Cookies(null, { path: '/' }), []);
+    const cookies = new Cookies(null, { path: '/' })
     const navigate = useNavigate();
 
     const [userData, setUserData] = useState(undefined);
