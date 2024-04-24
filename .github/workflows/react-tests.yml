@@ -36,9 +36,12 @@ jobs:
     - name: Test with Jest
       run: |
         docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --coverage' > jest.results.log 2>&1
+    - name: Output Results
+      run: |
+        cat jest.results.log
+    - name: Trigger Pass Fail
+      run: |
         if [[ $(grep -P '^Tests:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
-          cat jest.results.log
           echo 'UnitTests Failed'
           exit 1
         fi
-        cat jest.results.log
