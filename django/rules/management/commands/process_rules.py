@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 print('Rule: ', record.pk)
                 print('Runtime: ', record.last_ran_timestamp)
                 print('Rule Info: ', record.rule)
-                self.perform_action(record)
+                self.run_rule(record)
                 record.set_last_runtime(self.START_TIME)
                 print('New Runtime: ', record.last_ran_timestamp)
         # update this jobs last runtime
@@ -70,7 +70,11 @@ class Command(BaseCommand):
         )
         return rules
 
-    def run_conditions(self, conditions):
+    def run_conditions(self, conditions, start_from):
+        """
+        Queries the database based on the conditions the user set
+        Additionally the start_from is when the user set for the start date
+        """
         qs = None
         for condition in conditions:
             if condition['data'] == 'price':
@@ -82,25 +86,29 @@ class Command(BaseCommand):
                     operator = condition['operator'],
                     value = condition['value'],
                     condition = condition['condition'],
-                    timestamp = self.START_TIME
+                    timestamp = start_from
                 )
             else:
                 qs = StockData().get_stock_data(
                     ticker_id = condition['symbol']['id'],
                     column = condition['data'],
-                    opertor = condition['operator'],
+                    operator = condition['operator'],
                     value = condition['value'],
                     condition = condition['condition'],
                     data=qs
                 )
+        qs.filter('timestamp__lte', self.START_TIME)
         return qs
 
-    def perform_action(self, record):
+    def run_rule(self, record):
         """
-        Run the action portion of the rule to log the transactions
+        Run the rule
         """
-
-        stock_records = self.run_conditions(record.rule['conditions'])
+        # get the records that passed the user's conditions
+        start_date = record.start_date
+        if record.last_ran_timestamp is not None:
+            start_date = record.last_ran_timestamp
+        stock_records = self.run_conditions(record.rule['conditions'], start_date)
         print(stock_records.query)
         if stock_records is None or stock_records.count() == 0:
             return
@@ -111,7 +119,15 @@ class Command(BaseCommand):
         number_of_shares = record.shares
         balance = record.balance
 
+        # get last transaction for rule
+        last_transaction = Transactions.objects.get_last_transaction(record.id)
+        print(last_transaction)
+        exit()
+
         for stock_record in stock_records:
+            print('STock record: ', stock_record)
+
+            return
             if action['method'] == 'buy':
                 if balance == 0: # we can't buy anything at this point
                     break
