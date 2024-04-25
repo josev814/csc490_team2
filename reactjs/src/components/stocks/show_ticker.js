@@ -84,14 +84,14 @@ class ShowTickerChart extends React.Component {
   render(){
     return (
         <div className="container-fluid">
-          <div className="row pb-3">
+          {/* <div className="row pb-3">
             <form>
               <label className="px-2">Granularity:</label>
               <select>
                 <option>1d</option>
               </select>
             </form>
-          </div>
+          </div> */}
           <div className="row pb-3" id="chartContainer" style={{ height: "600px" }}>
           {this.renderGraph}
           </div>
