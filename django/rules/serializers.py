@@ -21,7 +21,7 @@ class RuleSerializer(serializers.HyperlinkedModelSerializer):
             'user','id', 'name', 
             'initial_investment', 'balance',
             'status', 'growth', 'profit', 
-            'create_date', 'updated_date',
+            'create_date', 'updated_date', 'start_date',
             'rule'
         ]
         read_only_fields = ['growth', 'profit', 'create_date', 'updated_date']

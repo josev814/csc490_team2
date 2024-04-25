@@ -60,6 +60,7 @@ class Rules(models.Model):
     balance = models.FloatField(max_length=20, default=0.0)
     create_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    start_date = models.DateField(blank=True, null=True)
     last_ran_timestamp = models.DateTimeField(blank=True, null=True)
     initial_investment = models.FloatField(max_length=20, default=0.0)
     rule = models.JSONField()
