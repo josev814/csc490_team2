@@ -4,6 +4,8 @@ Models for the application are stored here
 from django.db import models
 from django.conf import settings
 from users.models import Users
+# from stocks.models import Stocks
+# from django.core.exceptions import ObjectDoesNotExist
 
 User = settings.AUTH_USER_MODEL # auth.User
 
@@ -54,8 +56,13 @@ class Rules(models.Model):
     status = models.BooleanField(default=True)
     growth = models.FloatField(max_length=9, default=0.0)
     profit = models.FloatField(max_length=20, default=0.0)
+    shares = models.IntegerField(default=0)
+    balance = models.FloatField(max_length=20, default=0.0)
     create_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+    start_date = models.DateField(blank=True, null=True)
+    last_ran_timestamp = models.DateTimeField(blank=True, null=True)
+    initial_investment = models.FloatField(max_length=20, default=0.0)
     rule = models.JSONField()
 
     objects = RuleManager()
@@ -79,3 +86,43 @@ class Rules(models.Model):
         Sets the absolute url for a rule based on it's primary key
         """
         return f"/rules/{self.pk}/"
+
+    def update_balance(self, shares, balance, growth, profit):
+        """
+        Update the object's values that we need to update
+        Then save the record
+        """
+        self.shares = shares
+        self.balance = balance
+        self.growth = growth
+        self.profit = profit
+        self.save()
+    
+    def set_last_runtime(self, last_runtime):
+        """
+        Pull the record with the rule id
+        Update the object's last runtime
+        Then save the record
+        """
+        self.last_ran_timestamp = last_runtime
+        self.save()
+
+class RuleJobs(models.Model):
+    """
+    This class is meant to manage the jobs for rules
+    """
+    last_ran_timestamp = models.DateTimeField(blank=True, null=True)
+    objects = RuleManager()
+
+    def set_last_runtime(self, last_runtime):
+        """
+        Table that keeps track of when this job last ran
+        """
+        job = RuleJobs.objects.first()
+        if job is not None:
+            job.last_ran_timestamp = last_runtime
+            job.save()
+        
+        else:
+            kwargs = {'last_ran_timestamp': last_runtime}
+            RuleJobs.objects.create(**kwargs)
