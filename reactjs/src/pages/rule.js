@@ -1,53 +1,52 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
 import axios from 'axios';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
+import Spinner from "react-bootstrap/Spinner";
+
 import ShowRuleTransactionChart from '../components/rules/rule_chart';
 import CreateRuleForm from '../components/rules/CreateRule'
 
 export function SHOW_RULE(props) {
+    const django_url = props.sitedetails.django_url
     const {rule, rule_name} = useParams()
+
     const navigate = useNavigate()
-
-    function get_auth_header(){
-        const token = localStorage.getItem('accessToken')
-        const headers = {
-            Authorization: `Bearer ${token}`,
-        }
-        return headers
-    }
-
+    const [loading, setLoading] = useState(null);
     // State to hold the fetched rule data
-    const [ruleData, setRuleData] = useState(null);
+    const [ruleData, setRuleData] = useState({});
     // State to manage error state
     const [error, setError] = useState(null);
-
-    useEffect(() => {
-        async function fetchRuleData() {
-            try {
-                const response = await axios.get(`${props.sitedetails.django_url}/rules/${rule}/`, {
-                    headers: get_auth_header(),
-                });
-                
-                setRuleData(response.data);
-            } catch (error) {
-                setError(error.message); // Handle error appropriately
-            }
-        }
-        fetchRuleData();
-    }, [rule]);
-    console.log(rule);
-
-
     const [showModal, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
+    // Rule to fetch the rule information
+    async function fetchRuleData(rule) {
+        if (django_url === undefined){
+            return
+        }
+        try {
+            const response = await axios.get(
+                `${props.sitedetails.django_url}/rules/${rule}/`,
+                {
+                    headers: props.get_auth_header(),
+                }
+            );
+            setRuleData(response.data);
+            setLoading(false);
+            console.log(response.data)
+        } catch (error) {
+            setError(error.message); // Handle error appropriately
+        }
+    }
+
     async function handleDelete() {
         const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
         try {
-            const response = await axios.delete(delete_url, { headers: get_auth_header() });
+            const response = await axios.delete(delete_url, { headers: props.get_auth_header() });
             switch (response.status) {
                 case 204:
                     navigate('/rules/')
@@ -137,15 +136,15 @@ export function SHOW_RULE(props) {
     }
 
     function DisplaySequence(){
-        if(ruleData.rule.rule.checks.length > 0){
+        if(Object.keys(ruleData.record.rule).length > 0){
             return (
                 <>
-                {ruleData.rule.rule.checks[0].conditions.map(condition => (
+                {ruleData.record.rule.conditions.map(condition => (
                     <div className='row' key={condition.condition}>
                         <DisplayCondition content={condition} />
                     </div>
                 ))}
-                <DisplayAction content={ruleData.rule.rule.checks[0].action} />
+                <DisplayAction content={ruleData.record.rule.action} />
                 </>
             )
         } else if (ruleData.errors) {
@@ -235,6 +234,35 @@ export function SHOW_RULE(props) {
         )
     }
 
+    useEffect(() => {
+        if (loading && django_url !== undefined) {
+            fetchRuleData(rule);
+        }
+        return () => {}
+    }, [loading]);
+
+    useEffect(() => {
+        if (django_url === undefined){
+            setLoading(true);
+        }
+    }, [django_url]);
+
+    // use to set loading to true to invoke other effects
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(true);
+        }, 50);
+        return () => clearInterval(timer)
+    }, [])
+
+    if (loading || ruleData === undefined || Object.keys(ruleData).length == 0){
+        return (
+            <div className="container-fluid">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        )
+    }
+
     return (
         <>
             <div className="container-fluid">
@@ -267,7 +295,7 @@ export function SHOW_RULE(props) {
                 <div className="row mb-3">
                     <div className="col-md-8">
                         <h3>Total Balance:</h3>
-                        <DisplayBalance />
+                        {/* <DisplayBalance /> */}
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
                         <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
@@ -295,11 +323,11 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
-                        <div><b>Start:</b> {ruleData.rule.create_date}</div>
-                        <div><b>Transactions:</b> {ruleData.rule.transactions.count}</div>
-                        <div><b>Growth:</b> {ruleData.rule.growth}</div>
-                        <div><b>Return:</b> ${ruleData.rule.growth}</div>
-                        <div><b>Status:</b> <DisplayStatus data={ruleData.rule.status} /></div>
+                        <div><b>Start:</b> {ruleData.record.create_date}</div>
+                        {/* <div><b>Transactions:</b> {ruleData.record.transactions.count}</div> */}
+                        <div><b>Growth:</b> {ruleData.record.growth}</div>
+                        <div><b>Return:</b> ${ruleData.record.growth}</div>
+                        <div><b>Status:</b> <DisplayStatus data={ruleData.record.status} /></div>
                     </div>
                     <div className='col-md-6'>
                         <h4>Sequence</h4>
@@ -309,8 +337,8 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='container-fluid'>
                         <h2>Transactions</h2>
-                        <DisplayTransactionColumns />
-                        <DisplayTransactions />
+                        {/* <DisplayTransactionColumns />
+                        <DisplayTransactions /> */}
                     </div>
                 </div>
             </div>
