@@ -1,3 +1,6 @@
+"""
+This job runs rules to see if transactions should be performed
+"""
 from datetime import datetime
 from math import floor
 from typing import Any
@@ -20,6 +23,9 @@ class Command(BaseCommand):
     LAST_RUNTIME = None
 
     def handle(self, *args: Any, **options: Any):
+        """
+        Runs the job to process the rules in the db
+        """
         # // Get last runtime
         self.get_last_runtime()
         rules = self.get_rules()
@@ -170,6 +176,9 @@ class Command(BaseCommand):
         )
     
     def get_profit_loss(self, record, number_of_shares):
+        """
+        Calculates the profit loss for a rule
+        """
         symbol_id = record.rule['action']['symbol']['id']
         current_stock_price = self.get_current_stock_price(
             symbol_id
@@ -186,26 +195,37 @@ class Command(BaseCommand):
         return current_value - total_investment
 
     def get_average_cost_of_stock(self, rule, ticker):
+        """
+        Gets the average cost that the rule paid for the stock
+        """
         trx_data_cost = Transactions.objects.filter(
             rule_id__exact=rule,
-            ticker_id__exact=ticker
+            ticker_id__exact=ticker,
+            action__exact='buy'
         ).aggregate(total_cost=Sum('price'))
 
         trx_data_shares = Transactions.objects.filter(
             rule_id__exact=rule,
-            ticker_id__exact=ticker
+            ticker_id__exact=ticker,
+            action__exact='buy'
         ).aggregate(total_shares=Sum('quantity'))
         
         average_cost = trx_data_cost['avg_cost'] // float(trx_data_shares['total_shares'])
         return average_cost
 
     def get_current_stock_price(self, stock_id):
+        """
+        Gets the most recent stock price
+        """
         return StockData.objects.filter(
             ticker_id__exact=stock_id,
             granularity__exact='1m'
         ).order_by('-pk', ).first().low
 
     def get_stock_price_from_timestamp(self, stock_id, timestamp):
+        """
+        Gets the stock price that's closest to the timestamp given
+        """
         qs = StockData.objects.filter(
             ticker_id__exact=stock_id,
             granularity__exact='1m'
@@ -238,6 +258,7 @@ class Command(BaseCommand):
     
     def purchase_by_price(self, record, stock_record, balance, number_of_shares):
         """
+        Purchase the stock based on how much the user wants to spend
         """
         action = record.rule['action']
 
@@ -311,6 +332,9 @@ class Command(BaseCommand):
         return [balance, number_of_shares]
     
     def purchase_by_shares(self, record, stock_record, balance, number_of_shares):
+        """
+        Make a purchase of the stock based on shares that the user wants
+        """
         action = record.rule['action']
         print(action)
         action_stock = Stocks.objects.get(id=action['symbol']['id'])
@@ -352,7 +376,7 @@ class Command(BaseCommand):
 
     def sell_by_price(self, record, stock_record, balance, number_of_shares):
         """
-        
+        Sell shares of the stock up to the price that the user wants to sell
         """
         action = record.rule['action']
         wanted_price = action['quantity']
