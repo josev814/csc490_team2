@@ -38,8 +38,9 @@ export function SHOW_RULE(props) {
             setRuleData(response.data);
             setLoading(false);
             console.log(response.data)
-        } catch (error) {
-            setError(error.message); // Handle error appropriately
+        } catch (err) {
+            setError(err.message); // Handle error appropriately
+            console.log(error);
         }
     }
 
@@ -162,57 +163,57 @@ export function SHOW_RULE(props) {
         }
     }
 
-    function DisplayTransactionColumns(){
-        // Check if rule.rule.transactions[0] exists and is an object
-        if (ruleData.rule.transactions.columns) {
-            return (
-                <div className='row border border-light border-2'>
-                    {ruleData.rule.transactions.columns.map(column => (
-                        <div className='col-md-2' key={column}>
-                            <b>{column.toUpperCase()}</b>
-                        </div>
-                    ))}
-                </div>
-            );
-        } else {
-            return null; // Handle case when rule.rule.transactions[0] is not an object
-        }
-    }
+    // function DisplayTransactionColumns(){
+    //     // Check if rule.rule.transactions[0] exists and is an object
+    //     if (ruleData.rule.transactions.columns) {
+    //         return (
+    //             <div className='row border border-light border-2'>
+    //                 {ruleData.rule.transactions.columns.map(column => (
+    //                     <div className='col-md-2' key={column}>
+    //                         <b>{column.toUpperCase()}</b>
+    //                     </div>
+    //                 ))}
+    //             </div>
+    //         );
+    //     } else {
+    //         return null; // Handle case when rule.rule.transactions[0] is not an object
+    //     }
+    // }
 
-    function DisplayTransactions(){
-        if (ruleData.rule.transactions.count > 0) {
-            return (
-                ruleData.rule.transactions.records.map(transaction => (
-                    <div className='row border border-light border-1' key={transaction[0]}>
-                        <div className='col-md-2'>
-                            {transaction[0]}
-                        </div>
-                        <div className='col-md-2'>
-                            {transaction[1]}
-                        </div>
-                        <div className='col-md-2'>
-                            {transaction[2]}
-                        </div>
-                        <div className='col-md-2'>
-                            {transaction[3]}
-                        </div>
-                        <div className='col-md-2'>
-                            {transaction[4]}
-                        </div>
-                    </div> 
-                ))
-            );
-        } else {
-            return (
-                <div className='row'>
-                    <h4>No transactions found</h4>
-                </div>
-            );
-        }
-    }
+    // function DisplayTransactions(){
+    //     if (ruleData.rule.transactions.count > 0) {
+    //         return (
+    //             ruleData.rule.transactions.records.map(transaction => (
+    //                 <div className='row border border-light border-1' key={transaction[0]}>
+    //                     <div className='col-md-2'>
+    //                         {transaction[0]}
+    //                     </div>
+    //                     <div className='col-md-2'>
+    //                         {transaction[1]}
+    //                     </div>
+    //                     <div className='col-md-2'>
+    //                         {transaction[2]}
+    //                     </div>
+    //                     <div className='col-md-2'>
+    //                         {transaction[3]}
+    //                     </div>
+    //                     <div className='col-md-2'>
+    //                         {transaction[4]}
+    //                     </div>
+    //                 </div> 
+    //             ))
+    //         );
+    //     } else {
+    //         return (
+    //             <div className='row'>
+    //                 <h4>No transactions found</h4>
+    //             </div>
+    //         );
+    //     }
+    // }
 
     function DisplayBalance(){
-        let balance = ruleData.rule.initial_investment + ruleData.rule.return
+        let balance = ruleData.record.balance
         let className = 'text-success'
         if (balance < 0){
             className = 'text-danger'
@@ -255,7 +256,7 @@ export function SHOW_RULE(props) {
         return () => clearInterval(timer)
     }, [])
 
-    if (loading || ruleData === undefined || Object.keys(ruleData).length == 0){
+    if (loading || ruleData === undefined || Object.keys(ruleData).length === 0){
         return (
             <div className="container-fluid">
                 <Spinner animation="border" variant="primary" />
@@ -295,7 +296,7 @@ export function SHOW_RULE(props) {
                 <div className="row mb-3">
                     <div className="col-md-8">
                         <h3>Total Balance:</h3>
-                        {/* <DisplayBalance /> */}
+                        <DisplayBalance />
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
                         <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
