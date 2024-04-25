@@ -155,4 +155,3 @@ class UpdateAPIView(generics.UpdateAPIView):
                 {'errors': ['Record Not Found']},
                 status=status.HTTP_404_NOT_FOUND
             )
-        
