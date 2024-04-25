@@ -23,7 +23,7 @@ export function AsyncDropDown(props) {
     
     const handleSelect = (selectedOption) => {
          setSelectedOption(selectedOption);
-         console.group('handleSelect')
+         console.groupCollapsed('handleSelect')
          console.log(selectedOption)
          if (selectedOption && selectedOption !== null && props.handleChange){
             const event = {'target': {'value': selectedOption.value, 'name': props.name}}

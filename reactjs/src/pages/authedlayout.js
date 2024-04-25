@@ -1,16 +1,16 @@
 import { Outlet, useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import Header from './blocks/header';
 import Footer from './blocks/footer';
 import LeftNav from './blocks/leftnav';
 import Cookies from 'universal-cookie';
 
 export default function AuthedLayout(props) {
-    const cookies = useMemo(() => new Cookies(null, { path: '/' }), []);
     const navigate = useNavigate();
-
     const [userData, setUserData] = useState(undefined);
     useEffect(() => {
+        const cookies = new Cookies(null, { path: '/' })
+
         function stillLoggedIn() {
             const active = cookies.get('is_active');
             if (!active) {
@@ -34,7 +34,7 @@ export default function AuthedLayout(props) {
         }, 5 * 60 * 1000); // 5 minutes in milliseconds
 
         return () => clearInterval(interval); // Cleanup function to clear interval
-    }, [navigate, cookies]);
+    }, [navigate]);
 
     return (
         <>
