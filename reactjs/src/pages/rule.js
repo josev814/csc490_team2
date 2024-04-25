@@ -295,7 +295,7 @@ export function SHOW_RULE(props) {
                 </div>
                 <div className="row mb-3">
                     <div className="col-md-8">
-                        <h3>Total Balance:</h3>
+                        <h3>Investment Balance:</h3>
                         <DisplayBalance />
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
