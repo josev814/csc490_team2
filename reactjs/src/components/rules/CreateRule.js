@@ -273,6 +273,7 @@ export default function CreateRuleForm(props) {
             const validConditions = conditions.filter(condition => Object.keys(condition).length > 4);
             const json_rule = {'conditions': validConditions, 'action': action, 'trigger': trigger};
             setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule, ...inputs }));
+            console.groupEnd()
         }
         return () => {} // function cleanup
     }, [loading, conditions, action, trigger, inputs]);
