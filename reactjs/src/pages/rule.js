@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -17,6 +17,28 @@ export function SHOW_RULE(props) {
         }
         return headers
     }
+
+    // State to hold the fetched rule data
+    const [ruleData, setRuleData] = useState(null);
+    // State to manage error state
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        async function fetchRuleData() {
+            try {
+                const response = await axios.get(`${props.sitedetails.django_url}/rules/${rule}/`, {
+                    headers: get_auth_header(),
+                });
+                
+                setRuleData(response.data);
+            } catch (error) {
+                setError(error.message); // Handle error appropriately
+            }
+        }
+        fetchRuleData();
+    }, [rule]);
+    console.log(rule);
+
 
     const [showModal, setShow] = useState(false);
     const handleClose = () => setShow(false);
@@ -72,59 +94,6 @@ export function SHOW_RULE(props) {
         // Append the toast element to the toast container
         toastContainer.appendChild(toastElement);
     }
-    
-    
-    const return_data = {
-        'errors': null,
-        'rule':
-            {
-                'id': 1,
-                'created_date': '2024-03-22 08:40:23.1123',
-                'name': 'Amazon Buy The Dips',
-                'status': 0,
-                'initial_investment': 20,
-                'growth': 0.25,
-                'return': -20.13,
-                'rule': {
-                    'checks': [{
-                        'conditions': 
-                        [
-                            {
-                                'condition': 'if',
-                                'symbol': {'id':1,'ticker':'amzn'},
-                                'data': 'price',
-                                'operator': 'gt',
-                                'value': 10
-                            },
-                            {
-                                'condition': 'and',
-                                'symbol': {'id':1,'ticker':'amzn'},
-                                'data': 'open',
-                                'operator': 'lte',
-                                'value': 6
-                            }
-                        ],
-                        'action': {
-                            'method': 'buy',
-                            'quantity': 5,
-                            'symbol': {'id':1,'ticker':'amzn'},
-                            'order_type': 'limit'
-                        }
-                    }]
-                },
-                'transactions': {
-                    'count': 5,
-                    'columns': ['id', 'action','datetime','quantity', 'price'],
-                    'records':[
-                        [ 1, 'sell', '2024-03-22 08:40:23.1123', 5, 10 ],
-                        [ 2, 'sell', '2024-03-22 08:40:23.1123', 5, 11 ],
-                        [ 3, 'sell', '2024-03-22 08:40:23.1123', 5, 14 ],
-                        [ 4, 'sell', '2024-03-22 08:40:23.1123', 5, 8 ],
-                        [ 5, 'sell', '2024-03-22 08:40:23.1123', 5, 6 ]
-                    ]
-                }
-            }
-    }
 
     function GetOperator(operator){
                 switch (operator.operator) {
@@ -168,20 +137,20 @@ export function SHOW_RULE(props) {
     }
 
     function DisplaySequence(){
-        if(return_data.rule.rule.checks.length > 0){
+        if(ruleData.rule.rule.checks.length > 0){
             return (
                 <>
-                {return_data.rule.rule.checks[0].conditions.map(condition => (
+                {ruleData.rule.rule.checks[0].conditions.map(condition => (
                     <div className='row' key={condition.condition}>
                         <DisplayCondition content={condition} />
                     </div>
                 ))}
-                <DisplayAction content={return_data.rule.rule.checks[0].action} />
+                <DisplayAction content={ruleData.rule.rule.checks[0].action} />
                 </>
             )
-        } else if (return_data.errors) {
+        } else if (ruleData.errors) {
             <div className='row'>
-                {return_data.errors.map(error => (
+                {ruleData.errors.map(error => (
                     error
                 ))}
             </div>
@@ -196,10 +165,10 @@ export function SHOW_RULE(props) {
 
     function DisplayTransactionColumns(){
         // Check if rule.rule.transactions[0] exists and is an object
-        if (return_data.rule.transactions.columns) {
+        if (ruleData.rule.transactions.columns) {
             return (
                 <div className='row border border-light border-2'>
-                    {return_data.rule.transactions.columns.map(column => (
+                    {ruleData.rule.transactions.columns.map(column => (
                         <div className='col-md-2' key={column}>
                             <b>{column.toUpperCase()}</b>
                         </div>
@@ -212,9 +181,9 @@ export function SHOW_RULE(props) {
     }
 
     function DisplayTransactions(){
-        if (return_data.rule.transactions.count > 0) {
+        if (ruleData.rule.transactions.count > 0) {
             return (
-                return_data.rule.transactions.records.map(transaction => (
+                ruleData.rule.transactions.records.map(transaction => (
                     <div className='row border border-light border-1' key={transaction[0]}>
                         <div className='col-md-2'>
                             {transaction[0]}
@@ -244,7 +213,7 @@ export function SHOW_RULE(props) {
     }
 
     function DisplayBalance(){
-        let balance = return_data.rule.initial_investment + return_data.rule.return
+        let balance = ruleData.rule.initial_investment + ruleData.rule.return
         let className = 'text-success'
         if (balance < 0){
             className = 'text-danger'
@@ -265,7 +234,6 @@ export function SHOW_RULE(props) {
             <span className='text-success'>Enabled</span>
         )
     }
-
 
     return (
         <>
@@ -327,11 +295,11 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
-                        <div><b>Start:</b> {return_data.rule.created_date}</div>
-                        <div><b>Transactions:</b> {return_data.rule.transactions.count}</div>
-                        <div><b>Growth:</b> {return_data.rule.growth}</div>
-                        <div><b>Return:</b> ${return_data.rule.growth}</div>
-                        <div><b>Status:</b> <DisplayStatus data={return_data.rule.status} /></div>
+                        <div><b>Start:</b> {ruleData.rule.create_date}</div>
+                        <div><b>Transactions:</b> {ruleData.rule.transactions.count}</div>
+                        <div><b>Growth:</b> {ruleData.rule.growth}</div>
+                        <div><b>Return:</b> ${ruleData.rule.growth}</div>
+                        <div><b>Status:</b> <DisplayStatus data={ruleData.rule.status} /></div>
                     </div>
                     <div className='col-md-6'>
                         <h4>Sequence</h4>
