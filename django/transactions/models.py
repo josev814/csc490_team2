@@ -36,6 +36,9 @@ class TransactionsManager(models.Manager):
             'timestamp': trx_timestamp
         }
         self.create(**record)
+    
+    def get_last_transaction(self, rule_id):
+        return self.filter(rule_id__exact=rule_id).order_by('-pk').first()
 
 class Transactions(models.Model):
     """
