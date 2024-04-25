@@ -26,7 +26,12 @@ export function DateInput(props) {
 
     return (
         <>
-            <label htmlFor={props.id}>{props.label}:</label>
+            <label htmlFor={props.id}>
+                {props.label}: 
+            </label>
+            <span className='small text-muted'>
+                {props.description}
+            </span>
             <input
                 type="date"
                 id={props.id}

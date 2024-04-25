@@ -226,7 +226,13 @@ export default function CreateRuleForm(props) {
                 let condition = {...form_conditions[condition_index], [key]: value}
                 form_conditions[condition_index] = condition
             } else {
-                form_conditions.push({[key]: value})
+                let ifand = document.getElementsByName(
+                    'event_condition_' + (condition_index + 1)
+                )[0].value
+                form_conditions.push({
+                    [key]: value,
+                    'condition': ifand
+                })
             }
             setConditions(form_conditions)
         }
@@ -264,7 +270,7 @@ export default function CreateRuleForm(props) {
     // Build the formData when the states change
     useEffect(() => {
         if(!loading){
-            const validConditions = conditions.filter(condition => Object.keys(condition).length > 3);
+            const validConditions = conditions.filter(condition => Object.keys(condition).length > 4);
             const json_rule = {'conditions': validConditions, 'action': action, 'trigger': trigger};
             setFormData( prevFormData => ({ ...prevFormData, 'rule': json_rule, ...inputs }));
         }
@@ -307,7 +313,7 @@ export default function CreateRuleForm(props) {
                     </div>
                 </div>
                 <div className="row mb-3">
-                    <DateInput label='Start Date' id='start_date' name='start_date' handleChange={handleChange} />
+                    <DateInput label='Start Date' description='The date that the rule should start evaluating from' id='start_date' name='start_date' handleChange={handleChange} />
                 </div>
                 <div className="conditions">
                     {Array.from({ length: conditionCount }).map((_, index) => (
