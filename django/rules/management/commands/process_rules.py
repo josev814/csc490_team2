@@ -2,10 +2,11 @@
 This job runs rules to see if transactions should be performed
 """
 from datetime import datetime
-from math import floor
+# from math import floor
 from typing import Any
+import sys
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db.models import Q, Sum, Func, Value, F
 from rules.models import Rules, RuleJobs
 from stocks.models import StockData, Stocks
@@ -127,53 +128,57 @@ class Command(BaseCommand):
 
         # get last transaction for rule
         last_transaction = Transactions.objects.get_last_transaction(record.id)
+        print(action)
+        print(number_of_shares)
+        print(balance)
         print(last_transaction)
-        exit()
+        sys.exit()
 
-        for stock_record in stock_records:
-            print('STock record: ', stock_record)
+        # for stock_record in stock_records:
+        #     print('STock record: ', stock_record)
 
-            return
-            if action['method'] == 'buy':
-                if balance == 0: # we can't buy anything at this point
-                    break
-                if action['quantity_type'] == 'shares':
-                    balance, number_of_shares = self.purchase_by_shares(
-                        record, stock_record, balance, number_of_shares
-                    )
-                elif action['quantity_type'] == 'price':
-                    # TODO: create the purchase_by_price method and logic
-                    # return balance, profit_loss, number_of_shares
-                    balance, number_of_shares = self.purchase_by_price(
-                        record, stock_record, balance, number_of_shares
-                    )
-            elif action['method'] == 'sell':
-                if number_of_shares < 1:
-                    break
-                if action['quantity_type'] == 'shares':
-                    balance, number_of_shares = self.sell_by_shares(
-                        record, stock_record, balance, number_of_shares
-                    )
-                elif action['quantity_type'] == 'price':
-                    # TODO port to a function of sell_by_price
-                    # finish the logic for this and verify it
-                    balance, number_of_shares = self.sell_by_price(
+        #     break
+
+        #     if action['method'] == 'buy':
+        #         if balance == 0: # we can't buy anything at this point
+        #             break
+        #         if action['quantity_type'] == 'shares':
+        #             balance, number_of_shares = self.purchase_by_shares(
+        #                 record, stock_record, balance, number_of_shares
+        #             )
+        #         elif action['quantity_type'] == 'price':
+        #             # TODO: create the purchase_by_price method and logic
+        #             # return balance, profit_loss, number_of_shares
+        #             balance, number_of_shares = self.purchase_by_price(
+        #                 record, stock_record, balance, number_of_shares
+        #             )
+        #     elif action['method'] == 'sell':
+        #         if number_of_shares < 1:
+        #             break
+        #         if action['quantity_type'] == 'shares':
+        #             balance, number_of_shares = self.sell_by_shares(
+        #                 record, stock_record, balance, number_of_shares
+        #             )
+        #         elif action['quantity_type'] == 'price':
+        #             # TODO port to a function of sell_by_price
+        #             # finish the logic for this and verify it
+        #             balance, number_of_shares = self.sell_by_price(
                         
-                    )
-            else:
-                self.output_error('Unsupported action: ', action)
+        #             )
+        #     else:
+        #         self.output_error('Unsupported action: ', action)
         
-        growth = self.get_rule_growth(balance, record)
-        profit_loss = 0
-        if number_of_shares > 0:
-            profit_loss = self.get_profit_loss(record, number_of_shares)
+        # growth = self.get_rule_growth(balance, record)
+        # profit_loss = 0
+        # if number_of_shares > 0:
+        #     profit_loss = self.get_profit_loss(record, number_of_shares)
         
-        record.update_balance(
-            shares = number_of_shares,
-            balance = balance,
-            growth = growth,
-            profit = profit_loss
-        )
+        # record.update_balance(
+        #     shares = number_of_shares,
+        #     balance = balance,
+        #     growth = growth,
+        #     profit = profit_loss
+        # )
     
     def get_profit_loss(self, record, number_of_shares):
         """
@@ -270,7 +275,7 @@ class Command(BaseCommand):
             total_shares_cost = wanted_shares * current_share_price
 
             Transactions.objects.add_transaction(
-                ticker_id = Stocks.objects.get(id=action['symbol']['id']),
+                ticker = Stocks.objects.get(id=action['symbol']['id']),
                 rule_id = record,
                 action = action['method'],
                 qty = action['quantity'],
@@ -285,7 +290,7 @@ class Command(BaseCommand):
             total_shares_cost =  current_share_price * number_of_affordable_shares
 
             Transactions.objects.add_transaction(
-                ticker_id = Stocks.objects.get(id=action['symbol']['id']),
+                ticker = Stocks.objects.get(id=action['symbol']['id']),
                 rule_id = record.id,
                 action = action['method'],
                 qty = number_of_affordable_shares,
@@ -307,7 +312,7 @@ class Command(BaseCommand):
         if number_of_shares > action['quantity']: # sell what was asked
             number_of_shares -= action['quantity']
             Transactions.objects.add_transaction(
-                ticker_id = Stocks.objects.get(id=action['symbol']['id']),
+                ticker = Stocks.objects.get(id=action['symbol']['id']),
                 rule_id = record.id,
                 action = action['method'],
                 qty = action['quantity'],
@@ -318,7 +323,7 @@ class Command(BaseCommand):
         elif number_of_shares >= 1: # sell our remaining shares
             sellable_shares = int( number_of_shares // 1 )
             Transactions.objects.add_transaction(
-                ticker_id = Stocks.objects.get(id=action['symbol']['id']),
+                ticker = Stocks.objects.get(id=action['symbol']['id']),
                 rule_id = record.id,
                 action = action['method'],
                 qty = number_of_shares,
@@ -380,14 +385,14 @@ class Command(BaseCommand):
         """
         action = record.rule['action']
         wanted_price = action['quantity']
-        sellable_shares = int (wanted_price // stock_record.low) # gets the floor whole number of sellable_shares 
+        # gets the floor whole number of sellable_shares 
+        sellable_shares = int (wanted_price // stock_record.low)
 
         if number_of_shares > 0 and sellable_shares > 0: # has to have at least 1 share
-            if sellable_shares > number_of_shares: # ERROR, trying to sell more shares than you own
-                sellable_shares = number_of_shares # sets sellable_shares = number_of_shares so you can not oversell
+            sellable_shares = min(sellable_shares, number_of_shares) # prevent oversell
             
             Transactions.objects.add_transaction(
-                ticker_id = Stocks.objects.get(id=action['symbol']['id']),
+                ticker = Stocks.objects.get(id=action['symbol']['id']),
                 rule_id = record.id,
                 action = action['method'],
                 qty = action['quantity'],

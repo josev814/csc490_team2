@@ -11,6 +11,11 @@ from rules.models import Rules
 #from django.db import IntegrityError
 
 class TransactionsManager(models.Manager):
+    """_summary_
+
+    :param models: _description_
+    :type models: _type_
+    """
     def add_transaction(self, ticker, rule_id, action, qty, price, trx_timestamp):
         """Adds a transaction to the database
 
@@ -38,6 +43,9 @@ class TransactionsManager(models.Manager):
         self.create(**record)
     
     def get_last_transaction(self, rule_id):
+        """
+        Gets the most recent transaction that was performed by a rule
+        """
         return self.filter(rule_id__exact=rule_id).order_by('-pk').first()
 
 class Transactions(models.Model):

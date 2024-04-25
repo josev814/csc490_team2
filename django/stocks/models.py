@@ -146,9 +146,15 @@ class StockData(models.Model):
             return {'status': False, 'errors': [f'{ex_type}: Failed to save record: {ex}']}
         return {'status': True, 'errors': None}
 
-    def get_stock_data(self, ticker_id: int, column, operator, value, condition, timestamp=None, data=None):
+    def get_stock_data(
+            self, ticker_id: int, column, operator, 
+            value, condition, timestamp=None, data=None
+            ):
+        """
+        Gets stock data matching the query
+        """
         if column == 'price':
-            column == 'low'
+            column = 'low'
         
         if condition == 'if':
             if operator == 'eq':

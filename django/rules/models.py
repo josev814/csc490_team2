@@ -4,8 +4,8 @@ Models for the application are stored here
 from django.db import models
 from django.conf import settings
 from users.models import Users
-from stocks.models import Stocks
-from django.core.exceptions import ObjectDoesNotExist
+# from stocks.models import Stocks
+# from django.core.exceptions import ObjectDoesNotExist
 
 User = settings.AUTH_USER_MODEL # auth.User
 
@@ -108,7 +108,9 @@ class Rules(models.Model):
         self.save()
 
 class RuleJobs(models.Model):
-    
+    """
+    This class is meant to manage the jobs for rules
+    """
     last_ran_timestamp = models.DateTimeField(blank=True, null=True)
     objects = RuleManager()
 
