@@ -142,4 +142,3 @@ class GetUserProfit(generics.RetrieveAPIView):
             },
             status=status.HTTP_200_OK
         )
-    
