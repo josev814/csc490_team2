@@ -39,21 +39,29 @@ class UserProfitSerializer(serializers.ModelSerializer):
     """
 
     total_profit = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    total_balance = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     def to_representation(self, instance):
         """
         Set the way the data should be returned for the profit
         """
         total_profit = instance['total_profit']
-        return {'total_profit': total_profit}
+        if instance['total_profit'] is None:
+            total_profit = float('0.00')
+        total_balance = instance['total_balance']
+        if instance['total_balance'] is None:
+            total_balance = float('0.00')
+        return {'total_profit': total_profit, 'total_balance': total_balance}
 
     def get_total_profit(self, user):
         """
         Calculate the total profit for the given user
         """
-        total_profit = Rules.objects.filter(
+        result = Rules.objects.filter(
             user=user
         ).aggregate(
-            total_profit=Sum('profit')
-        )['total_profit']
-        return total_profit if total_profit is not None else float('0.00')
+            total_profit=Sum('profit'),
+            total_balance=Sum('balance')
+        )
+
+        return self.to_representation(result)

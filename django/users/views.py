@@ -130,13 +130,13 @@ class GetUserProfit(generics.RetrieveAPIView):
         print(args)
         print(kwargs)
         serializer = self.get_serializer()
-        total_profit = serializer.get_total_profit(request.user)
+        result = serializer.get_total_profit(request.user)
         
         return Response(
             {
                 'errors': None,
                 'record': {
-                    'total_profit': total_profit,
+                    **result,
                     'user_id': request.user.id
                 }
             },
