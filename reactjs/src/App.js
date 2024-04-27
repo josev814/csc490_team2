@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
+import EditRuleForm from './components/rules/EditRule';
 
 class App extends React.Component {
   constructor(props) {
@@ -137,8 +138,9 @@ class App extends React.Component {
     const user_url = `${this.state.sitedetails.django_url}/users/${user_id}/`;
     return user_url;
   }
-
+  
   render(){
+    console.log('App.js', this.props);
     return (
       <BrowserRouter>
         <Routes>
@@ -173,12 +175,8 @@ class App extends React.Component {
                 />
               }
             />
-            <Route path=":rule/:rule_name" element={
-              <SHOW_RULE 
-                sitedetails={this.state.sitedetails}
-                get_auth_header={this.get_auth_header} 
-              />} 
-            />
+            <Route path=":rule/:rule_name" element={<SHOW_RULE sitedetails={this.state.sitedetails} get_auth_header={this.get_auth_header} />} />
+            <Route path= ":rule/:rule_name/edit" element={<EditRuleForm sitedetails={this.state.sitedetails} get_auth_header={this.get_auth_header} />} />
           </Route>
 
           <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
