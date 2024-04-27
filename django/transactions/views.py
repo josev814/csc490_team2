@@ -9,6 +9,9 @@ from .models import Transactions
 from .serializer import TransactionSerializer
 
 class CustomLimitPagination(pagination.LimitOffsetPagination):
+    """
+    Setting a custom pagination class that will allow us to override how may records can be returned
+    """
     default_limit = 10
     max_limit = 1000
 
