@@ -9,5 +9,6 @@ from . import views
 routes = DefaultRouter()
 
 urlpatterns = [
-    path('<int:rule>/', views.ListAPIView.as_view())
+    path('rule/<int:rule>/', views.ListRuleTransactionsAPIView.as_view()),
+    path('<int:pk>/', views.GetAPIView.as_view())
 ]
