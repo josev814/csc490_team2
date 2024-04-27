@@ -51,5 +51,9 @@ class UserProfitSerializer(serializers.ModelSerializer):
         """
         Calculate the total profit for the given user
         """
-        total_profit = Rules.objects.filter(user=user).aggregate(total_profit=Sum('profit'))['total_profit']
+        total_profit = Rules.objects.filter(
+            user=user
+        ).aggregate(
+            total_profit=Sum('profit')
+        )['total_profit']
         return total_profit if total_profit is not None else float('0.00')
