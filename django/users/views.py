@@ -6,19 +6,14 @@ import datetime
 import logging
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework import viewsets, status
-# from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny
+from rest_framework import viewsets, status, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import filters
 # from rest_framework.decorators import api_view
 from rest_framework.decorators import action
 from rest_framework.response import Response
-# from rest_framework import renderers
-# from rest_framework.renderers import JSONRenderer
 
-
-
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, UserProfitSerializer
 from users.models import Users
 # from django.utils import timezone
 
@@ -119,3 +114,31 @@ class UserViewSet(viewsets.ModelViewSet):
             'last_login': user_obj.last_login,
             'last_updated': user_obj.updated
         }, status=status.HTTP_200_OK)
+
+class GetUserProfit(generics.RetrieveAPIView):
+    """
+    API endpoint that allows to retrieve the Profit Loss for a users rules combined
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserProfitSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Gets the current total user balance
+        """
+        print(request)
+        print(args)
+        print(kwargs)
+        serializer = self.get_serializer()
+        result = serializer.get_total_profit(request.user)
+        
+        return Response(
+            {
+                'errors': None,
+                'record': {
+                    **result,
+                    'user_id': request.user.id
+                }
+            },
+            status=status.HTTP_200_OK
+        )
