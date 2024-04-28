@@ -241,7 +241,7 @@ export function SHOW_RULE(props) {
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading]);
+    }, [loading, django_url]);
 
     useEffect(() => {
         if (django_url === undefined){

@@ -156,6 +156,7 @@ export default function EditRuleForm(props) {
                 setErrorMessage("Rule already exists");
             } else {
                 setErrorMessage(`${error.response.status}: ${error}`);
+                console.log(errorMessage);
             }
         }
     };
