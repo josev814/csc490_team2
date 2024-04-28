@@ -22,6 +22,8 @@ export function SHOW_RULE(props) {
     const [showModal, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+    // State to hld the transactions data
+    const [transactions, setTransactions] = useState([]);
 
     // Rule to fetch the rule information
     async function fetchRuleData(rule) {
@@ -256,6 +258,22 @@ export function SHOW_RULE(props) {
         return () => clearInterval(timer)
     }, [])
 
+    useEffect(() => {
+        if (loading && django_url !== undefined) {
+            // Fetch transaction data
+            axios.get(`${props.sitedetails.django_url}/transactions/${rule}/`, { headers: props.get_auth_header() })
+                .then(response => {
+                    // Here, you should set the fetched transaction data
+                    setTransactions(response.data);
+                })
+                .catch(error => {
+                    // Handle any errors that occur during the request
+                    console.error("Error fetching transaction data:", error);
+                });
+        }
+    }, [loading]);
+    
+
     if (loading || ruleData === undefined || Object.keys(ruleData).length === 0){
         return (
             <div className="container-fluid">
@@ -325,7 +343,7 @@ export function SHOW_RULE(props) {
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
                         <div><b>Start:</b> {ruleData.record.create_date}</div>
-                        {/* <div><b>Transactions:</b> {ruleData.record.transactions.count}</div> */}
+                        <div><b>Transactions:</b> {ruleData.record.transactions.count}</div>
                         <div><b>Growth:</b> {ruleData.record.growth}</div>
                         <div><b>Return:</b> ${ruleData.record.growth}</div>
                         <div><b>Status:</b> <DisplayStatus data={ruleData.record.status} /></div>
