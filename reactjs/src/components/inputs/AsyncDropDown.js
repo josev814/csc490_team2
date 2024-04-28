@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import axios from "axios";
 import AsyncSelect from 'react-select/async';
 
@@ -41,9 +41,15 @@ export function AsyncDropDown(props) {
          console.groupEnd()
     };
 
-    if (props.defaultValue !== undefined){
-        setSelectedOption(props.defaultValue)
-      }
+    useEffect(() => {
+        // Set default value when component is loaded
+        if (props.defaultValue && !selectedOption) {
+            setSelectedOption({
+                'label': props.defaultValue.ticker.toUpperCase(),
+                'value': props.defaultValue.id + '|' + props.defaultValue.ticker
+            });
+        }
+    }, [props.defaultValue, selectedOption]);
 
     return(
         <>

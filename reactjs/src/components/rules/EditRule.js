@@ -31,7 +31,6 @@ function AddRowCondition(props){
         {value:'lte', label: 'less than or equal to'},
         {value:'eq', label: 'equal to'},
     ]
-    console.log(props);
     return (
         <div className="row px-2 py-3" id={"condition_" + props.event}>
             <div className="col">
@@ -41,7 +40,7 @@ function AddRowCondition(props){
                 </div>
                 <div className="row shadow py-3 px-2">
                     <div className="col-md-3">
-                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.django_url} value={props.condition.symbol} />
+                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.sitedetails.django_url} defaultValue={props.condition.symbol} />
                     </div>
                     <div className="col-auto">
                         HAS 
@@ -127,13 +126,13 @@ export default function EditRuleForm(props) {
     
         // Construct user URL based on user ID
         const user_id = userCookie.id;
-        const user_url = `${props.django_url}/users/${user_id}/`;
+        const user_url = `${props.site_details.django_url}/users/${user_id}/`;
         return user_url;
     }
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = `${props.django_url}/rules/update/${props.rule}`;
+        const url = `${props.site_details.django_url}/rules/update/${props.rule}`;
     
         const updatedFormData = {
             ...formData,
@@ -352,14 +351,14 @@ export default function EditRuleForm(props) {
                 />
             </div>
                 <div className="conditions">
-                    {Array.from({ length: conditionCount }).map((_, index) => (
+                    {conditions.map((condition, index) => (
                         <AddRowCondition 
                             key={index} 
                             event={index + 1} 
                             handleChange={handleChange} 
-                            django_url={props.django_url} 
+                            sitedetails={props.sitedetails}
                             removeRowCondition={removeRowCondition} 
-                            condition={conditions[index]}
+                            condition={condition}
                         />
                     ))}
                 </div>
@@ -398,7 +397,7 @@ export default function EditRuleForm(props) {
                                 OF
                             </div>
                             <div className="col-md-3">
-                                <AsyncDropDown name='then_symbol' handleChange={handleChange}  django_url={props.django_url}/>
+                                <AsyncDropDown name='then_symbol' handleChange={handleChange} defaultValue={action.symbol} django_url={props.sitedetails.django_url}/>
                             </div>
                         </div>
                     </div>
