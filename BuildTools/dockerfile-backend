@@ -63,7 +63,7 @@ COPY ./BuildTools/supervisord/supervisord.conf /etc/supervisord/conf.d/superviso
 COPY ./BuildTools/crontab /tmp/crontab
 
 RUN apt-get update \
-    && apt-get install -y cron \
+    && apt-get install -y cron mydumper \
     && cat /tmp/crontab | crontab - \
     && rm /tmp/crontab
 
