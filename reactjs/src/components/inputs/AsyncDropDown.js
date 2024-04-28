@@ -41,6 +41,10 @@ export function AsyncDropDown(props) {
          console.groupEnd()
     };
 
+    if (props.defaultValue !== undefined){
+        setSelectedOption(props.defaultValue)
+      }
+
     return(
         <>
             <AsyncSelect

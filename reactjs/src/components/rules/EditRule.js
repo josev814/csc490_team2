@@ -41,7 +41,7 @@ function AddRowCondition(props){
                 </div>
                 <div className="row shadow py-3 px-2">
                     <div className="col-md-3">
-                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.django_url} />
+                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.django_url} value={props.condition.symbol} />
                     </div>
                     <div className="col-auto">
                         HAS 
@@ -133,35 +133,35 @@ export default function EditRuleForm(props) {
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = `${props.django_url}/rules/`
-
+        const url = `${props.django_url}/rules/update/${props.rule}`;
+    
         const updatedFormData = {
             ...formData,
             user: get_user_from_cookie(),
         };
-
+    
         setFormData(updatedFormData);
         try {
-            const headers = props.get_auth_header()
-            const response = await axios.post(url, updatedFormData, {headers})
+            const headers = props.get_auth_header();
+            const response = await axios.put(url, updatedFormData, { headers });
             if (response.status === 200 || response.status === 201) {
-                const rule_id = response.data.id
-                const rule_name = response.data.name
+                const rule_id = response.data.id;
+                const rule_name = response.data.name;
                 navigate(`/rule/${rule_id}/${rule_name}/`);
             } else {
-                console.error('Failed to create rule')
-                throw new Error('Failed to create rule');
+                console.error('Failed to update rule');
+                throw new Error('Failed to update rule');
             }
-        }
-        catch (error) {
+        } catch (error) {
             if (error.response && error.response.status === 409) {
                 setErrorMessage("Rule already exists");
             } else {
                 setErrorMessage(`${error.response.status}: ${error}`);
             }
-            console.log(errorMessage)
+            console.log(errorMessage);
         }
     };
+    
 
     const addRowCondition = () => {
         addConditionCount(conditionCount + 1)
