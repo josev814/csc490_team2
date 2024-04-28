@@ -101,6 +101,8 @@ export default function EditRuleForm(props) {
     const [conditionCount, addConditionCount] = useState(1); // State to manage rule conditions
     const [trigger, setTrigger] = useState({}); // State to manage the action
     const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
+    const [ruleId, setRuleId] =useState(null);
+    const [ruleName, setRuleName] = useState(null);
     
     const then_methods = [
         {value:'buy', label: 'Buy'},
@@ -126,13 +128,13 @@ export default function EditRuleForm(props) {
     
         // Construct user URL based on user ID
         const user_id = userCookie.id;
-        const user_url = `${props.site_details.django_url}/users/${user_id}/`;
+        const user_url = `${props.sitedetails.django_url}/users/${user_id}/`;
         return user_url;
     }
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = `${props.sitedetails.django_url}/rules/update/${props.rule}`;
+        const url = `${props.sitedetails.django_url}/rules/update/${ruleId}/`;
     
         const updatedFormData = {
             ...formData,
@@ -144,9 +146,7 @@ export default function EditRuleForm(props) {
             const headers = props.get_auth_header();
             const response = await axios.put(url, updatedFormData, { headers });
             if (response.status === 200 || response.status === 201) {
-                const rule_id = response.data.id;
-                const rule_name = response.data.name;
-                navigate(`/rule/${rule_id}/${rule_name}/`);
+                navigate(`/rule/${ruleId}/${ruleName}/`);
             } else {
                 console.error('Failed to update rule');
                 throw new Error('Failed to update rule');
@@ -157,10 +157,8 @@ export default function EditRuleForm(props) {
             } else {
                 setErrorMessage(`${error.response.status}: ${error}`);
             }
-            console.log(errorMessage);
         }
     };
-    console.log(props.sitedetails.django_url);
     
 
     const addRowCondition = () => {
@@ -169,11 +167,8 @@ export default function EditRuleForm(props) {
 
     const removeRowCondition = (params) => {
         console.groupCollapsed('removeRow')
-        console.log(params)
-        console.log('condition_' + params.event)
         function remove_html_element(idx){
             const element = document.getElementById('condition_' + idx)
-            console.log(element)
             if (element) {
                 element.remove()
             }
@@ -294,16 +289,16 @@ export default function EditRuleForm(props) {
         inputFields.forEach(input => {
             updatedInputs[input] = recordInfo[input];
         });
+        setRuleId(recordInfo.id);
+        setRuleName(recordInfo.name);
         setInputs(updatedInputs);
-    
         // Set action and conditions states
         setAction(recordInfo.rule.action);
         setConditions(recordInfo.rule.conditions);
         setTrigger(recordInfo.rule.trigger);
-        console.log(recordInfo.rule.conditions);
         setLoading(false); // Set loading to false after retrieving and setting data
     }, []);
-
+    
     if (loading){
         return (
             <div className="container-fluid">
