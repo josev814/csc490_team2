@@ -132,7 +132,7 @@ export default function EditRuleForm(props) {
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = `${props.site_details.django_url}/rules/update/${props.rule}`;
+        const url = `${props.sitedetails.django_url}/rules/update/${props.rule}`;
     
         const updatedFormData = {
             ...formData,
@@ -160,6 +160,7 @@ export default function EditRuleForm(props) {
             console.log(errorMessage);
         }
     };
+    console.log(props.sitedetails.django_url);
     
 
     const addRowCondition = () => {
