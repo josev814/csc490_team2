@@ -17,6 +17,8 @@ Supported Arguments:
     - eslint
     - reacttest | jest
     - react (this runs eslint and react tests)
+    - dbbackup (dumps the database in it's current state to django/database/{{ datetime }}/)
+    - restorebackup (restore the database by referencing the date of the restoration to use as an argument)
 
 Example:
     bash run_in_containers.sh pycoverage users"
@@ -40,6 +42,25 @@ function react_unittests(){
     cat jest.results.log
 }
 
+function backup_database(){
+    backup_datetime=$(date +"%Y%m%d%H%M%S")
+    djangoCmd+="mkdir -p database/${backup_datetime}; "
+    djangoCmd+="cd database/${backup_datetime}; "
+    djangoCmd+='mydumper -u ${MYSQL_USER} -p ${MYSQL_PWD} -h ${MYSQL_HOST} -B ${MYSQL_DATABASE} -o ./'
+    docker exec stocks_backend /bin/bash -c "${djangoCmd}"
+}
+
+function restore_database(){
+    restore_dir="${1}"
+    djangoCmd+="if [[ -d "database/${restore_dir}" ]]; then "
+    djangoCmd+="cd database/; "
+    djangoCmd+='myloader -u ${MYSQL_USER} -p ${MYSQL_PWD} -h ${MYSQL_HOST} --overwrite-tables -d '
+    djangoCmd+="${restore_dir}; "
+    djangoCmd+="else echo 'Restore Directory not found'; "
+    djangoCmd+="fi"
+    docker exec stocks_backend /bin/bash -c "${djangoCmd}"
+}
+
 case "${1}" in
     "pylint")
         docker exec stocks_backend /bin/bash -c "${pylintCmd}"
@@ -61,6 +82,12 @@ case "${1}" in
         docker exec stocks_backend /bin/bash -c "${removeTestDB}"
         docker exec stocks_backend /bin/bash -c "${coverageCmd}"
         docker exec stocks_backend /bin/bash -c "${coverageReport}"
+        ;;
+    "dbbackup")
+        backup_database
+        ;;
+    "restorebackup")
+        restore_database "${2}"
         ;;
     "eslint")
         react_lint
