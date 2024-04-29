@@ -2,6 +2,7 @@
 The job collects the metrics from the database that we should be pulling
 """
 from math import ceil
+import time
 import traceback
 from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand, CommandError
@@ -15,8 +16,8 @@ class Command(BaseCommand):
     The command that executes when this job is ran
     """
     help = 'Update metrics for all stock symbols'
-    refresh = datetime.now() - timedelta(hours=1)
-    record_limit = 10
+    refresh = datetime.now() - timedelta(minutes=10)
+    record_limit = 100
 
     def handle(self, *args, **options):
         try:
@@ -46,6 +47,7 @@ class Command(BaseCommand):
                 # Iterate over each symbol and update metrics in StocksData table
                 for ticker, ticker_id in symbols:
                     self.process_ticker(ticker, ticker_id)
+                    self.remove_ticker_no_data(ticker_id)
         except Exception as err:
             raise CommandError(f'Error: {err}') from err
         end_time = datetime.now()
@@ -64,7 +66,15 @@ class Command(BaseCommand):
         :type ticker_id: int
         """
         try:
-            start_date = self.get_oldest_rule_start_date()
+            start_date = self.get_start_date()
+            try:
+                last_updated = Stocks.objects.filter(pk__exact=ticker_id).first().updated_date
+                if last_updated >= start_date:
+                    start_date = last_updated
+            except:
+                # No record
+                pass
+            
             current_datetime = datetime.now()
             while start_date < current_datetime:
                 end_date = start_date + timedelta(days=7)
@@ -74,6 +84,12 @@ class Command(BaseCommand):
                 end_posix = int(end_date.timestamp())
                 chart = yf.get_chart(ticker, period1=start_posix, period2=end_posix)
                 if 'chart' not in chart:
+                    self.output_error(
+                        f'No data for {ticker} on {start_date}'
+                    )
+                    # move forward one day
+                    start_date = start_date + timedelta(days=1)
+                    time.sleep(.5)
                     continue
                 chart_metrics = chart['chart']['result'][0]
                 
@@ -98,7 +114,17 @@ class Command(BaseCommand):
             self.output_error(traceback.print_exc())
             self.output_error(f'Error updating metrics for {ticker}: {e}')
     
-    def get_oldest_rule_start_date(self):
+    def remove_ticker_no_data(self, ticker_id):
+        """
+        Removes a ticker if we don't have any data for them
+        """
+        if StockData.objects.filter(ticker_id__exact=ticker_id).count() > 0:
+            return
+        # cleanup the ticker, since we haven't gotten any data from them.
+        Stocks.objects.filter(pk__exact=ticker_id).delete()
+
+    
+    def get_start_date(self):
         """
         Get the oldest rule start date or default to beginning of the year
         """
