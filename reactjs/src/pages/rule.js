@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { Link } from "react-router-dom";
 import axios from 'axios';
 import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import Modal from 'react-bootstrap/Modal';
@@ -38,6 +38,7 @@ export function SHOW_RULE(props) {
                 }
             );
             setRuleData(response.data);
+            localStorage.setItem('user_rule', JSON.stringify(response.data));
             setLoading(false);
             console.log(response.data)
         } catch (err) {
@@ -131,7 +132,7 @@ export function SHOW_RULE(props) {
             <span>
                 <b className='text-danger'>THEN </b>
                 <b className='text-primary'>{data.method.toUpperCase()}</b>{' '}
-                <b>{data.quantity}</b>{' of '}
+                <b>{data.quantity} {data.quantity_type} </b>{' of '}
                 <b>{data.symbol.ticker.toUpperCase()}</b>{' as '}
                 <b>{data.order_type}</b>{' order '}
             </span>
@@ -242,7 +243,7 @@ export function SHOW_RULE(props) {
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading]);
+    }, [loading, django_url]);
 
     useEffect(() => {
         if (django_url === undefined){
@@ -318,9 +319,11 @@ export function SHOW_RULE(props) {
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
                         <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
-                            <button className="btn btn-warning btn-md">
-                                <EditOutlined /> Edit
-                            </button>
+                            <Link to={{ pathname: `/rule/${rule}/${rule_name}/edit` }}>
+                                <button className="btn btn-warning btn-md">
+                                    <EditOutlined /> Edit
+                                </button>
+                            </Link>
                         </div>
                         <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
                             <button className="btn btn-warning btn-md">
