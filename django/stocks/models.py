@@ -116,7 +116,9 @@ class StockData(models.Model):
                 return {'status': False, 'errors': ['YahooData: No data']}
             trading_periods = self.get_trading_times(yahoo_data)
             for i in range(len(yahoo_data['timestamp'])):
-                record = self.process_record(yahoo_data, i, trading_periods, ticker_reference, granularity)
+                record = self.process_record(
+                    yahoo_data, i, trading_periods, ticker_reference, granularity
+                )
                 if record:
                     try:
                         StockData.objects.create(**record)
@@ -125,7 +127,10 @@ class StockData(models.Model):
                             #print('skipping duplicate record entry')
                             pass
                         else:
-                            return {'status': False, 'errors': [f'IntegrityError: Failed to save record: {e}']}
+                            return {
+                                'status': False,
+                                'errors': [f'IntegrityError: Failed to save record: {e}']
+                            }
         except KeyError as e:
             return {'status': False, 'errors': [f'KeyError: Failed to save record: {e}']}
         except Exception:
@@ -135,6 +140,11 @@ class StockData(models.Model):
         return {'status': True, 'errors': None}
 
     def process_record(self, yahoo_data, i, trading_periods, ticker_reference, granularity):
+        """
+        Verifies that a tickers entry is in the trading window
+        if so it will check for the correct keys
+        then it will build out the record that gets inserted into the db
+        """
         entry_datetime = yahoo_data['timestamp'][i]
         # only add entries that are within the trading window fo the stock exchange
         if not self.is_in_trading_window(trading_periods, entry_datetime):
@@ -180,12 +190,11 @@ class StockData(models.Model):
         hour = dt.hour
         minutes = dt.minute
         secs = dt.second
-        if hour < 9:
-            hour = f'0{hour}'
-        if minutes < 9:
-            minutes = f'0{minutes}'
-        if secs < 9:
-            secs = f'0{secs}'
+        time_parts = [hour, minutes, secs]
+        for i in range(len(time_parts)):
+            if time_parts[i] < 10:
+                time_parts[i] = f'0{time_parts[i]}'
+        hour, minutes, secs = time_parts
         return f'{hour}:{minutes}:{secs}'
     
     def is_in_trading_window(self, trading_periods: dict, entry_datetime:int) -> bool:

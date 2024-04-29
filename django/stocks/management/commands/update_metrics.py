@@ -69,8 +69,7 @@ class Command(BaseCommand):
             start_date = self.get_start_date()
             try:
                 last_updated = Stocks.objects.filter(pk__exact=ticker_id).first().updated_date
-                if last_updated >= start_date:
-                    start_date = last_updated
+                start_date = max(start_date, last_updated)
             except:
                 # No record
                 pass
