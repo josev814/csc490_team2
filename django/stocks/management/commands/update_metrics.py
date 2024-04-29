@@ -5,8 +5,10 @@ from math import ceil
 import traceback
 from datetime import datetime, timedelta
 from django.core.management.base import BaseCommand, CommandError
+
 from stocks.models import Stocks, StockData
 from stocks.views import YahooFinance, StockSearch
+from rules.models import Rules
 
 class Command(BaseCommand):
     """
@@ -62,36 +64,53 @@ class Command(BaseCommand):
         :type ticker_id: int
         """
         try:
-            stock_search = StockSearch()
-            StockSearch.objects.values_list(
-                'search_args'
-            ).filter(
-                search_phrase=ticker
-            ).all()
+            start_date = self.get_oldest_rule_start_date()
+            current_datetime = datetime.now()
+            while start_date < current_datetime:
+                end_date = start_date + timedelta(days=7)
 
-            yf = YahooFinance()
-            chart_metrics = yf.get_chart(ticker)['chart']['result'][0]
-            
-            # Create or update StocksData entry for the symbol
-            dict_resp = StockData().save_stock_results(chart_metrics)
-            
-            if dict_resp['status']:
-                self.output_success(
-                    f'Successfully added metrics for {ticker}'
-                )
-                # update the symbol for when was last saved it
-                stock_search.save_search_request(ticker)
-                stock = Stocks.objects.filter(id=ticker_id, is_active=1).get()
-                stock.updated_date = datetime.now()
-                stock.save()
-            else:
-                errors = dict_resp['errors']
-                self.output_error(
-                    f'Failed adding metrics for {ticker} with error: {errors}'
-                )
+                yf = YahooFinance()
+                start_posix = int(start_date.timestamp())
+                end_posix = int(end_date.timestamp())
+                chart = yf.get_chart(ticker, period1=start_posix, period2=end_posix)
+                if 'chart' not in chart:
+                    continue
+                chart_metrics = chart['chart']['result'][0]
+                
+                # Create or update StocksData entry for the symbol
+                dict_resp = StockData().save_stock_results(chart_metrics)
+                if dict_resp['status']:
+                    self.output_success(
+                        f'Successfully added metrics for {ticker}'
+                    )
+                    # update the symbol for when was last saved it
+                    StockSearch().save_search_request(ticker)
+                    stock = Stocks.objects.filter(id=ticker_id, is_active=1).get()
+                    stock.updated_date = datetime.now()
+                    stock.save()
+                else:
+                    errors = dict_resp['errors']
+                    self.output_error(
+                        f'Failed adding metrics for {ticker} with error: {errors}'
+                    )
+                start_date = end_date + timedelta(minutes=1)
         except Exception as e:
             self.output_error(traceback.print_exc())
             self.output_error(f'Error updating metrics for {ticker}: {e}')
+    
+    def get_oldest_rule_start_date(self):
+        """
+        Get the oldest rule start date or default to beginning of the year
+        """
+        oldest_date = datetime.now() - timedelta(days=30) + timedelta(minutes=1)
+        # try:
+        #     rule = Rules.objects.order_by('-start_date').first()
+        #     rule_oldest_date = datetime.combine(rule.start_date, datetime.min.time())
+        #     if rule_oldest_date < oldest_date:
+        #         oldest_date = rule_oldest_date
+        # except:
+        #     pass
+        return oldest_date
 
     def output_error(self, error_msg) -> None:
         """Outputs an error message
