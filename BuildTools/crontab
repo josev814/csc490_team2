@@ -1,1 +1,1 @@
-@hourly /bin/bash -c 'cd /app && source /var/local/bin/stocks_venv/bin/activate && python manage.py runjobs hourly' > /proc/1/fd/1 2> /proc/1/fd/2
+*/10 * * * 1-5 /usr/bin/flock -xon /tmp/metrics_ten_minutes.lockfile /bin/bash -c 'cd /app && source /var/local/bin/stocks_venv/bin/activate && python manage.py runjobs hourly' > /proc/1/fd/1 2> /proc/1/fd/2
