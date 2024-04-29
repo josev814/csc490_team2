@@ -54,6 +54,8 @@ export default function LIST_RULES(props) {
         }
     }, [fetchRules, django_url]);
 
+    console.log(localStorage.accessToken);
+
     // Function to handle page change
     const handlePageChange = (link) => {
         fetchRules(link); // Update currentPage
@@ -111,6 +113,9 @@ export default function LIST_RULES(props) {
     }
 
     function DisplayBalCreate() {
+        // api call to list the total balance of all rules
+        //{{base_url}}/users/get_profit_loss/
+
         return (
             <div className="row mb-3">
                 <div className="col-md-8">
