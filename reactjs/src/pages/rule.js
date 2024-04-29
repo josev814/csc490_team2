@@ -307,11 +307,11 @@ export function SHOW_RULE(props) {
                                 </button>
                             </Link>
                         </div>
-                        <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
+                        {/* <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
                             <button className="btn btn-warning btn-md">
                                 <ContentCopyOutlined /> Duplicate
                             </button>
-                        </div>
+                        </div> */}
                         <div className='col-md-4 d-flex align-items-center justify-content-end'>
                             <button className="btn btn-danger btn-md" onClick={handleShow}>
                                 <DeleteOutline /> Remove
