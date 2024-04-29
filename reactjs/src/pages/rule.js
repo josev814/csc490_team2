@@ -130,7 +130,7 @@ export function SHOW_RULE(props) {
             <span>
                 <b className='text-danger'>THEN </b>
                 <b className='text-primary'>{data.method.toUpperCase()}</b>{' '}
-                <b>{data.quantity}</b>{' of '}
+                <b>{data.quantity} {data.quantity_type} </b>{' of '}
                 <b>{data.symbol.ticker.toUpperCase()}</b>{' as '}
                 <b>{data.order_type}</b>{' order '}
             </span>
