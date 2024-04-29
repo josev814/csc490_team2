@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
+import EditRuleForm from './components/rules/EditRule';
 
 class App extends React.Component {
   constructor(props) {
@@ -66,10 +67,8 @@ class App extends React.Component {
     const is_active = this.cookies.get('is_active');
     if (is_active) {
       // Log the current value of 'is_active' (optional for debugging)
-      console.log("Current 'is_active' value:", is_active);
 
       // Update the expiration time of the 'is_active' cookie
-      console.log('Login Expiration: ', loginStatusExpiration)
       this.cookies.set('is_active', is_active, { expires: loginStatusExpiration });
       return true
     } else {
@@ -83,10 +82,8 @@ class App extends React.Component {
     const refresh_url = `${this.state.sitedetails.django_url}/auth/refresh/`;
     const data = {'refresh': localStorage.getItem('refreshToken')};
     if(data['refresh'] === undefined){
-      console.log('Refresh token is undefined')
       return
     }
-    console.log(data)
     try {
       // Send POST request to refresh URL
       const response = await axios.post(refresh_url, data, { headers: this.get_auth_header() });
@@ -114,9 +111,7 @@ class App extends React.Component {
     if (this.state.sitedetails.django_url === undefined){
       return
     }
-    console.groupCollapsed('refresh_session')
     let user_url = this.get_user_from_cookie()
-    console.log(user_url)
     if(user_url !== undefined){
       if (this.refresh_login_cookie()){
         this.refresh_token()
@@ -137,7 +132,7 @@ class App extends React.Component {
     const user_url = `${this.state.sitedetails.django_url}/users/${user_id}/`;
     return user_url;
   }
-
+  
   render(){
     return (
       <BrowserRouter>
@@ -173,12 +168,8 @@ class App extends React.Component {
                 />
               }
             />
-            <Route path=":rule/:rule_name" element={
-              <SHOW_RULE 
-                sitedetails={this.state.sitedetails}
-                get_auth_header={this.get_auth_header} 
-              />} 
-            />
+            <Route path=":rule/:rule_name" element={<SHOW_RULE sitedetails={this.state.sitedetails} get_auth_header={this.get_auth_header} />} />
+            <Route path= ":rule/:rule_name/edit" element={<EditRuleForm sitedetails={this.state.sitedetails} get_auth_header={this.get_auth_header} />} />
           </Route>
 
           <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
