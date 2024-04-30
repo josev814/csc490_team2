@@ -394,7 +394,7 @@ export default function EditRuleForm(props) {
                                 OF
                             </div>
                             <div className="col-md-3">
-                                <AsyncDropDown name='then_symbol' handleChange={handleChange} defaultValue={action.symbol} django_url={props.sitedetails.django_url}/>
+                                <AsyncDropDown isDisabled={true} name='then_symbol' handleChange={handleChange} defaultValue={action.symbol} django_url={props.sitedetails.django_url}/>
                             </div>
                         </div>
                     </div>
