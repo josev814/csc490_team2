@@ -152,7 +152,7 @@ export default function LIST_RULES(props) {
         }
     }, [fetchBalance, django_url]);
 
-    function DisplayBalCreate({}) {
+    function DisplayBalCreate() {
         
         return (
             <div className="row mb-3">
