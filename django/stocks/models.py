@@ -89,11 +89,13 @@ class StockData(models.Model):
     open = models.FloatField(default=0.0, max_length=28)
     close = models.FloatField(default=0.0, max_length=28)
     granularity = models.CharField(max_length=4)
+    day_open = models.FloatField(default=0.0, max_length=28)
+    day_close = models.FloatField(null=True, blank=True, max_length=28)
     create_date = models.DateTimeField(auto_now_add=True)
     exchange_open = models.TimeField(null=True, blank=True)
     exchange_close = models.TimeField(null=True, blank=True)
     exchange_gmtoffset = models.IntegerField(default=-14400)
-
+    
     class Meta:
         """
         Adding indexes for the table
