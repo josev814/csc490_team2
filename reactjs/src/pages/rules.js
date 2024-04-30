@@ -114,11 +114,10 @@ export default function LIST_RULES(props) {
     }
 
     //function to fetch total balance of rules
-    const fetchBalance = useCallback(async (balanceLink) => {
+    const fetchBalance = useCallback(async() => {
         try {
-            if (balanceLink === undefined){
-                balanceLink = `${django_url}/users/get_profit_loss/`
-            }
+            const balanceLink = `${django_url}/users/get_profit_loss/`
+
             const headers = get_auth_header();
             // Fetch rules data from the server based on current page
             const res = await axios.get(balanceLink, { headers });
@@ -128,7 +127,6 @@ export default function LIST_RULES(props) {
                 setTotalBalance(res.data.record.total_balance)
                 setTotalUserProfit(res.data.record.total_profit)
 
-                console.log(res.data.record)
             } else {
                 setError('Unexpected response status'); // Handle unexpected response status
             }
