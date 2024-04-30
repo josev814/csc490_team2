@@ -13,6 +13,7 @@ export default function LIST_RULES(props) {
     const [links, setLinks] = useState(null); // Sets the prev/next links
     const [loading, setLoading] = useState(true); // State for loading status
     const [error, setError] = useState(null); // State for error handling
+    const [totalBalance, setTotalBalance] = useState(null);
 
     // Function to fetch rules data
     const fetchRules = useCallback(async (link) => {
@@ -54,7 +55,6 @@ export default function LIST_RULES(props) {
         }
     }, [fetchRules, django_url]);
 
-    console.log(localStorage.accessToken);
 
     // Function to handle page change
     const handlePageChange = (link) => {
@@ -112,17 +112,53 @@ export default function LIST_RULES(props) {
         );
     }
 
-    function DisplayBalCreate() {
-        // api call to list the total balance of all rules
-        //{{base_url}}/users/get_profit_loss/
+    //function to fetch total balance of rules
+    const fetchBalance = useCallback(async (balanceLink) => {
+        try {
+            if (balanceLink === undefined){
+                balanceLink = `${django_url}/users/get_profit_loss/`
+            }
+            const headers = get_auth_header();
+            // Fetch rules data from the server based on current page
+            const res = await axios.get(balanceLink, { headers });
 
+            // Check response status
+            if (res.status === 200) {
+                setTotalBalance(res.records.total_balance)
+                console.log(res.records.total_balance)
+            } else {
+                setError('Unexpected response status'); // Handle unexpected response status
+            }
+        } catch (error) {
+            let errorMessage = 'An error occurred, try again later'; // Default error message
+        
+            if (error.response && error.response.data && error.response.data.errors && error.response.data.errors.length > 0) {
+                // Use the first error message from the response
+                errorMessage = error.response.data.errors[0];
+            }
+        
+            setError(errorMessage); // Set error message
+        }            
+    }, [get_auth_header, django_url]);
+
+    useEffect(() => {
+        if (django_url === undefined){
+            setLoading(true);
+        } else {
+            fetchBalance();
+        }
+    }, [fetchBalance, django_url]);
+    console.log(error)
+
+    function DisplayBalCreate({}) {
+        
         return (
             <div className="row mb-3">
                 <div className="col-md-8">
                     <h3>Total Balance:</h3>
                     {/* Display total balance */}
-                    <h4 className='text-success'>$0</h4>
-                    <h4 className='text-danger'>-$20</h4>
+                    <h4 className='text-success'>{totalBalance}</h4>
+                    {/* <h4 className='text-danger'>-$20</h4> */}
                 </div>
                 <div className='col-md-4 d-flex justify-content-end'>
                     <div className='col-md-6 d-flex align-items-center justify-content-end'>
