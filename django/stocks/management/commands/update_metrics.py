@@ -22,14 +22,23 @@ class Command(BaseCommand):
     """
     The command that executes when this job is ran
     """
-    help = 'Update metrics for all stock symbols or pass --ticker_id xxxx to process a specific ticker'
+    help = 'Update metrics for all stock symbols or pass '
+    help += '--ticker_id xxxx to process a specific ticker'
     refresh = datetime.now() - timedelta(minutes=10)
     record_limit = 100
 
     def add_arguments(self, parser):
         parser.add_argument('--ticker_id', type=int, help='ticker_id to process')
-        parser.add_argument('--ticker_ids', type=str, help='comma separated list of ticker_ids to process')
-        parser.add_argument('--update_open_close', type=bool, help='Whether to update the open_close of stocks')
+        parser.add_argument(
+            '--ticker_ids',
+            type=str,
+            help='comma separated list of ticker_ids to process'
+        )
+        parser.add_argument(
+            '--update_open_close',
+            type=bool,
+            help='Whether to update the open_close of stocks'
+        )
 
     def handle(self, *args, **options):
         try:
@@ -48,7 +57,7 @@ class Command(BaseCommand):
                     '#### End Update Metrics Job #####'
                 ])
                 return
-            elif 'ticker_id' in options and options['ticker_id'] is not None:
+            if 'ticker_id' in options and options['ticker_id'] is not None:
                 self.run_specific_ticker(
                     int(options['ticker_id'])
                 )
@@ -57,8 +66,8 @@ class Command(BaseCommand):
                 for ticker_id in ticker_ids:
                     ticker_id = int(ticker_id)
                     try:
-                       self.run_specific_ticker(
-                           int(ticker_id)
+                        self.run_specific_ticker(
+                            int(ticker_id)
                         )
                     except CommandError as ce:
                         self.output_error(ce)
