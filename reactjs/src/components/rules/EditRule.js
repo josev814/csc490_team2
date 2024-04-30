@@ -40,7 +40,7 @@ function AddRowCondition(props){
                 </div>
                 <div className="row shadow py-3 px-2">
                     <div className="col-md-3">
-                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.sitedetails.django_url} defaultValue={props.condition.symbol} />
+                        <AsyncDropDown isDisabled={true} name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.sitedetails.django_url} defaultValue={props.condition.symbol} />
                     </div>
                     <div className="col-auto">
                         HAS 
