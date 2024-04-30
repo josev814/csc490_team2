@@ -14,6 +14,7 @@ export default function LIST_RULES(props) {
     const [loading, setLoading] = useState(true); // State for loading status
     const [error, setError] = useState(null); // State for error handling
     const [totalBalance, setTotalBalance] = useState(null);
+    const [totalUserProfit, setTotalUserProfit] = useState(null);
 
     // Function to fetch rules data
     const fetchRules = useCallback(async (link) => {
@@ -124,8 +125,10 @@ export default function LIST_RULES(props) {
 
             // Check response status
             if (res.status === 200) {
-                setTotalBalance(res.records.total_balance)
-                console.log(res.records.total_balance)
+                setTotalBalance(res.data.record.total_balance)
+                setTotalUserProfit(res.data.record.total_profit)
+
+                console.log(res.data.record)
             } else {
                 setError('Unexpected response status'); // Handle unexpected response status
             }
@@ -148,7 +151,6 @@ export default function LIST_RULES(props) {
             fetchBalance();
         }
     }, [fetchBalance, django_url]);
-    console.log(error)
 
     function DisplayBalCreate({}) {
         
@@ -157,8 +159,9 @@ export default function LIST_RULES(props) {
                 <div className="col-md-8">
                     <h3>Total Balance:</h3>
                     {/* Display total balance */}
-                    <h4 className='text-success'>{totalBalance}</h4>
-                    {/* <h4 className='text-danger'>-$20</h4> */}
+                    <h4 className='text-success'>${totalBalance}</h4>
+                    <h3 className='fs-5'>Total User Profit:</h3>
+                    <h4 className='text-success fs-5'>${totalUserProfit}</h4>
                 </div>
                 <div className='col-md-4 d-flex justify-content-end'>
                     <div className='col-md-6 d-flex align-items-center justify-content-end'>
