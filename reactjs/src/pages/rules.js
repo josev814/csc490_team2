@@ -13,6 +13,8 @@ export default function LIST_RULES(props) {
     const [links, setLinks] = useState(null); // Sets the prev/next links
     const [loading, setLoading] = useState(true); // State for loading status
     const [error, setError] = useState(null); // State for error handling
+    const [totalBalance, setTotalBalance] = useState(null);
+    const [totalUserProfit, setTotalUserProfit] = useState(null);
 
     // Function to fetch rules data
     const fetchRules = useCallback(async (link) => {
@@ -53,6 +55,7 @@ export default function LIST_RULES(props) {
             fetchRules();
         }
     }, [fetchRules, django_url]);
+
 
     // Function to handle page change
     const handlePageChange = (link) => {
@@ -110,14 +113,53 @@ export default function LIST_RULES(props) {
         );
     }
 
+    //function to fetch total balance of rules
+    const fetchBalance = useCallback(async() => {
+        try {
+            const balanceLink = `${django_url}/users/get_profit_loss/`
+
+            const headers = get_auth_header();
+            // Fetch rules data from the server based on current page
+            const res = await axios.get(balanceLink, { headers });
+
+            // Check response status
+            if (res.status === 200) {
+                setTotalBalance(res.data.record.total_balance)
+                setTotalUserProfit(res.data.record.total_profit)
+
+            } else {
+                setError('Unexpected response status'); // Handle unexpected response status
+            }
+        } catch (error) {
+            let errorMessage = 'An error occurred, try again later'; // Default error message
+        
+            if (error.response && error.response.data && error.response.data.errors && error.response.data.errors.length > 0) {
+                // Use the first error message from the response
+                errorMessage = error.response.data.errors[0];
+            }
+        
+            setError(errorMessage); // Set error message
+        }            
+    }, [get_auth_header, django_url]);
+
+    useEffect(() => {
+        if (django_url === undefined){
+            setLoading(true);
+        } else {
+            fetchBalance();
+        }
+    }, [fetchBalance, django_url]);
+
     function DisplayBalCreate() {
+        
         return (
             <div className="row mb-3">
                 <div className="col-md-8">
                     <h3>Total Balance:</h3>
                     {/* Display total balance */}
-                    <h4 className='text-success'>$0</h4>
-                    <h4 className='text-danger'>-$20</h4>
+                    <h4 className='text-success'>${totalBalance}</h4>
+                    <h3 className='fs-5'>Total User Profit:</h3>
+                    <h4 className='text-success fs-5'>${totalUserProfit}</h4>
                 </div>
                 <div className='col-md-4 d-flex justify-content-end'>
                     <div className='col-md-6 d-flex align-items-center justify-content-end'>
