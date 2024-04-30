@@ -7,6 +7,7 @@ from typing import Any
 import sys
 
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 from django.db.models import Q, Sum, Func, Value, F
 from rules.models import Rules, RuleJobs
 from stocks.models import StockData, Stocks
@@ -20,47 +21,79 @@ class Command(BaseCommand):
     The command that executes when this job is ran
     """
     help = 'Runs the rules against out database'
-    START_TIME = datetime.now()
-    LAST_RUNTIME = None
+
+    def set_defaults(self):
+        """
+        Initialize this job
+        """
+        self.START_TIME = datetime.now()
+        self.this_job = self.get_job_info()
+        # Get the last runtime of this job
+        self.LAST_RUNTIME = self.get_last_runtime()
+        
 
     def handle(self, *args: Any, **options: Any):
         """
         Runs the job to process the rules in the db
         """
-        # // Get last runtime
-        self.get_last_runtime()
+        self.set_defaults()
+
         rules = self.get_rules()
         for record in rules:
-            # only process rule if active and filled in
-            if record.rule is not None \
-                  and 'conditions' in record.rule and 'action' in record.rule \
-                  and record.initial_investment > 0:
+            # only process rule if filled in
+            if self.is_rule_valid(record.rule) and record.initial_investment > 0:
                 if record.last_ran_timestamp is None:
-                    record.balance = record.initial_investment
-                    record.save()
+                    self.set_record_balance(record, record.initial_investment)
                 print('Rule: ', record.pk)
                 print('Runtime: ', record.last_ran_timestamp)
                 print('Rule Info: ', record.rule)
                 self.run_rule(record)
-                record.set_last_runtime(self.START_TIME)
-                print('New Runtime: ', record.last_ran_timestamp)
-        # update this jobs last runtime
-        self.set_last_runtime()
+        #         self.set_record_last_run(record, self.START_TIME)
+        #         print('New Runtime: ', record.last_ran_timestamp)
+        # # update this jobs last runtime
+        # self.set_last_runtime()
+    
+    def set_record_balance(self, record, balance):
+        """
+        Set the balance for the record
+        """
+        record.balance = balance
+        record.save()
+    
+    def set_record_last_run(self, record):
+        """
+        Sets the last_ran_time for the record to be the start time of this process
+        """
+        record.last_ran_timestamp = self.START_TIME
+        record.save()
+    
+    def is_rule_valid(self, rule):
+        """
+        Checks if the rule is properly defined
+        """
+        if rule is not None and all(key in rule for key in ['conditions', 'action', 'trigger']):
+            return True
+        return False
+    
+    def get_job_info(self):
+        """
+        Gets the job info from the database
+        """
+        return RuleJobs.objects.first()
     
     def get_last_runtime(self):
         """
         Get the last time this job ran
         """
-        job = RuleJobs.objects.first()
-        if job is not None and job.last_ran_timestamp is not None:
-            self.LAST_RUNTIME = job.last_ran_timestamp
-        self.LAST_RUNTIME = self.START_TIME
+        if self.this_job is not None and self.this_job.last_ran_timestamp is not None:
+            return self.this_job.last_ran_timestamp
+        return self.START_TIME
 
     def set_last_runtime(self):
         """
-        Set the last time this job ran base on the start time
+        Set the last time this job ran based on the start time
         """
-        RuleJobs.objects.first().set_last_runtime(
+        self.this_job.set_last_runtime(
             self.START_TIME
         )
 
@@ -77,49 +110,61 @@ class Command(BaseCommand):
         )
         return rules
 
-    def run_conditions(self, conditions, start_from):
+
+    def get_referenced_symbols(self, rule):
         """
-        Queries the database based on the conditions the user set
-        Additionally the start_from is when the user set for the start date
+        Gets the symbols in the conditions and actions
         """
-        qs = None
+        symbols = self.get_conditions_symbols(rule['conditions'])
+        action_symbol = self.get_action_symbols(rule['action'])
+        for item_id, _ in action_symbol.items():
+            if item_id not in symbols:
+                symbols.update(action_symbol)
+        return symbols
+    
+    def get_conditions_symbols(self, conditions):
+        """
+        Get the symbols that a rule references
+        """
+        symbols = {}
         for condition in conditions:
-            if condition['data'] == 'price':
-                condition['data'] = 'low'
-            if not qs:
-                qs = StockData().get_stock_data(
-                    ticker_id = condition['symbol']['id'],
-                    column = condition['data'],
-                    operator = condition['operator'],
-                    value = condition['value'],
-                    condition = condition['condition'],
-                    timestamp = start_from
-                )
-            else:
-                qs = StockData().get_stock_data(
-                    ticker_id = condition['symbol']['id'],
-                    column = condition['data'],
-                    operator = condition['operator'],
-                    value = condition['value'],
-                    condition = condition['condition'],
-                    data=qs
-                )
-        qs.filter('timestamp__lte', self.START_TIME)
-        return qs
+            symbol = condition['symbol']
+            if symbol['id'] in symbols:
+                # already in our dict
+                continue
+            symbols[symbol['id']] = symbol['ticker']
+        return symbols
+            
+    
+    def get_action_symbols(self, action):
+        """
+        Gets the symbol referenced in the action
+        """
+        return {action['symbol']['id']: action['symbol']['ticker']}
+
+    def update_metrics_before_processing(self, record):
+        """
+        Runs the update metrics process before we run the rule
+        """
+        self.output_success(f'### Updating stocks pertaining to rule: {record.id} - {record.name}')
+        symbols = self.get_referenced_symbols(record.rule)
+        symbol_ids_csv = ','.join(symbols.keys())
+        call_command('update_metrics', ticker_ids=symbol_ids_csv)
+        self.output_success(f'### Updated stocks pertaining to rule: {record.id} - {record.name}')        
 
     def run_rule(self, record):
         """
         Run the rule
         """
         # get the records that passed the user's conditions
-        start_date = record.start_date
-        if record.last_ran_timestamp is not None:
-            start_date = record.last_ran_timestamp
+        start_date = self.get_start_from(record)
+        self.update_metrics_before_processing(record)
+        
+        # ensure we have rules
         stock_records = self.run_conditions(record.rule['conditions'], start_date)
-        print(stock_records.query)
         if stock_records is None or stock_records.count() == 0:
             return
-        print('Triggers: ', stock_records.count())
+        print('Matching Stock Records: ', stock_records.count())
 
         action = record.rule['action']
 
@@ -179,6 +224,45 @@ class Command(BaseCommand):
         #     growth = growth,
         #     profit = profit_loss
         # )
+    
+    def get_start_from(self, record):
+        """
+        Gets the date to start from
+        """
+        if record.last_ran_timestamp is not None:
+            return record.last_ran_timestamp
+        return record.start_date
+    
+    def run_conditions(self, conditions, start_from):
+        """
+        Queries the database based on the conditions the user set
+        Additionally the start_from is when the user set for the start date
+        """
+        qs = None
+        for condition in conditions:
+            if condition['data'] == 'price':
+                condition['data'] = 'low'
+            if not qs:
+                qs = StockData().get_stock_data(
+                    ticker_id = condition['symbol']['id'],
+                    column = condition['data'],
+                    operator = condition['operator'],
+                    value = condition['value'],
+                    condition = condition['condition'],
+                    timestamp = start_from
+                )
+            else:
+                qs = StockData().get_stock_data(
+                    ticker_id = condition['symbol']['id'],
+                    column = condition['data'],
+                    operator = condition['operator'],
+                    value = condition['value'],
+                    condition = condition['condition'],
+                    data=qs
+                )
+        # Ensure to only pull records since this last ran
+        qs = qs.filter(timestamp__lte=self.START_TIME)
+        return qs
     
     def get_profit_loss(self, record, number_of_shares):
         """
