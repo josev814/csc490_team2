@@ -9,15 +9,18 @@ from django.core.management.base import BaseCommand, CommandError
 
 from stocks.models import Stocks, StockData
 from stocks.views import YahooFinance, StockSearch
-from rules.models import Rules
 
 class Command(BaseCommand):
     """
     The command that executes when this job is ran
     """
-    help = 'Update metrics for all stock symbols'
+    help = 'Update metrics for all stock symbols or pass --ticker_id xxxx to process a specific ticker'
     refresh = datetime.now() - timedelta(minutes=10)
     record_limit = 100
+
+    def add_arguments(self, parser):
+        parser.add_argument('--ticker_id', type=int, help='ticker_id to process')
+        parser.add_argument('--ticker_ids', type=str, help='comma separated list of ticker_ids to process')
 
     def handle(self, *args, **options):
         try:
@@ -26,28 +29,66 @@ class Command(BaseCommand):
                 '#### Update Metrics Job #####',
                 f'Start Time: {start_time}'
             ])
-            # Query all symbols from the Stocks table
-            symbol_count = Stocks.objects.filter(
-                is_active=1,
-                updated_date__lte=self.refresh
-            ).count()
-            max_page = ceil(symbol_count/self.record_limit)
-            self.stdout.write(f'Records: {symbol_count}, MaxPage: {max_page}')
-            for page_num in range(max_page):
-                start = page_num * self.record_limit
-                self.stdout.write(
-                    f'Page: {page_num}, Start: {start}, End: {start + self.record_limit}'
+            if 'ticker_id' in options and options['ticker_id'] is not None:
+                ticker_id = int(options['ticker_id'])
+                ticker_info = Stocks.objects.filter(
+                    is_active=1,
+                    updated_date__lte=self.refresh,
+                    pk__exact=ticker_id
+                ).values_list(
+                    'ticker'
                 )
-                symbols = Stocks.objects.values_list(
-                    'ticker', 'id'
-                ).filter(
+                if ticker_info.count() == 0:
+                    ## already up to date
+                    self.output_success(f'Ticker with id {ticker_id} is already up to date')
+                    return
+                ticker = ticker_info.get()[0]
+
+                self.process_ticker(ticker, ticker_id)
+            elif 'ticker_ids' in options and options['ticker_ids'] is not None:
+                ticker_ids = options['ticker_ids'].split(',')
+                for ticker_id in ticker_ids:
+                    ticker_id = int(ticker_id)
+                    try:
+                        ticker_info = Stocks.objects.filter(
+                            is_active=1,
+                            updated_date__lte=self.refresh,
+                            pk__exact=ticker_id
+                        ).values_list(
+                            'ticker'
+                        )
+                        if ticker_info.count() == 0:
+                            ## already up to date
+                            self.output_success(f'Ticker with id {ticker_id} is already up to date')
+                            continue
+                        ticker = ticker_info.get()[0]
+                        self.process_ticker(ticker, ticker_id)
+                    except CommandError as ce:
+                        self.output_error(ce)
+                        pass
+            else:
+                # Query all symbols from the Stocks table
+                symbol_count = Stocks.objects.filter(
                     is_active=1,
                     updated_date__lte=self.refresh
-                ).all()[0:self.record_limit]
-                # Iterate over each symbol and update metrics in StocksData table
-                for ticker, ticker_id in symbols:
-                    self.process_ticker(ticker, ticker_id)
-                    self.remove_ticker_no_data(ticker_id)
+                ).count()
+                max_page = ceil(symbol_count/self.record_limit)
+                self.stdout.write(f'Records: {symbol_count}, MaxPage: {max_page}')
+                for page_num in range(max_page):
+                    start = page_num * self.record_limit
+                    self.stdout.write(
+                        f'Page: {page_num}, Start: {start}, End: {start + self.record_limit}'
+                    )
+                    symbols = Stocks.objects.values_list(
+                        'ticker', 'id'
+                    ).filter(
+                        is_active=1,
+                        updated_date__lte=self.refresh
+                    ).all()[0:self.record_limit]
+                    # Iterate over each symbol and update metrics in StocksData table
+                    for ticker, ticker_id in symbols:
+                        self.process_ticker(ticker, ticker_id)
+                        self.remove_ticker_no_data(ticker_id)
         except Exception as err:
             raise CommandError(f'Error: {err}') from err
         end_time = datetime.now()
