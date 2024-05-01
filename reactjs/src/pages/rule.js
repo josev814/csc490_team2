@@ -336,7 +336,7 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
-                        <div><b>Start:</b> {ruleData.record.create_date}</div>
+                        <div><b>Start:</b> {ruleData.record.start_date}</div>
                         {/* <div><b>Transactions:</b> {ruleData.record.transactions.count}</div> */}
                         <div><b>Growth:</b> {ruleData.record.growth}</div>
                         <div><b>Return:</b> ${ruleData.record.growth}</div>
