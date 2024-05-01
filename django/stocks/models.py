@@ -226,7 +226,7 @@ class StockData(models.Model):
         elif column == 'close':
             column == 'day_close'
         
-        if condition == 'if':
+        if condition == 'if' or data is None:
             if operator == 'eq':
                 data = StockData.objects.filter(**{'ticker_id': ticker_id, f'{column}': value})
             else:
@@ -328,9 +328,9 @@ class StockSearch(models.Model):
                 'search_args': args,
                 'search_phrase': phrase
             }
-            StockSearch.objects.create(**kwargs)
+            StockSearch.objects.update_or_create(**kwargs)
         except IntegrityError as e:
-            return {'status': False, 'IntegrityError': f'Failed to save record: {e}'}
+            return {'status': False, 'errors': f'IntegrityError Failed to save record: {e}'}
         except Exception as e:
             return {'status': False, 'errors': f'Failed to save record: {e}'}
         return {'status': True, 'errors': None}
