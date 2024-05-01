@@ -61,8 +61,7 @@ export function SHOW_RULE(props) {
                 });
         }
     }, [loading]);
-    console.log("Transactions:", transactions);
-    console.log(`${props.sitedetails.django_url}/transactions/${rule}/`);
+
 
     async function handleDelete() {
         const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
