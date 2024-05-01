@@ -357,7 +357,7 @@ export function SHOW_RULE(props) {
                         <h1>{rule_name}</h1>
                     </div>
                 </div>
-                <div className="row mb-3">
+                <div className="row mb-5">
                     <div className="col-md-8">
                         <h3>Investment Balance:</h3>
                         <DisplayBalance />
@@ -378,11 +378,11 @@ export function SHOW_RULE(props) {
                         </div>
                     </div>
                 </div>
-                <div className="row border border-light border-2 shadow-sm mb-5">
+                {/* <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart />
+                    <ShowRuleTransactionChart /> */}
                     {/* ^ pass symbol and transactions that are loaded from request */}
-                </div>
+                {/* </div> */}
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
