@@ -1,5 +1,5 @@
- """
-    Command to update the Growth and Profit for a user
+"""
+Command to update the Growth and Profit for a user
 """
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
