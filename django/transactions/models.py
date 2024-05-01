@@ -16,13 +16,13 @@ class TransactionsManager(models.Manager):
     :param models: _description_
     :type models: _type_
     """
-    def add_transaction(self, ticker, rule_id, action, qty, price, trx_timestamp):
+    def add_transaction(self, ticker_obj, rule_obj, action, qty, price, trx_timestamp):
         """Adds a transaction to the database
 
-        :param ticker: 
-        :type ticker: ticker
-        :param rule_id: 
-        :type rule_id: int
+        :param ticker_obj: 
+        :type ticker_obj: Stocks object
+        :param rule_obj: 
+        :type rule_obj: Rules Object
         :param action: Whether we buy or sell a stock
         :type action: str
         :param qty: 
@@ -33,8 +33,8 @@ class TransactionsManager(models.Manager):
         :type trx_timestamp: datetime
         """
         record = {
-            'ticker': ticker,
-            'rule': rule_id,
+            'ticker': ticker_obj,
+            'rule': rule_obj,
             'action': action,
             'quantity': qty,
             'price': price,
@@ -64,6 +64,10 @@ class Transactions(models.Model):
     timestamp = models.DateTimeField()
     quantity = models.IntegerField()
     price = models.FloatField(max_length=28)
+    # total_shares = models.IntegerField()
+    # balance = models.FloatField(max_length=28)
+    # initial_investment = models.FloatField(max_length=28)
+
 
     objects = TransactionsManager()
 
