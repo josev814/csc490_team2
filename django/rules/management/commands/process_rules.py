@@ -87,9 +87,13 @@ class Command(BaseCommand):
         """
         Set the last time this job ran based on the start time
         """
-        self.this_job.set_last_runtime(
-            self.START_TIME
-        )
+        try:
+            self.this_job.set_last_runtime(
+                self.START_TIME
+            )
+        except Exception as e:
+            self.output_error(f'Error occurred {e}')
+            pass
 
     def get_rules(self):
         """
