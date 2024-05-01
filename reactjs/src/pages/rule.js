@@ -22,6 +22,8 @@ export function SHOW_RULE(props) {
     const [showModal, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+    // State to hld the transactions data
+    const [transactions, setTransactions] = useState([]);
 
     // Rule to fetch the rule information
     async function fetchRuleData(rule) {
@@ -38,12 +40,28 @@ export function SHOW_RULE(props) {
             setRuleData(response.data);
             localStorage.setItem('user_rule', JSON.stringify(response.data));
             setLoading(false);
-            console.log(response.data)
         } catch (err) {
             setError(err.message); // Handle error appropriately
             console.log(error);
         }
     }
+
+    useEffect(() => {
+        if (loading && django_url !== undefined) {
+            // Fetch transaction data
+            axios.get(`${props.sitedetails.django_url}/transactions/${rule}/`, { headers: props.get_auth_header() })
+                .then(response => {
+                    // Here, you should set the fetched transaction data
+                    setTransactions(response.data);
+                    console.log("Transactions:", response.data);
+                })
+                .catch(error => {
+                    // Handle any errors that occur during the request
+                    console.error("Error fetching transaction data:", error);
+                });
+        }
+    }, [loading]);
+
 
     async function handleDelete() {
         const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
@@ -177,54 +195,54 @@ export function SHOW_RULE(props) {
         }
     }
 
-    // function DisplayTransactionColumns(){
-    //     // Check if rule.rule.transactions[0] exists and is an object
-    //     if (ruleData.rule.transactions.columns) {
-    //         return (
-    //             <div className='row border border-light border-2'>
-    //                 {ruleData.rule.transactions.columns.map(column => (
-    //                     <div className='col-md-2' key={column}>
-    //                         <b>{column.toUpperCase()}</b>
-    //                     </div>
-    //                 ))}
-    //             </div>
-    //         );
-    //     } else {
-    //         return null; // Handle case when rule.rule.transactions[0] is not an object
-    //     }
-    // }
+    function DisplayTransactionColumns(){
+        // Check if rule.rule.transactions[0] exists and is an object
+        if (transactions.columns) {
+            return (
+                <div className='row border border-light border-2'>
+                    {ruleData.rule.transactions.columns.map(column => (
+                        <div className='col-md-2' key={column}>
+                            <b>{column.toUpperCase()}</b>
+                        </div>
+                    ))}
+                </div>
+            );
+        } else {
+            return null; // Handle case when rule.rule.transactions[0] is not an object
+        }
+    }
 
-    // function DisplayTransactions(){
-    //     if (ruleData.rule.transactions.count > 0) {
-    //         return (
-    //             ruleData.rule.transactions.records.map(transaction => (
-    //                 <div className='row border border-light border-1' key={transaction[0]}>
-    //                     <div className='col-md-2'>
-    //                         {transaction[0]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[1]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[2]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[3]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[4]}
-    //                     </div>
-    //                 </div> 
-    //             ))
-    //         );
-    //     } else {
-    //         return (
-    //             <div className='row'>
-    //                 <h4>No transactions found</h4>
-    //             </div>
-    //         );
-    //     }
-    // }
+    function DisplayTransactions(){
+        if (Object.keys(transactions).length > 0) {
+            return (
+                transactions.records.map(transaction => (
+                    <div className='row border border-light border-1' key={transaction[0]}>
+                        <div className='col-md-2'>
+                            {transaction[0]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[1]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[2]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[3]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[4]}
+                        </div>
+                    </div> 
+                ))
+            );
+        } else {
+            return (
+                <div className='row'>
+                    <h4>No transactions found</h4>
+                </div>
+            );
+        }
+    }
 
     function DisplayBalance(){
         let balance = ruleData.record.balance
@@ -269,6 +287,7 @@ export function SHOW_RULE(props) {
         }, 50);
         return () => clearInterval(timer)
     }, [])
+    
 
     if (loading || ruleData === undefined || Object.keys(ruleData).length === 0){
         return (
@@ -337,7 +356,7 @@ export function SHOW_RULE(props) {
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
                         <div><b>Start:</b> {ruleData.record.start_date}</div>
-                        {/* <div><b>Transactions:</b> {ruleData.record.transactions.count}</div> */}
+                        <div><b>Transactions:</b> {Object.keys(transactions).length}</div>
                         <div><b>Growth:</b> {ruleData.record.growth}</div>
                         <div><b>Return:</b> ${ruleData.record.growth}</div>
                         <div><b>Status:</b> <DisplayStatus data={ruleData.record.status} /></div>
@@ -350,8 +369,8 @@ export function SHOW_RULE(props) {
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='container-fluid'>
                         <h2>Transactions</h2>
-                        {/* <DisplayTransactionColumns />
-                        <DisplayTransactions /> */}
+                        <DisplayTransactionColumns />
+                        <DisplayTransactions />
                     </div>
                 </div>
             </div>
