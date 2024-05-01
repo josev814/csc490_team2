@@ -46,14 +46,41 @@ export function SHOW_RULE(props) {
         }
     }
 
+    function formatTransactions(transactions){
+        let formatted = []
+        // "id": 175,
+        //     "ticker": 10,
+        //     "action": "buy",
+        //     "quantity": 1,
+        //     "price": 168.75,
+        //     "timestamp": "2024-04-08T15:32:00"
+        let cols = ['id','ticker','action','quantity','price','timestamp']
+        
+        transactions.forEach(trx => {
+            formatted.push(
+                [
+                    trx.id,
+                    trx.ticker,
+                    trx.action,
+                    trx.quantity,
+                    trx.price,
+                    trx.timestamp
+                ]
+            )
+        })
+        return {'columns': cols, 'records': formatted}
+    }
+
     useEffect(() => {
         if (loading && django_url !== undefined) {
             // Fetch transaction data
-            axios.get(`${props.sitedetails.django_url}/transactions/${rule}/`, { headers: props.get_auth_header() })
+            axios.get(`${props.sitedetails.django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
                 .then(response => {
-                    // Here, you should set the fetched transaction data
-                    setTransactions(response.data);
-                    console.log("Transactions:", response.data);
+                    if (response.data.count > 0){
+                        // Here, you should set the fetched transaction data
+                        let trxs = formatTransactions(response.data.results);
+                        setTransactions(trxs);
+                    }
                 })
                 .catch(error => {
                     // Handle any errors that occur during the request
@@ -197,10 +224,11 @@ export function SHOW_RULE(props) {
 
     function DisplayTransactionColumns(){
         // Check if rule.rule.transactions[0] exists and is an object
+        console.log(transactions)
         if (transactions.columns) {
             return (
                 <div className='row border border-light border-2'>
-                    {ruleData.rule.transactions.columns.map(column => (
+                    {transactions.columns.map(column => (
                         <div className='col-md-2' key={column}>
                             <b>{column.toUpperCase()}</b>
                         </div>
@@ -231,6 +259,9 @@ export function SHOW_RULE(props) {
                         </div>
                         <div className='col-md-2'>
                             {transaction[4]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[5]}
                         </div>
                     </div> 
                 ))
@@ -368,7 +399,7 @@ export function SHOW_RULE(props) {
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='container-fluid'>
-                        <h2>Transactions</h2>
+                        <h2>Last 50 Transactions</h2>
                         <DisplayTransactionColumns />
                         <DisplayTransactions />
                     </div>
