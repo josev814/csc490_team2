@@ -1,10 +1,8 @@
 """
 This job runs rules to see if transactions should be performed
 """
-from datetime import datetime
-# from math import floor
+from datetime import datetime, timedelta
 from typing import Any
-import sys
 
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
@@ -12,8 +10,6 @@ from django.db.models import Q, Sum, Func, Value, F
 from rules.models import Rules, RuleJobs
 from stocks.models import StockData, Stocks
 from transactions.models import Transactions
-#from users.models import Users
-#from django.core.exceptions import ValidationError
 
 
 class Command(BaseCommand):
@@ -21,12 +17,14 @@ class Command(BaseCommand):
     The command that executes when this job is ran
     """
     help = 'Runs the rules against out database'
+    START_TIME = datetime.now()
+    this_job = None
+    LAST_RUNTIME = None
 
     def set_defaults(self):
         """
         Initialize this job
         """
-        self.START_TIME = datetime.now()
         self.this_job = self.get_job_info()
         # Get the last runtime of this job
         self.LAST_RUNTIME = self.get_last_runtime()
@@ -44,14 +42,10 @@ class Command(BaseCommand):
             if self.is_rule_valid(record.rule) and record.initial_investment > 0:
                 if record.last_ran_timestamp is None:
                     self.set_record_balance(record, record.initial_investment)
-                print('Rule: ', record.pk)
-                print('Runtime: ', record.last_ran_timestamp)
-                print('Rule Info: ', record.rule)
                 self.run_rule(record)
-        #         self.set_record_last_run(record, self.START_TIME)
-        #         print('New Runtime: ', record.last_ran_timestamp)
-        # # update this jobs last runtime
-        # self.set_last_runtime()
+                self.set_record_last_run(record)
+        # update this jobs last runtime
+        self.set_job_last_runtime()
     
     def set_record_balance(self, record, balance):
         """
@@ -89,7 +83,7 @@ class Command(BaseCommand):
             return self.this_job.last_ran_timestamp
         return self.START_TIME
 
-    def set_last_runtime(self):
+    def set_job_last_runtime(self):
         """
         Set the last time this job ran based on the start time
         """
@@ -134,7 +128,6 @@ class Command(BaseCommand):
                 continue
             symbols[symbol['id']] = symbol['ticker']
         return symbols
-            
     
     def get_action_symbols(self, action):
         """
@@ -150,9 +143,63 @@ class Command(BaseCommand):
         symbols = self.get_referenced_symbols(record.rule)
         symbol_ids_csv = ','.join(symbols.keys())
         call_command('update_metrics', ticker_ids=symbol_ids_csv)
-        self.output_success(f'### Updated stocks pertaining to rule: {record.id} - {record.name}')        
+        self.output_success(f'### Updated stocks pertaining to rule: {record.id} - {record.name}')
+    
+    def get_trx_wait(self, trigger:dict, trx_time:(None|datetime) = None) -> (None|datetime):
+        """
+        Gets the next time we shold trigger a transaction
 
-    def run_rule(self, record):
+        :param trigger: the json object that defines how often we should trigger
+        :type trigger: dict
+        :param trx_time: The time the last transaction was performed, defaults to None
+        :type trx_time: None | datetime, optional
+        :return: Returns either None or datetime object
+        :rtype: datetime | None
+        """
+        if trx_time is None:
+            # no wait time
+            return None
+        delta = self.get_trx_timedelta(trigger)
+        if delta is not None:
+            if trigger['frequency'].lower() == 'days':
+                # ensure we are starting with a new date
+                return trx_time.date() + delta
+            return trx_time + delta
+
+    def get_trx_timedelta(self, trigger:dict) -> timedelta:
+        """
+        Gets the trigger interval offset
+        """
+        interval = int(trigger['interval'])
+        match trigger['frequency'].lower():
+            case 'hours':
+                return timedelta(hours=interval)
+            case 'minutes':
+                return timedelta(minutes=interval)
+            case 'days':
+                return timedelta(days=interval)
+            case _:
+                self.output_error('Invalid trigger frequency defined')
+                return None
+
+    def update_rule_profit_loss(self, record:Rules, number_of_shares:int, current_stock_price:float):
+        """
+        Updates the Profit Loss for a rule
+        """
+        if number_of_shares > 0:
+            profit_loss = self.get_profit_loss(record, number_of_shares, current_stock_price)        
+            record.profit = profit_loss
+            record.save()
+    
+    def update_rule_growth(self, record:Rules, number_of_shares:int, current_stock_price:float):
+        """
+        Updates the Growth of a rule
+        """
+        current_growth = self.get_rule_growth(record.balance, record, number_of_shares, current_stock_price)
+        record.growth = current_growth
+        record.save()
+
+    def run_rule(self, record:Rules):
         """
         Run the rule
         """
@@ -160,71 +207,88 @@ class Command(BaseCommand):
         start_date = self.get_start_from(record)
         self.update_metrics_before_processing(record)
         
-        # ensure we have rules
+        # ensure we have stock changes to process
         stock_records = self.run_conditions(record.rule['conditions'], start_date)
         if stock_records is None or stock_records.count() == 0:
+            self.output_success(f'Rule, {record.id} - {record.name}, is up to date, no processing is required')
+            current_stock_price = self.get_current_stock_price(
+                record.rule['action']['symbol']['id']
+            )
+            self.update_rule_profit_loss(record, record.shares, current_stock_price)
+            self.update_rule_growth(record, record.shares, current_stock_price)
             return
         print('Matching Stock Records: ', stock_records.count())
+        print(stock_records.query)
 
         action = record.rule['action']
-
+        trigger = record.rule['trigger']
         number_of_shares = record.shares
         balance = record.balance
 
         # get last transaction for rule
         last_transaction = Transactions.objects.get_last_transaction(record.id)
-        print(action)
-        print(number_of_shares)
-        print(balance)
-        print(last_transaction)
-        sys.exit()
+        self.output_info(f'action: {action}')
+        self.output_info(f'shares: {number_of_shares}')
+        self.output_info(f'balance: {balance}')
+        #self.output_info(f'last transaction: {last_transaction}')
+        trx_wait = None
+        if last_transaction:
+            # ensure we wait until the next execution in between runs
+            trx_wait = self.get_trx_wait(trigger, last_transaction.timestamp)
+            # filter the queryset to pick up stocks starting from the trx_wait time
+            stock_records = stock_records.filter(timestamp__gte=trx_wait)
 
-        # for stock_record in stock_records:
-        #     print('STock record: ', stock_record)
+    ##### TODO: ######
 
-        #     break
+        for stock_record in stock_records:
+            self.output_info(f'stock_time: {stock_record.timestamp} - trx_wait: {trx_wait}')
+            if trx_wait is not None and stock_record.timestamp <= trx_wait:
+                continue
+            pre_trx_balance = balance
+            if action['method'] == 'buy':
+                if balance == 0: # we can't buy anything at this point
+                    break
+                if action['quantity_type'] == 'shares':
+                    balance, number_of_shares = self.purchase_by_shares(
+                        record, stock_record, balance, number_of_shares
+                    )
+                elif action['quantity_type'] == 'usd':
+                    balance, number_of_shares = self.purchase_by_price(
+                        record, stock_record, balance, number_of_shares
+                    )
+            elif action['method'] == 'sell':
+                if number_of_shares < 1:
+                    break
+                if action['quantity_type'] == 'shares':
+                    balance, number_of_shares = self.sell_by_shares(
+                        record, stock_record, balance, number_of_shares
+                    )
+                elif action['quantity_type'] == 'usd':
+                    # TODO port to a function of sell_by_price
+                    # finish the logic for this and verify it
+                    balance, number_of_shares = self.sell_by_price(
+                        record, stock_record, balance, number_of_shares
+                    )
+            else:
+                self.output_error('Unsupported action: ', action)
+            if pre_trx_balance != balance:
+                trx_wait = self.get_trx_wait(trigger, stock_record.timestamp)
 
-        #     if action['method'] == 'buy':
-        #         if balance == 0: # we can't buy anything at this point
-        #             break
-        #         if action['quantity_type'] == 'shares':
-        #             balance, number_of_shares = self.purchase_by_shares(
-        #                 record, stock_record, balance, number_of_shares
-        #             )
-        #         elif action['quantity_type'] == 'price':
-        #             # TODO: create the purchase_by_price method and logic
-        #             # return balance, profit_loss, number_of_shares
-        #             balance, number_of_shares = self.purchase_by_price(
-        #                 record, stock_record, balance, number_of_shares
-        #             )
-        #     elif action['method'] == 'sell':
-        #         if number_of_shares < 1:
-        #             break
-        #         if action['quantity_type'] == 'shares':
-        #             balance, number_of_shares = self.sell_by_shares(
-        #                 record, stock_record, balance, number_of_shares
-        #             )
-        #         elif action['quantity_type'] == 'price':
-        #             # TODO port to a function of sell_by_price
-        #             # finish the logic for this and verify it
-        #             balance, number_of_shares = self.sell_by_price(
-                        
-        #             )
-        #     else:
-        #         self.output_error('Unsupported action: ', action)
+        current_stock_price = self.get_current_stock_price(stock_records[0].ticker)
+        growth = self.get_rule_growth(balance, record, number_of_shares, current_stock_price)
+        profit_loss = 0
+        if number_of_shares > 0:
+            profit_loss = self.get_profit_loss(record, number_of_shares, current_stock_price)
         
-        # growth = self.get_rule_growth(balance, record)
-        # profit_loss = 0
-        # if number_of_shares > 0:
-        #     profit_loss = self.get_profit_loss(record, number_of_shares)
-        
-        # record.update_balance(
-        #     shares = number_of_shares,
-        #     balance = balance,
-        #     growth = growth,
-        #     profit = profit_loss
-        # )
-    
+        record.update_balance(
+            shares = number_of_shares,
+            balance = balance,
+            growth = growth,
+            profit = profit_loss
+        )
+
+    ######### END TODO: ###################
+
     def get_start_from(self, record):
         """
         Gets the date to start from
@@ -232,46 +296,79 @@ class Command(BaseCommand):
         if record.last_ran_timestamp is not None:
             return record.last_ran_timestamp
         return record.start_date
+
+    def get_day_open(self, ticker_id, proc_date):
+        """
+        Get the day's open price for the ticker
+        """
+        results = StockData.objects.filter(
+            ticker_id__exact=ticker_id,
+            timestamp__gte=proc_date
+        ).order_by('-timestamp')
+        if results.count() == 0:
+            return None
+        return results.values_list('open').first()[0]
+
+
+    def get_day_close(self, ticker_id, proc_date):
+        """
+        Get the day's close price for the ticker
+        """
+        results = StockData.objects.filter(
+            ticker_id__exact=ticker_id,
+            timestamp__gte=proc_date
+        ).order_by('timestamp')
+        if results.count() == 0:
+            return None
+        return results.values_list('close').first()[0]
+
     
-    def run_conditions(self, conditions, start_from):
+    def run_conditions(self, conditions, start_from:datetime):
         """
         Queries the database based on the conditions the user set
         Additionally the start_from is when the user set for the start date
         """
         qs = None
         for condition in conditions:
-            if condition['data'] == 'price':
-                condition['data'] = 'low'
+            col = condition['data']
+            if col == 'price':
+                col = 'low'
+            elif col == 'open':
+                col = 'day_open'
+            elif col == 'close':
+                col = 'day_close'
+            condition_info = {
+                'ticker_id': condition['symbol']['id'],
+                'column': col,
+                'operator': condition['operator'],
+                'value': condition['value'],
+                'condition': condition['condition'],
+            }
             if not qs:
                 qs = StockData().get_stock_data(
-                    ticker_id = condition['symbol']['id'],
-                    column = condition['data'],
-                    operator = condition['operator'],
-                    value = condition['value'],
-                    condition = condition['condition'],
-                    timestamp = start_from
+                    timestamp = start_from,
+                    **condition_info
                 )
             else:
                 qs = StockData().get_stock_data(
-                    ticker_id = condition['symbol']['id'],
-                    column = condition['data'],
-                    operator = condition['operator'],
-                    value = condition['value'],
-                    condition = condition['condition'],
-                    data=qs
+                    data=qs,
+                    **condition_info
                 )
-        # Ensure to only pull records since this last ran
+            if col in ['day_open','day_close']:
+                filter_condition = {
+                    f'{col}__gt': 0.0,
+                    f'{col}__isnull': False
+                }
+                qs = qs.filter(Q(**filter_condition))
+        # Ensure to only pull records that aren't older than the start time of this job
         qs = qs.filter(timestamp__lte=self.START_TIME)
         return qs
     
-    def get_profit_loss(self, record, number_of_shares):
+    def get_profit_loss(self, record, number_of_shares, current_stock_price):
         """
         Calculates the profit loss for a rule
         """
         symbol_id = record.rule['action']['symbol']['id']
-        current_stock_price = self.get_current_stock_price(
-            symbol_id
-        )
         average_cost = self.get_average_cost_of_stock(
             record.id,
             symbol_id
@@ -299,8 +396,10 @@ class Command(BaseCommand):
             action__exact='buy'
         ).aggregate(total_shares=Sum('quantity'))
         
-        average_cost = trx_data_cost['avg_cost'] // float(trx_data_shares['total_shares'])
-        return average_cost
+        total_cost = trx_data_cost['total_cost'] or 0  # Get total cost or 0 if None
+        total_shares = trx_data_shares['total_shares'] or 1  # Get total shares or 1 if None
+
+        return total_cost / float(total_shares) # this is the avg cost
 
     def get_current_stock_price(self, stock_id):
         """
@@ -326,7 +425,7 @@ class Command(BaseCommand):
         print(qs.query)
         return qs.first().low
     
-    def get_rule_growth(self, balance:float, record:Rules.rule):
+    def get_rule_growth(self, balance:float, record:Rules.rule, number_of_shares:int, current_stock_price):
         """
         Calculates the growth for the rule
 
@@ -341,7 +440,8 @@ class Command(BaseCommand):
             return 0
         return (
             (
-                balance - record.initial_investment
+                balance - record.initial_investment + 
+                (float(number_of_shares) * current_stock_price)
             ) / record.initial_investment
         ) * 100
     
@@ -351,40 +451,35 @@ class Command(BaseCommand):
         """
         action = record.rule['action']
 
-        wanted_price = action['quantity']
-        current_share_price = stock_record.low
+        wanted_price = float(action['quantity'])
+        current_share_price = float(stock_record.low)
         wanted_shares = int ( wanted_price // current_share_price )
+        number_of_affordable_shares = int( wanted_price // current_share_price )
 
-        if balance > wanted_price and wanted_shares > 0: # filling full order
+        trx_info = {
+            'ticker_obj': Stocks.objects.get(id=action['symbol']['id']), # stock object
+            'rule_obj': record, # rules object
+            'action': action['method'],
+            'qty': wanted_shares,
+            'price': float(stock_record.low),
+            'trx_timestamp': stock_record.timestamp
+        }
+
+        if balance >= wanted_price and wanted_shares > 0: # filling full order
             total_shares_cost = wanted_shares * current_share_price
-
-            Transactions.objects.add_transaction(
-                ticker = Stocks.objects.get(id=action['symbol']['id']),
-                rule_id = record,
-                action = action['method'],
-                qty = action['quantity'],
-                price = stock_record.low,
-                trx_timestamp = stock_record.timestamp
-            )
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares += wanted_shares
             balance -= total_shares_cost
-
-        elif balance >= current_share_price: # filling partial order
-            number_of_affordable_shares = int( wanted_price // current_share_price )
+        elif balance >= current_share_price and number_of_affordable_shares > 0: # filling partial order
             total_shares_cost =  current_share_price * number_of_affordable_shares
-
-            Transactions.objects.add_transaction(
-                ticker = Stocks.objects.get(id=action['symbol']['id']),
-                rule_id = record.id,
-                action = action['method'],
-                qty = number_of_affordable_shares,
-                price = stock_record.low,
-                trx_timestamp = stock_record.timestamp
-            )
+            trx_info['qty'] = number_of_affordable_shares
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares += number_of_affordable_shares
             balance -= total_shares_cost
+        elif wanted_shares == 0:
+            self.output_error(f"Can't purchase a share worth ${current_share_price} at ${wanted_price}")
         else:
-            self.output_error("Insufficient balance to make the purchase")
+            self.output_error(f"Insufficient balance, {balance}, to make the purchase")
         return [balance, number_of_shares]
     
     def sell_by_shares(self, record, stock_record, balance, number_of_shares):
@@ -392,28 +487,22 @@ class Command(BaseCommand):
         Sells the number of shares we have or qty requested when we have a matched record
         """
         action = record.rule['action']
-
+        trx_info = {
+            'ticker_obj': Stocks.objects.get(id=action['symbol']['id']),
+            'rule_obj': record,
+            'action': action['method'],
+            'qty': action['quantity'],
+            'price': action['value'],
+            'trx_timestamp': stock_record.timestamp
+        }
         if number_of_shares > action['quantity']: # sell what was asked
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares -= action['quantity']
-            Transactions.objects.add_transaction(
-                ticker = Stocks.objects.get(id=action['symbol']['id']),
-                rule_id = record.id,
-                action = action['method'],
-                qty = action['quantity'],
-                price = action['value'],
-                trx_timestamp = stock_record.timestamp
-            )
             balance += (action['quantity'] * stock_record.low)
         elif number_of_shares >= 1: # sell our remaining shares
             sellable_shares = int( number_of_shares // 1 )
-            Transactions.objects.add_transaction(
-                ticker = Stocks.objects.get(id=action['symbol']['id']),
-                rule_id = record.id,
-                action = action['method'],
-                qty = number_of_shares,
-                price = action['value'],
-                trx_timestamp = stock_record.timestamp
-            )
+            trx_info['qty'] = number_of_shares,
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares -= sellable_shares
             balance += (sellable_shares * stock_record.low)
         else:
@@ -425,38 +514,30 @@ class Command(BaseCommand):
         Make a purchase of the stock based on shares that the user wants
         """
         action = record.rule['action']
-        print(action)
         action_stock = Stocks.objects.get(id=action['symbol']['id'])
         current_share_price = self.get_stock_price_from_timestamp(
             action_stock.pk,
             stock_record.timestamp
         )
         total_shares_cost = float(action['quantity']) * current_share_price
+        trx_info = {
+            'ticker_obj': action_stock,
+            'rule_obj': record,
+            'action': action['method'],
+            'qty': action['quantity'],
+            'price': current_share_price,
+            'trx_timestamp': stock_record.timestamp
+        }
         if balance >= total_shares_cost: # make full purchase
             # balance -= sale_income
-            print(action)
-            Transactions.objects.add_transaction(
-                ticker = action_stock,
-                rule_id = record,
-                action = action['method'],
-                qty = action['quantity'],
-                price = current_share_price,
-                trx_timestamp = stock_record.timestamp
-            )
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares += int(action['quantity'])
             balance -= (float(action['quantity']) * current_share_price)
         elif balance >= current_share_price: # buy what we can
             number_of_affordable_shares = int( current_share_price // balance )
             total_shares_cost =  current_share_price * float(number_of_affordable_shares)
-            
-            Transactions.objects.add_transaction(
-                ticker = action_stock,
-                rule_id = record.id,
-                action = action['method'],
-                qty = number_of_affordable_shares,
-                price = stock_record.low,
-                trx_timestamp = stock_record.timestamp
-            )
+            trx_info['qty'] = number_of_affordable_shares
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares += number_of_affordable_shares
             balance -= (float(number_of_affordable_shares) * stock_record.low)
         else:
@@ -471,18 +552,18 @@ class Command(BaseCommand):
         wanted_price = action['quantity']
         # gets the floor whole number of sellable_shares 
         sellable_shares = int (wanted_price // stock_record.low)
-
+        trx_info = {
+            'ticker_obj': Stocks.objects.get(id=action['symbol']['id']),
+            'rule_obj': record,
+            'action': action['method'],
+            'qty': action['quantity'],
+            'price': action['value'],
+            'trx_timestamp': stock_record.timestamp
+        }
         if number_of_shares > 0 and sellable_shares > 0: # has to have at least 1 share
             sellable_shares = min(sellable_shares, number_of_shares) # prevent oversell
             
-            Transactions.objects.add_transaction(
-                ticker = Stocks.objects.get(id=action['symbol']['id']),
-                rule_id = record.id,
-                action = action['method'],
-                qty = action['quantity'],
-                price = action['value'],
-                trx_timestamp = stock_record.timestamp
-            )
+            Transactions.objects.add_transaction(**trx_info)
             number_of_shares -= sellable_shares # sells shares
             balance += (float(sellable_shares) * stock_record.low) # adds the profit_loss
 
@@ -515,3 +596,21 @@ class Command(BaseCommand):
                 success_msg
             )
         )
+    
+    def output_info(self, info_msg) -> None:
+        """Outputs an informational message
+
+        :param info_msg: the message to output
+        :type info_msg: str|list
+        """
+        if isinstance(info_msg, list):
+            formatted_msg = [self.style.NOTICE(line) for line in info_msg]
+            self.stdout.writelines(
+                formatted_msg
+            )
+        else:
+            self.stdout.write(
+                self.style.NOTICE(
+                    info_msg
+                )
+            )

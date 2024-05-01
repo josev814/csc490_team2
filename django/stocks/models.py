@@ -174,7 +174,11 @@ class StockData(models.Model):
         """
         Getting the Stock's trading times for the exhange
         """
-        trading_periods = yahoo_data['meta']['tradingPeriods']['regular'][0][0]
+        meta = yahoo_data['meta']
+        if 'tradingPeriods' in meta:
+            trading_periods = meta['tradingPeriods']['regular'][0][0]
+        elif 'currentTradingPeriod' in meta:
+            trading_periods = meta['currentTradingPeriod']['regular']
         trading_gmt_start = self.get_time_from_timestamp(trading_periods['start'])
         trading_gmt_end = self.get_time_from_timestamp(trading_periods['end'])
         trading_timezone_offset = trading_periods['gmtoffset']
@@ -348,4 +352,4 @@ class StockSearch(models.Model):
         if 'quotes' in yahoo_results and len(yahoo_results['quotes']) > 0:
             return Stocks().save_search_results(yahoo_results['quotes'])
         msg = 'Unhandled option in save_search_results'
-        return {'status': True, 'errors': [msg]}
+        return {'status': True, 'errors': [msg], 'yahoo': yahoo_results}

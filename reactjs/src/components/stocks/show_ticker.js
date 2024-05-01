@@ -21,9 +21,13 @@ class ShowTickerChart extends React.Component {
   }
 
   componentDidMount() {
-    let { ticker } = this.props.params
+    const { ticker } = this.props.params
     this.setState({symbol: ticker})
-    let url = 'http://localhost:8889/stocks/get_ticker_metrics/?ticker=' + ticker    
+    const now = new Date()
+    const current_time = (now.getTime() / 1000).toString().split('.')[0]
+    const four_months_ago = (new Date(now.getFullYear(), now.getMonth() - 4, now.getDate()).getTime() / 1000).toString().split('.')[0]; // Date four months ago
+    let url = 'http://localhost:8889/stocks/get_ticker_metrics/?ticker=' + ticker + '&interval=1d&starttime=' + four_months_ago + '&endtime=' + current_time
+    //https://query1.finance.yahoo.com/v8/finance/chart/AMZN?interval=1d&includePrePost=True&period1=1704174096&period2=1714542096&lang=en-Us&region=US
     axios.get(url)
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure
