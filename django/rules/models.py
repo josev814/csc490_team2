@@ -19,9 +19,9 @@ class RuleQuerySet(models.QuerySet):
             return self.filter(user=user).none()
         qs = self.filter(user=user)
         if name:
-            qs.filter(models.Q(name__icontains=name))
+            qs = qs.filter(models.Q(name__icontains=name))
         if status and status in [0|1]:
-            qs.filter(models.Q(status=status))
+            qs = qs.filter(models.Q(status=status))
         return qs
 
 class RuleManager(models.Manager):
