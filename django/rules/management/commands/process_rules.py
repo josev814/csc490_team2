@@ -28,7 +28,6 @@ class Command(BaseCommand):
         self.this_job = self.get_job_info()
         # Get the last runtime of this job
         self.LAST_RUNTIME = self.get_last_runtime()
-        
 
     def handle(self, *args: Any, **options: Any):
         """

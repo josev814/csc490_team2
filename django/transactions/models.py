@@ -64,10 +64,10 @@ class Transactions(models.Model):
     timestamp = models.DateTimeField()
     quantity = models.IntegerField()
     price = models.FloatField(max_length=28)
-    # total_shares = models.IntegerField()
-    # balance = models.FloatField(max_length=28)
-    # initial_investment = models.FloatField(max_length=28)
-
+    total_shares = models.IntegerField(default=0)
+    balance = models.FloatField(default=0.0, max_length=28)
+    initial_investment = models.FloatField(default=0.0, max_length=28)
+    current_profit_loss = models.FloatField(default=0.0, max_length=28)
 
     objects = TransactionsManager()
 
@@ -88,4 +88,6 @@ class Transactions(models.Model):
         :return: Returns the ticker, rule, action, quantity, price and timestamp
         :rtype: str
         """
-        return f'{self.ticker, self.rule, self.action, self.quantity, self.price, self.timestamp}'
+        return f'{self.ticker}, {self.rule}, {self.action}, ' + \
+            f'{self.quantity}, {self.price}, {self.timestamp}, ' + \
+            f'{self.total_shares}, {self.current_profit_loss}'
