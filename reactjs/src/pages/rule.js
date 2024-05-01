@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import axios from 'axios';
-import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
+import { EditOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from "react-bootstrap/Spinner";
 
@@ -327,11 +327,7 @@ export function SHOW_RULE(props) {
                                 </button>
                             </Link>
                         </div>
-                        <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
-                            <button className="btn btn-warning btn-md">
-                                <ContentCopyOutlined /> Duplicate
-                            </button>
-                        </div>
+                        
                         <div className='col-md-4 d-flex align-items-center justify-content-end'>
                             <button className="btn btn-danger btn-md" onClick={handleShow}>
                                 <DeleteOutline /> Remove
