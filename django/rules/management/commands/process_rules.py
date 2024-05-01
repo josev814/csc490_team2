@@ -165,6 +165,7 @@ class Command(BaseCommand):
                 # ensure we are starting with a new date
                 return trx_time.date() + delta
             return trx_time + delta
+        return None
 
     def get_trx_timedelta(self, trigger:dict) -> timedelta:
         """
@@ -182,7 +183,11 @@ class Command(BaseCommand):
                 self.output_error('Invalid trigger frequency defined')
                 return None
 
-    def update_rule_profit_loss(self, record:Rules, number_of_shares:int, current_stock_price:float):
+    def update_rule_profit_loss(
+                self, record:Rules, 
+                number_of_shares:int, 
+                current_stock_price:float
+            ):
         """
         Updates the Profit Loss for a rule
         """
@@ -195,7 +200,9 @@ class Command(BaseCommand):
         """
         Updates the Growth of a rule
         """
-        current_growth = self.get_rule_growth(record.balance, record, number_of_shares, current_stock_price)
+        current_growth = self.get_rule_growth(
+            record.balance, record, number_of_shares, current_stock_price
+        )
         record.growth = current_growth
         record.save()
 
@@ -210,7 +217,10 @@ class Command(BaseCommand):
         # ensure we have stock changes to process
         stock_records = self.run_conditions(record.rule['conditions'], start_date)
         if stock_records is None or stock_records.count() == 0:
-            self.output_success(f'Rule, {record.id} - {record.name}, is up to date, no processing is required')
+            self.output_success(
+                f'Rule, {record.id} - {record.name}, ' + \
+                    'is up to date, no processing is required'
+            )
             current_stock_price = self.get_current_stock_price(
                 record.rule['action']['symbol']['id']
             )
@@ -425,7 +435,10 @@ class Command(BaseCommand):
         print(qs.query)
         return qs.first().low
     
-    def get_rule_growth(self, balance:float, record:Rules.rule, number_of_shares:int, current_stock_price):
+    def get_rule_growth(
+                self, balance:float, record:Rules.rule, 
+                number_of_shares:int, current_stock_price
+            ):
         """
         Calculates the growth for the rule
 
@@ -470,14 +483,18 @@ class Command(BaseCommand):
             Transactions.objects.add_transaction(**trx_info)
             number_of_shares += wanted_shares
             balance -= total_shares_cost
-        elif balance >= current_share_price and number_of_affordable_shares > 0: # filling partial order
+        # filling partial order
+        elif balance >= current_share_price and number_of_affordable_shares > 0:
             total_shares_cost =  current_share_price * number_of_affordable_shares
             trx_info['qty'] = number_of_affordable_shares
             Transactions.objects.add_transaction(**trx_info)
             number_of_shares += number_of_affordable_shares
             balance -= total_shares_cost
         elif wanted_shares == 0:
-            self.output_error(f"Can't purchase a share worth ${current_share_price} at ${wanted_price}")
+            self.output_error(
+                f"Can't purchase a share worth ${current_share_price} " + \
+                    "at ${wanted_price}"
+            )
         else:
             self.output_error(f"Insufficient balance, {balance}, to make the purchase")
         return [balance, number_of_shares]
@@ -501,7 +518,7 @@ class Command(BaseCommand):
             balance += (action['quantity'] * stock_record.low)
         elif number_of_shares >= 1: # sell our remaining shares
             sellable_shares = int( number_of_shares // 1 )
-            trx_info['qty'] = number_of_shares,
+            trx_info['qty'] = number_of_shares
             Transactions.objects.add_transaction(**trx_info)
             number_of_shares -= sellable_shares
             balance += (sellable_shares * stock_record.low)

@@ -226,9 +226,9 @@ class StockData(models.Model):
         if column == 'price':
             column = 'low'
         elif column == 'open':
-            column == 'day_open'
+            column = 'day_open'
         elif column == 'close':
-            column == 'day_close'
+            column = 'day_close'
         
         if condition == 'if' or data is None:
             if operator == 'eq':

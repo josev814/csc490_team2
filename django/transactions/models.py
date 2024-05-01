@@ -64,6 +64,10 @@ class Transactions(models.Model):
     timestamp = models.DateTimeField()
     quantity = models.IntegerField()
     price = models.FloatField(max_length=28)
+    total_shares = models.IntegerField()
+    balance = models.FloatField(max_length=28)
+    initial_investment = models.FloatField(max_length=28)
+
 
     objects = TransactionsManager()
 

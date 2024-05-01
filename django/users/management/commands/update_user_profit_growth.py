@@ -1,3 +1,6 @@
+ """
+    Command to update the Growth and Profit for a user
+"""
 from django.core.management.base import BaseCommand
 from django.db.models import Sum
 
@@ -6,6 +9,9 @@ from users.models import Users
 
 
 class Command(BaseCommand):
+    """
+    Update the Growth and Profit for a user
+    """
     help = "Update the Growth and Profit for a user"
 
     def add_arguments(self, parser):
@@ -25,7 +31,7 @@ class Command(BaseCommand):
             pg = self.get_total_rules_profit_growth(user)
             self.update_profit_growth(user, pg)
         else:
-            self.output_info(f"Updating Profit for ALL Users")
+            self.output_info('Updating Profit for ALL Users')
     
     def get_user_record(self, user_id:int) -> Users:
         """
