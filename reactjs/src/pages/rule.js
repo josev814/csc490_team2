@@ -136,17 +136,30 @@ export function SHOW_RULE(props) {
             </span>
         )
     }
+    function DisplayTrigger(content){
+        let data = content.content
+        return (
+            <span>
+                <b className='text-success'>every {data.interal} </b>
+                <b>{data.interval} </b>
+                <b>{data.frequency} </b>
+
+            </span>
+            
+        )
+    }
 
     function DisplaySequence(){
         if(Object.keys(ruleData.record.rule).length > 0){
             return (
                 <>
-                {ruleData.record.rule.conditions.map(condition => (
-                    <div className='row' key={condition.condition}>
-                        <DisplayCondition content={condition} />
-                    </div>
-                ))}
-                <DisplayAction content={ruleData.record.rule.action} />
+                    {ruleData.record.rule.conditions.map(condition => (
+                        <div className='row' key={condition.condition}>
+                            <DisplayCondition content={condition} />
+                        </div>
+                    ))}
+                    <DisplayAction content={ruleData.record.rule.action} />
+                    <DisplayTrigger content={ruleData.record.rule.trigger} />
                 </>
             )
         } else if (ruleData.errors) {
