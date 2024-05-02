@@ -74,7 +74,7 @@ export function SHOW_RULE(props) {
     useEffect(() => {
         if (loading && django_url !== undefined) {
             // Fetch transaction data
-            axios.get(`${props.sitedetails.django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
+            axios.get(`${django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
                 .then(response => {
                     if (response.data.count > 0){
                         // Here, you should set the fetched transaction data
@@ -87,7 +87,7 @@ export function SHOW_RULE(props) {
                     console.error("Error fetching transaction data:", error);
                 });
         }
-    }, [loading]);
+    }, [loading, django_url]);
 
 
     async function handleDelete() {
@@ -303,7 +303,7 @@ export function SHOW_RULE(props) {
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading, django_url]);
+    }, [loading, django_url, fetchRuleData, rule]);
 
     useEffect(() => {
         if (django_url === undefined){
@@ -378,11 +378,11 @@ export function SHOW_RULE(props) {
                         </div>
                     </div>
                 </div>
-                {/* <div className="row border border-light border-2 shadow-sm mb-5">
+                <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart /> */}
+                    <ShowRuleTransactionChart sitedetails={props.sitedetails} get_auth_header={props.get_auth_header} />
                     {/* ^ pass symbol and transactions that are loaded from request */}
-                {/* </div> */}
+                </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
