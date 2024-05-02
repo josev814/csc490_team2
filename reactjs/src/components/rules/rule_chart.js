@@ -41,10 +41,10 @@ class ShowRuleTransactionChart extends React.Component {
   }
 
   componentDidMount() {
-    if(this.state.processing == true){
+    if(this.state.processing === true){
       return;
     }
-    this.state = {...this.state, processing:true }
+    this.setState( prevState => ({...prevState, 'processing':true }))
     console.log('props: ', this.props)
     let rule_id = this.props.params.rule
     let url = `${this.props.sitedetails.django_url}/transactions/rule/${rule_id}/?limit=50&ordering=pk`
@@ -84,7 +84,7 @@ class ShowRuleTransactionChart extends React.Component {
               }
             } else if (last_datetime !== undefined){
               // Start add to qty if current date
-              if (entry_date == last_datetime){
+              if (entry_date === last_datetime){
                 if (record.action === 'buy'){
                   day_purchased_qty += record.quantity
                 } else if (record.action === 'sold'){

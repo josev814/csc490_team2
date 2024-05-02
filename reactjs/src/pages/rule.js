@@ -25,27 +25,6 @@ export function SHOW_RULE(props) {
     // State to hld the transactions data
     const [transactions, setTransactions] = useState([]);
 
-    // Rule to fetch the rule information
-    async function fetchRuleData(rule) {
-        if (django_url === undefined){
-            return
-        }
-        try {
-            const response = await axios.get(
-                `${props.sitedetails.django_url}/rules/${rule}/`,
-                {
-                    headers: props.get_auth_header(),
-                }
-            );
-            setRuleData(response.data);
-            localStorage.setItem('user_rule', JSON.stringify(response.data));
-            setLoading(false);
-        } catch (err) {
-            setError(err.message); // Handle error appropriately
-            console.log(error);
-        }
-    }
-
     function formatTransactions(transactions){
         let formatted = []
         // "id": 175,
@@ -300,10 +279,30 @@ export function SHOW_RULE(props) {
 
     useEffect(() => {
         if (loading && django_url !== undefined) {
+            // Rule to fetch the rule information
+            async function fetchRuleData(rule) {
+                if (django_url === undefined){
+                    return
+                }
+                try {
+                    const response = await axios.get(
+                        `${props.sitedetails.django_url}/rules/${rule}/`,
+                        {
+                            headers: props.get_auth_header(),
+                        }
+                    );
+                    setRuleData(response.data);
+                    localStorage.setItem('user_rule', JSON.stringify(response.data));
+                    setLoading(false);
+                } catch (err) {
+                    setError(err.message); // Handle error appropriately
+                    console.log(error);
+                }
+            }
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading, django_url, fetchRuleData, rule]);
+    }, [loading, django_url, rule]);
 
     useEffect(() => {
         if (django_url === undefined){
