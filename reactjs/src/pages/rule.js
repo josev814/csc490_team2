@@ -62,9 +62,9 @@ export function SHOW_RULE(props) {
                         setTransactions(trxs);
                     }
                 })
-                .catch(error => {
+                .catch(err => {
                     // Handle any errors that occur during the request
-                    console.error("Error fetching transaction data:", error);
+                    setError("Error fetching transaction data:", err)
                 });
         }
     }, [loading, django_url, get_auth_header, rule]);
@@ -79,47 +79,53 @@ export function SHOW_RULE(props) {
                     navigate('/rules/')
                     break;
                 case 404:
-                    showToastError('Record not found to delete')
+                    setError('Record not found to delete')
                     break;
                 default:
                     break;
             }
-        } catch(error){
-            showToastError(error)
+        } catch(err){
+            setError(err)
         }
     }
-    const toastContainer = document.getElementById('toastContainer')
 
-    function showToastError(message) {    
-        // Create the toast element
-        const toastElement = document.createElement('div');
-        toastElement.className = 'toast show'; // Set the class name
-        toastElement.setAttribute('role', 'alert');
-        toastElement.setAttribute('aria-live', 'assertive');
-        toastElement.setAttribute('aria-atomic', 'true');
-        toastElement.setAttribute('data-bs-autohide', 'true');
-        toastElement.setAttribute('data-bs-delay', 5000);
-    
-        // Create the inner content of the toast element
-        const toastContent = document.createElement('div');
-        toastContent.className = 'toast-body bg-danger text-white';
-        toastContent.textContent = message;
-    
-        // Construct the inner HTML content
-        const toastHeader = `
-            <div class="toast-header">
-                <strong class="me-auto text-danger">Error</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-    
-        // Set the inner HTML content of the toast element
-        toastElement.innerHTML = toastHeader;
-        toastElement.appendChild(toastContent);
-    
-        // Append the toast element to the toast container
-        toastContainer.appendChild(toastElement);
-    }
+    useEffect(() => {
+        function showToastError(message) {
+            const toastContainer = document.getElementById('toastContainer')
+            // Create the toast element
+            const toastElement = document.createElement('div');
+            toastElement.className = 'toast show'; // Set the class name
+            toastElement.setAttribute('role', 'alert');
+            toastElement.setAttribute('aria-live', 'assertive');
+            toastElement.setAttribute('aria-atomic', 'true');
+            toastElement.setAttribute('data-bs-autohide', 'true');
+            toastElement.setAttribute('data-bs-delay', 5000);
+        
+            // Create the inner content of the toast element
+            const toastContent = document.createElement('div');
+            toastContent.className = 'toast-body bg-danger text-white';
+            toastContent.textContent = message;
+        
+            // Construct the inner HTML content
+            const toastHeader = `
+                <div class="toast-header">
+                    <strong class="me-auto text-danger">Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+        
+            // Set the inner HTML content of the toast element
+            toastElement.innerHTML = toastHeader;
+            toastElement.appendChild(toastContent);
+        
+            // Append the toast element to the toast container
+            toastContainer.appendChild(toastElement);
+        }
+        if (error){
+            console.error('Error: ', error)
+            showToastError(error)
+        }
+    }, [error])
 
     function GetOperator(operator){
                 switch (operator.operator) {
@@ -189,8 +195,8 @@ export function SHOW_RULE(props) {
             )
         } else if (ruleData.errors) {
             <div className='row'>
-                {ruleData.errors.map(error => (
-                    error
+                {ruleData.errors.map(err => (
+                    err
                 ))}
             </div>
         } else {
