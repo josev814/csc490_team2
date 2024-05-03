@@ -11,6 +11,7 @@ import CreateRuleForm from '../components/rules/CreateRule'
 
 export function SHOW_RULE(props) {
     const django_url = props.sitedetails.django_url
+    const get_auth_header = props.get_auth_header
     const {rule, rule_name} = useParams()
 
     const navigate = useNavigate()
@@ -53,7 +54,7 @@ export function SHOW_RULE(props) {
     useEffect(() => {
         if (loading && django_url !== undefined) {
             // Fetch transaction data
-            axios.get(`${django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
+            axios.get(`${django_url}/transactions/rule/${rule}/?limit=50`, { headers: get_auth_header() })
                 .then(response => {
                     if (response.data.count > 0){
                         // Here, you should set the fetched transaction data
@@ -66,13 +67,13 @@ export function SHOW_RULE(props) {
                     console.error("Error fetching transaction data:", error);
                 });
         }
-    }, [loading, django_url]);
+    }, [loading, django_url, get_auth_header, rule]);
 
 
     async function handleDelete() {
         const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
         try {
-            const response = await axios.delete(delete_url, { headers: props.get_auth_header() });
+            const response = await axios.delete(delete_url, { headers: get_auth_header() });
             switch (response.status) {
                 case 204:
                     navigate('/rules/')
@@ -286,9 +287,9 @@ export function SHOW_RULE(props) {
                 }
                 try {
                     const response = await axios.get(
-                        `${props.sitedetails.django_url}/rules/${rule}/`,
+                        `${django_url}/rules/${rule}/`,
                         {
-                            headers: props.get_auth_header(),
+                            headers: get_auth_header(),
                         }
                     );
                     setRuleData(response.data);
@@ -296,13 +297,13 @@ export function SHOW_RULE(props) {
                     setLoading(false);
                 } catch (err) {
                     setError(err.message); // Handle error appropriately
-                    console.log(error);
+                    console.log(err);
                 }
             }
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading, django_url, rule]);
+    }, [loading, django_url, get_auth_header, rule]);
 
     useEffect(() => {
         if (django_url === undefined){
@@ -379,7 +380,7 @@ export function SHOW_RULE(props) {
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart sitedetails={props.sitedetails} get_auth_header={props.get_auth_header} />
+                    <ShowRuleTransactionChart sitedetails={props.sitedetails} get_auth_header={get_auth_header} />
                     {/* ^ pass symbol and transactions that are loaded from request */}
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
