@@ -298,7 +298,7 @@ class StockViewSet(viewsets.ModelViewSet):
             timedelta(**{delta_interval['delta_name']:delta_interval['delta_value']})
         kwsearch = Q(ticker = self._get_ticker_primary_key(ticker))
         for kwfilter in kwargs:
-            if kwfilter == 'internval':
+            if kwfilter == 'interval':
                 kwsearch &= Q(granularity=kwargs.get(kwfilter))
             elif kwfilter == 'starttime':
                 kwsearch &= Q(timestamp__gte=kwargs.get(kwfilter))

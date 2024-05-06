@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import axios from 'axios';
-import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
+import { EditOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import Modal from 'react-bootstrap/Modal';
 import Spinner from "react-bootstrap/Spinner";
 
@@ -22,6 +22,8 @@ export function SHOW_RULE(props) {
     const [showModal, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+    // State to hld the transactions data
+    const [transactions, setTransactions] = useState([]);
 
     // Rule to fetch the rule information
     async function fetchRuleData(rule) {
@@ -38,12 +40,55 @@ export function SHOW_RULE(props) {
             setRuleData(response.data);
             localStorage.setItem('user_rule', JSON.stringify(response.data));
             setLoading(false);
-            console.log(response.data)
         } catch (err) {
             setError(err.message); // Handle error appropriately
             console.log(error);
         }
     }
+
+    function formatTransactions(transactions){
+        let formatted = []
+        // "id": 175,
+        //     "ticker": 10,
+        //     "action": "buy",
+        //     "quantity": 1,
+        //     "price": 168.75,
+        //     "timestamp": "2024-04-08T15:32:00"
+        let cols = ['id','ticker','action','quantity','price','timestamp']
+        
+        transactions.forEach(trx => {
+            formatted.push(
+                [
+                    trx.id,
+                    trx.ticker,
+                    trx.action,
+                    trx.quantity,
+                    trx.price,
+                    trx.timestamp
+                ]
+            )
+        })
+        return {'columns': cols, 'records': formatted}
+    }
+
+    useEffect(() => {
+        if (loading && django_url !== undefined) {
+            // Fetch transaction data
+            axios.get(`${props.sitedetails.django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
+                .then(response => {
+                    if (response.data.count > 0){
+                        // Here, you should set the fetched transaction data
+                        let trxs = formatTransactions(response.data.results);
+                        setTransactions(trxs);
+                    }
+                })
+                .catch(error => {
+                    // Handle any errors that occur during the request
+                    console.error("Error fetching transaction data:", error);
+                });
+        }
+    }, [loading]);
+
 
     async function handleDelete() {
         const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
@@ -136,17 +181,30 @@ export function SHOW_RULE(props) {
             </span>
         )
     }
+    function DisplayTrigger(content){
+        let data = content.content
+        return (
+            <span>
+                <b className='text-success'>every {data.interal} </b>
+                <b>{data.interval} </b>
+                <b>{data.frequency} </b>
+
+            </span>
+            
+        )
+    }
 
     function DisplaySequence(){
         if(Object.keys(ruleData.record.rule).length > 0){
             return (
                 <>
-                {ruleData.record.rule.conditions.map(condition => (
-                    <div className='row' key={condition.condition}>
-                        <DisplayCondition content={condition} />
-                    </div>
-                ))}
-                <DisplayAction content={ruleData.record.rule.action} />
+                    {ruleData.record.rule.conditions.map(condition => (
+                        <div className='row' key={condition.condition}>
+                            <DisplayCondition content={condition} />
+                        </div>
+                    ))}
+                    <DisplayAction content={ruleData.record.rule.action} />
+                    <DisplayTrigger content={ruleData.record.rule.trigger} />
                 </>
             )
         } else if (ruleData.errors) {
@@ -164,54 +222,58 @@ export function SHOW_RULE(props) {
         }
     }
 
-    // function DisplayTransactionColumns(){
-    //     // Check if rule.rule.transactions[0] exists and is an object
-    //     if (ruleData.rule.transactions.columns) {
-    //         return (
-    //             <div className='row border border-light border-2'>
-    //                 {ruleData.rule.transactions.columns.map(column => (
-    //                     <div className='col-md-2' key={column}>
-    //                         <b>{column.toUpperCase()}</b>
-    //                     </div>
-    //                 ))}
-    //             </div>
-    //         );
-    //     } else {
-    //         return null; // Handle case when rule.rule.transactions[0] is not an object
-    //     }
-    // }
+    function DisplayTransactionColumns(){
+        // Check if rule.rule.transactions[0] exists and is an object
+        console.log(transactions)
+        if (transactions.columns) {
+            return (
+                <div className='row border border-light border-2'>
+                    {transactions.columns.map(column => (
+                        <div className='col-md-2' key={column}>
+                            <b>{column.toUpperCase()}</b>
+                        </div>
+                    ))}
+                </div>
+            );
+        } else {
+            return null; // Handle case when rule.rule.transactions[0] is not an object
+        }
+    }
 
-    // function DisplayTransactions(){
-    //     if (ruleData.rule.transactions.count > 0) {
-    //         return (
-    //             ruleData.rule.transactions.records.map(transaction => (
-    //                 <div className='row border border-light border-1' key={transaction[0]}>
-    //                     <div className='col-md-2'>
-    //                         {transaction[0]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[1]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[2]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[3]}
-    //                     </div>
-    //                     <div className='col-md-2'>
-    //                         {transaction[4]}
-    //                     </div>
-    //                 </div> 
-    //             ))
-    //         );
-    //     } else {
-    //         return (
-    //             <div className='row'>
-    //                 <h4>No transactions found</h4>
-    //             </div>
-    //         );
-    //     }
-    // }
+    function DisplayTransactions(){
+        if (Object.keys(transactions).length > 0) {
+            return (
+                transactions.records.map(transaction => (
+                    <div className='row border border-light border-1' key={transaction[0]}>
+                        <div className='col-md-2'>
+                            {transaction[0]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[1]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[2]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[3]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[4]}
+                        </div>
+                        <div className='col-md-2'>
+                            {transaction[5]}
+                        </div>
+                    </div> 
+                ))
+            );
+        } else {
+            return (
+                <div className='row'>
+                    <h4>No transactions found</h4>
+                </div>
+            );
+        }
+    }
 
     function DisplayBalance(){
         let balance = ruleData.record.balance
@@ -256,6 +318,7 @@ export function SHOW_RULE(props) {
         }, 50);
         return () => clearInterval(timer)
     }, [])
+    
 
     if (loading || ruleData === undefined || Object.keys(ruleData).length === 0){
         return (
@@ -294,7 +357,7 @@ export function SHOW_RULE(props) {
                         <h1>{rule_name}</h1>
                     </div>
                 </div>
-                <div className="row mb-3">
+                <div className="row mb-5">
                     <div className="col-md-8">
                         <h3>Investment Balance:</h3>
                         <DisplayBalance />
@@ -307,11 +370,7 @@ export function SHOW_RULE(props) {
                                 </button>
                             </Link>
                         </div>
-                        <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
-                            <button className="btn btn-warning btn-md">
-                                <ContentCopyOutlined /> Duplicate
-                            </button>
-                        </div>
+                        
                         <div className='col-md-4 d-flex align-items-center justify-content-end'>
                             <button className="btn btn-danger btn-md" onClick={handleShow}>
                                 <DeleteOutline /> Remove
@@ -319,16 +378,16 @@ export function SHOW_RULE(props) {
                         </div>
                     </div>
                 </div>
-                <div className="row border border-light border-2 shadow-sm mb-5">
+                {/* <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart />
+                    <ShowRuleTransactionChart /> */}
                     {/* ^ pass symbol and transactions that are loaded from request */}
-                </div>
+                {/* </div> */}
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
-                        <div><b>Start:</b> {ruleData.record.create_date}</div>
-                        {/* <div><b>Transactions:</b> {ruleData.record.transactions.count}</div> */}
+                        <div><b>Start:</b> {ruleData.record.start_date}</div>
+                        <div><b>Transactions:</b> {Object.keys(transactions).length}</div>
                         <div><b>Growth:</b> {ruleData.record.growth}</div>
                         <div><b>Return:</b> ${ruleData.record.growth}</div>
                         <div><b>Status:</b> <DisplayStatus data={ruleData.record.status} /></div>
@@ -340,9 +399,9 @@ export function SHOW_RULE(props) {
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='container-fluid'>
-                        <h2>Transactions</h2>
-                        {/* <DisplayTransactionColumns />
-                        <DisplayTransactions /> */}
+                        <h2>Last 50 Transactions</h2>
+                        <DisplayTransactionColumns />
+                        <DisplayTransactions />
                     </div>
                 </div>
             </div>
