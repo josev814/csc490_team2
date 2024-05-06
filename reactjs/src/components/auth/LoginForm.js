@@ -11,7 +11,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
   };
 
   return (
-    <form role="form" className="form shadow" onSubmit={handleSubmit}>
+    <form className="form shadow" onSubmit={handleSubmit}>
       <div className="card px-5 py-2 rounded border-2 border-light">
         <div className="card-body">
           <h3 className="card-title text-center">Account Login</h3>
@@ -44,10 +44,10 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
             />
           </div>
           <div className="d-grid mt-3">
-            <button role="button" type="submit" className="btn btn-primary">Login</button>
+            <button type="submit" className="btn btn-primary">Login</button>
           </div>
           <p className="text-center mt-2">
-            <a role="link" href="/forgot-password">Forgot password?</a>
+            <a href="/forgot-password">Forgot password?</a>
           </p>
           {errorMessage && (
             <div className="alert alert-danger mt-3" role="alert">

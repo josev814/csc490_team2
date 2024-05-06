@@ -11,10 +11,10 @@ export default function UnAuthedHeader(props){
                 </div>
                 <div className="col-md-6 d-flex justify-content-end align-items-center">
                     <Link role="link" to='/login' className="pe-3">
-                        <button role="button" className='bg-warning btn btn-lg'>Login</button>
+                        <button className='bg-warning btn btn-lg'>Login</button>
                     </Link>
                     <Link role="link" to='/register'>
-                        <button role="button" className='bg-warning btn btn-lg'>Register</button>
+                        <button className='bg-warning btn btn-lg'>Register</button>
                     </Link>
                 </div>
             </div>
