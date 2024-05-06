@@ -11,12 +11,12 @@ export default function RegisterForm({ formData, handleChange, handleSubmit, err
   };
 
   return (
-    <form className="form shadow" onSubmit={handleSubmit}>
+    <form role="form" className="form shadow" onSubmit={handleSubmit}>
       <div className="card px-5 py-2 rounded border-2 border-light">
         <div className="card-body">
           <h3 className="card-title text-center">Account Registration</h3>
           <div className="card-text text-center">
-            <p>Already registered? <span className="link-primary" onClick={handleLoginRedirect}>Log In</span></p>
+            <p>Already registered? <span role='link' className="link-primary" onClick={handleLoginRedirect}>Log In</span></p>
           </div>
           <div className="form-group mt-3">
             <label htmlFor="email" className="form-label">Email address</label>
@@ -44,7 +44,7 @@ export default function RegisterForm({ formData, handleChange, handleSubmit, err
             />
           </div>
           <div className="d-grid mt-3">
-            <button type="submit" className="btn btn-primary">Register</button>
+            <button role="button" type="submit" className="btn btn-primary">Register</button>
           </div>
           {errorMessage && (
             <div className="alert alert-danger mt-3" role="alert">

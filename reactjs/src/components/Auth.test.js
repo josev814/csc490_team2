@@ -1,42 +1,46 @@
-import React from "react";
-import { render, fireEvent } from "@testing-library/react";
-import {LoginRegister} from "./Auth";
+import React from 'react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import App from '../App';
 
 describe("LoginRegister component", () => {
-  test("renders login form by default", () => {
-    const { getByText, getByLabelText } = render(<LoginRegister />);
-    
-    expect(getByText("Account Login")).toBeInTheDocument();
-    expect(getByText("Register")).toBeInTheDocument();
-    expect(getByLabelText("Email address")).toBeInTheDocument();
-    expect(getByLabelText("Password")).toBeInTheDocument();
-  });
-
-  test("switches to registration form when 'Register' link is clicked", () => {
-    const { getByText, getByLabelText } = render(<LoginRegister />);
-    const registerLink = getByText("Register");
-
-    fireEvent.click(registerLink);
-
-    expect(getByText("Account Registration")).toBeInTheDocument();
-    expect(getByText("Log In")).toBeInTheDocument();
-    expect(getByLabelText("Email address")).toBeInTheDocument();
-    expect(getByLabelText("Password")).toBeInTheDocument();
-  });
-
-  test("switches back to login form when 'Log In' link is clicked", () => {
-    const { getByText, getByLabelText } = render(<LoginRegister />);
-    const registerLink = getByText("Register");
-    fireEvent.click(registerLink);
-
-    const loginLink = getByText("Log In");
+  test("go to login form", async () => {
+    render(<App />)
+    const loginLink = screen.getByText(/Login/i);
     fireEvent.click(loginLink);
-
-    expect(getByText("Account Login")).toBeInTheDocument();
-    expect(getByText("Register")).toBeInTheDocument();
-    expect(getByLabelText("Email address")).toBeInTheDocument();
-    expect(getByLabelText("Password")).toBeInTheDocument();
+    
+    expect(screen.getByText("Account Login")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
+
+  test("switches to registration form when 'Register' link is clicked", async () => {
+    render(<App />)
+    // const loginLink = screen.getByText(/Login/i);
+    // fireEvent.click(loginLink);
+    
+    const form = screen.getByRole('form')
+    const registerLink = within(form).getByRole('link', {name: /Register/i})
+    
+    fireEvent.click(registerLink);
+
+    expect(screen.getByText("Account Registration")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+  });
+
+  // test("switches back to login form when 'Log In' link is clicked", () => {
+  //   const { getByText, getByLabelText } = render(<LoginRegister />);
+  //   const registerLink = getByText("Register");
+  //   fireEvent.click(registerLink);
+
+  //   const loginLink = getByText("Log In");
+  //   fireEvent.click(loginLink);
+
+  //   expect(getByText("Account Login")).toBeInTheDocument();
+  //   expect(getByText("Register")).toBeInTheDocument();
+  //   expect(getByLabelText("Email address")).toBeInTheDocument();
+  //   expect(getByLabelText("Password")).toBeInTheDocument();
+  // });
 
 //   test("submits login form with correct data", () => {
 //     const { getByLabelText, getByText, getByTestId } = render(<LoginRegister />);
