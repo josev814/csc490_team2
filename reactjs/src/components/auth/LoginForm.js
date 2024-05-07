@@ -11,7 +11,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
   };
 
   return (
-    <form className="form shadow" onSubmit={handleSubmit}>
+    <form name="loginForm" className="form shadow" onSubmit={handleSubmit}>
       <div className="card px-5 py-2 rounded border-2 border-light">
         <div className="card-body">
           <h3 className="card-title text-center">Account Login</h3>
