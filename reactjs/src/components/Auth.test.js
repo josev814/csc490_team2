@@ -2,6 +2,13 @@ import React from 'react';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import App from '../App';
 
+function removeLoginErrors(){
+  // reset invalid creds element
+  const invalidCredentialsElement = screen.queryByText(/Invalid Credentials/i);
+  if (invalidCredentialsElement) {
+    document.getElementById('login_errors').remove()
+  }
+}
 describe("LoginRegister component", () => {
   test("go to login form", async () => {
     render(<App />)
@@ -39,7 +46,7 @@ describe("LoginRegister component", () => {
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
-  test("displays error message on login form submission failure", () => {
+  test("test invalid email login form submission failure", async () => {
     render(<App />)
 
     const form = screen.getByRole('form')
@@ -47,13 +54,45 @@ describe("LoginRegister component", () => {
     // Fill in the form fields with invalid data
     fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "invalid-email" } });
     fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
-  
+
     // Submit the form
-    fireEvent.click(within(form).getByText("Log In"));
+    fireEvent.click(within(form).getByText("Login"));
 
     // Assert that the error message is displayed
-    expect(within(form).getByTestId("error-message")).toBeInTheDocument();
-    expect(screen.queryByTestId("loading-indicator")).toBeNull();
+    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
+
+  });
+
+  test("test missing password login form submission failure", async () => {
+    render(<App />)
+    // reset invalid creds element
+    removeLoginErrors()
+    const form = screen.getByRole('form')
+    
+  
+    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
+    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
+
+    // Submit the form
+    fireEvent.click(within(form).getByText("Login"));
+    
+    // Assert that the error message is displayed
+    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
+  });
+
+  test("test short password login form submission failure", async () => {
+    render(<App />)
+    removeLoginErrors()
+    const form = screen.getByRole('form')
+  
+    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
+    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "asdf" } });
+
+    // Submit the form
+    fireEvent.click(within(form).getByText("Login"));  
+    
+    // Assert that the error message is displayed
+    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
   });
 
 //   test("submits login form with correct data", () => {

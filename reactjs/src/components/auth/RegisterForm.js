@@ -28,6 +28,7 @@ export default function RegisterForm({ formData, handleChange, handleSubmit, err
               placeholder="Enter email"
               value={formData.email}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-group mt-3">
@@ -41,13 +42,14 @@ export default function RegisterForm({ formData, handleChange, handleSubmit, err
               minLength={8}
               value={formData.password}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="d-grid mt-3">
             <button type="submit" className="btn btn-primary">Register</button>
           </div>
           {errorMessage && (
-            <div className="alert alert-danger mt-3" role="alert">
+            <div id="registration_errors" className="alert alert-danger mt-3" role="alert">
               {errorMessage}
             </div>
           )}

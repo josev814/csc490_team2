@@ -28,6 +28,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
               placeholder="Enter email"
               value={formData.email}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-group mt-3">
@@ -41,6 +42,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
               minLength={8}
               value={formData.password}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="d-grid mt-3">
@@ -50,7 +52,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
             <a href="/forgot-password">Forgot password?</a>
           </p>
           {errorMessage && (
-            <div className="alert alert-danger mt-3" role="alert">
+            <div id="login_errors" className="alert alert-danger mt-3" role="alert">
               {errorMessage}
             </div>
           )}
