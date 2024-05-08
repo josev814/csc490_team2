@@ -1,65 +1,148 @@
-import React from 'react';
-import { EditOutlined, ContentCopyOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import ShowRuleTransactionChart from '../components/rules/rule_chart';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import axios from 'axios';
+import { EditOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
+import Modal from 'react-bootstrap/Modal';
+import Spinner from "react-bootstrap/Spinner";
 
-export default function SHOW_RULE() {
+import ShowRuleTransactionChart from '../components/rules/rule_chart';
+import CreateRuleForm from '../components/rules/CreateRule'
+
+export function SHOW_RULE(props) {
+    const django_url = props.sitedetails.django_url
+    const {rule, rule_name} = useParams()
+
     const navigate = useNavigate()
-    
-    const return_data = {
-        'errors': null,
-        'rule':
-            {
-                'id': 1,
-                'created_date': '2024-03-22 08:40:23.1123',
-                'name': 'Amazon Buy The Dips',
-                'status': 0,
-                'initial_investment': 20,
-                'growth': 0.25,
-                'return': -20.13,
-                'rule': {
-                    'checks': [{
-                        'conditions': 
-                        [
-                            {
-                                'condition': 'if',
-                                'symbol': {'id':1,'ticker':'amzn'},
-                                'data': 'price',
-                                'operator': 'gt',
-                                'value': 10
-                            },
-                            {
-                                'condition': 'and',
-                                'symbol': {'id':1,'ticker':'amzn'},
-                                'data': 'open',
-                                'operator': 'lte',
-                                'value': 6
-                            }
-                        ],
-                        'action': {
-                            'method': 'buy',
-                            'quantity': 5,
-                            'symbol': {'id':1,'ticker':'amzn'},
-                            'order_type': 'limit'
-                        }
-                    }]
-                },
-                'transactions': {
-                    'count': 5,
-                    'columns': ['id', 'action','datetime','quantity', 'price'],
-                    'records':[
-                        [ 1, 'sell', '2024-03-22 08:40:23.1123', 5, 10 ],
-                        [ 2, 'sell', '2024-03-22 08:40:23.1123', 5, 11 ],
-                        [ 3, 'sell', '2024-03-22 08:40:23.1123', 5, 14 ],
-                        [ 4, 'sell', '2024-03-22 08:40:23.1123', 5, 8 ],
-                        [ 5, 'sell', '2024-03-22 08:40:23.1123', 5, 6 ]
-                    ]
+    const [loading, setLoading] = useState(null);
+    // State to hold the fetched rule data
+    const [ruleData, setRuleData] = useState({});
+    // State to manage error state
+    const [error, setError] = useState(null);
+    const [showModal, setShow] = useState(false);
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+    // State to hld the transactions data
+    const [transactions, setTransactions] = useState([]);
+
+    // Rule to fetch the rule information
+    async function fetchRuleData(rule) {
+        if (django_url === undefined){
+            return
+        }
+        try {
+            const response = await axios.get(
+                `${props.sitedetails.django_url}/rules/${rule}/`,
+                {
+                    headers: props.get_auth_header(),
                 }
+            );
+            setRuleData(response.data);
+            localStorage.setItem('user_rule', JSON.stringify(response.data));
+            setLoading(false);
+        } catch (err) {
+            setError(err.message); // Handle error appropriately
+            console.log(error);
+        }
+    }
+
+    function formatTransactions(transactions){
+        let formatted = []
+        // "id": 175,
+        //     "ticker": 10,
+        //     "action": "buy",
+        //     "quantity": 1,
+        //     "price": 168.75,
+        //     "timestamp": "2024-04-08T15:32:00"
+        let cols = ['id','ticker','action','quantity','price','timestamp']
+        
+        transactions.forEach(trx => {
+            formatted.push(
+                [
+                    trx.id,
+                    trx.ticker,
+                    trx.action,
+                    trx.quantity,
+                    trx.price,
+                    trx.timestamp
+                ]
+            )
+        })
+        return {'columns': cols, 'records': formatted}
+    }
+
+    useEffect(() => {
+        if (loading && django_url !== undefined) {
+            // Fetch transaction data
+            axios.get(`${props.sitedetails.django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
+                .then(response => {
+                    if (response.data.count > 0){
+                        // Here, you should set the fetched transaction data
+                        let trxs = formatTransactions(response.data.results);
+                        setTransactions(trxs);
+                    }
+                })
+                .catch(error => {
+                    // Handle any errors that occur during the request
+                    console.error("Error fetching transaction data:", error);
+                });
+        }
+    }, [loading]);
+
+
+    async function handleDelete() {
+        const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
+        try {
+            const response = await axios.delete(delete_url, { headers: props.get_auth_header() });
+            switch (response.status) {
+                case 204:
+                    navigate('/rules/')
+                    break;
+                case 404:
+                    showToastError('Record not found to delete')
+                    break;
+                default:
+                    break;
             }
+        } catch(error){
+            showToastError(error)
+        }
+    }
+    const toastContainer = document.getElementById('toastContainer')
+
+    function showToastError(message) {    
+        // Create the toast element
+        const toastElement = document.createElement('div');
+        toastElement.className = 'toast show'; // Set the class name
+        toastElement.setAttribute('role', 'alert');
+        toastElement.setAttribute('aria-live', 'assertive');
+        toastElement.setAttribute('aria-atomic', 'true');
+        toastElement.setAttribute('data-bs-autohide', 'true');
+        toastElement.setAttribute('data-bs-delay', 5000);
+    
+        // Create the inner content of the toast element
+        const toastContent = document.createElement('div');
+        toastContent.className = 'toast-body bg-danger text-white';
+        toastContent.textContent = message;
+    
+        // Construct the inner HTML content
+        const toastHeader = `
+            <div class="toast-header">
+                <strong class="me-auto text-danger">Error</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+    
+        // Set the inner HTML content of the toast element
+        toastElement.innerHTML = toastHeader;
+        toastElement.appendChild(toastContent);
+    
+        // Append the toast element to the toast container
+        toastContainer.appendChild(toastElement);
     }
 
     function GetOperator(operator){
-        switch (operator.operator) {
+                switch (operator.operator) {
             case 'gt':
                 return ('>')
             case 'gte':
@@ -69,7 +152,7 @@ export default function SHOW_RULE() {
             case 'lte':
                 return ('<=')
             default:
-                break;
+                return ('=')
         }
     }
 
@@ -92,28 +175,41 @@ export default function SHOW_RULE() {
             <span>
                 <b className='text-danger'>THEN </b>
                 <b className='text-primary'>{data.method.toUpperCase()}</b>{' '}
-                <b>{data.quantity}</b>{' of '}
+                <b>{data.quantity} {data.quantity_type} </b>{' of '}
                 <b>{data.symbol.ticker.toUpperCase()}</b>{' as '}
                 <b>{data.order_type}</b>{' order '}
             </span>
         )
     }
+    function DisplayTrigger(content){
+        let data = content.content
+        return (
+            <span>
+                <b className='text-success'>every {data.interal} </b>
+                <b>{data.interval} </b>
+                <b>{data.frequency} </b>
+
+            </span>
+            
+        )
+    }
 
     function DisplaySequence(){
-        if(return_data.rule.rule.checks.length > 0){
+        if(Object.keys(ruleData.record.rule).length > 0){
             return (
                 <>
-                {return_data.rule.rule.checks[0].conditions.map(condition => (
-                    <div className='row' key={condition.condition}>
-                        <DisplayCondition content={condition} />
-                    </div>
-                ))}
-                <DisplayAction content={return_data.rule.rule.checks[0].action} />
+                    {ruleData.record.rule.conditions.map(condition => (
+                        <div className='row' key={condition.condition}>
+                            <DisplayCondition content={condition} />
+                        </div>
+                    ))}
+                    <DisplayAction content={ruleData.record.rule.action} />
+                    <DisplayTrigger content={ruleData.record.rule.trigger} />
                 </>
             )
-        } else if (return_data.errors) {
+        } else if (ruleData.errors) {
             <div className='row'>
-                {return_data.errors.map(error => (
+                {ruleData.errors.map(error => (
                     error
                 ))}
             </div>
@@ -128,10 +224,11 @@ export default function SHOW_RULE() {
 
     function DisplayTransactionColumns(){
         // Check if rule.rule.transactions[0] exists and is an object
-        if (return_data.rule.transactions.columns) {
+        console.log(transactions)
+        if (transactions.columns) {
             return (
                 <div className='row border border-light border-2'>
-                    {return_data.rule.transactions.columns.map(column => (
+                    {transactions.columns.map(column => (
                         <div className='col-md-2' key={column}>
                             <b>{column.toUpperCase()}</b>
                         </div>
@@ -144,9 +241,9 @@ export default function SHOW_RULE() {
     }
 
     function DisplayTransactions(){
-        if (return_data.rule.transactions.count > 0) {
+        if (Object.keys(transactions).length > 0) {
             return (
-                return_data.rule.transactions.records.map(transaction => (
+                transactions.records.map(transaction => (
                     <div className='row border border-light border-1' key={transaction[0]}>
                         <div className='col-md-2'>
                             {transaction[0]}
@@ -163,6 +260,9 @@ export default function SHOW_RULE() {
                         <div className='col-md-2'>
                             {transaction[4]}
                         </div>
+                        <div className='col-md-2'>
+                            {transaction[5]}
+                        </div>
                     </div> 
                 ))
             );
@@ -176,7 +276,7 @@ export default function SHOW_RULE() {
     }
 
     function DisplayBalance(){
-        let balance = return_data.rule.initial_investment + return_data.rule.return
+        let balance = ruleData.record.balance
         let className = 'text-success'
         if (balance < 0){
             className = 'text-danger'
@@ -198,10 +298,55 @@ export default function SHOW_RULE() {
         )
     }
 
+    useEffect(() => {
+        if (loading && django_url !== undefined) {
+            fetchRuleData(rule);
+        }
+        return () => {}
+    }, [loading, django_url]);
+
+    useEffect(() => {
+        if (django_url === undefined){
+            setLoading(true);
+        }
+    }, [django_url]);
+
+    // use to set loading to true to invoke other effects
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setLoading(true);
+        }, 50);
+        return () => clearInterval(timer)
+    }, [])
+    
+
+    if (loading || ruleData === undefined || Object.keys(ruleData).length === 0){
+        return (
+            <div className="container-fluid">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        )
+    }
 
     return (
         <>
             <div className="container-fluid">
+                <Modal show={showModal} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Delete Rule {rule_name} ({rule})</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        Are you sure you want to delete this rule?
+                    </Modal.Body>
+                    <Modal.Footer>
+                    <button className='btn btn-secondary' onClick={handleClose}>
+                        Cancel
+                    </button>
+                    <button className="btn btn-danger" onClick={handleDelete}>
+                        Delete
+                    </button>
+                    </Modal.Footer>
+                </Modal>
                 <div className='row'>
                     <div className='col-1'>
                         <button className="btn btn-warning btn-md" onClick={() => navigate(-1)}>
@@ -209,44 +354,43 @@ export default function SHOW_RULE() {
                         </button>
                     </div>
                     <div className='col-11'>
-                        <h1>{return_data.rule.name}</h1>
+                        <h1>{rule_name}</h1>
                     </div>
                 </div>
-                <div className="row mb-3">
+                <div className="row mb-5">
                     <div className="col-md-8">
-                        <h3>Total Balance:</h3>
+                        <h3>Investment Balance:</h3>
                         <DisplayBalance />
                     </div>
                     <div className='col-md-4 d-flex justify-content-end'>
                         <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
-                            <button className="btn btn-warning btn-md">
-                                <EditOutlined /> Edit
-                            </button>
+                            <Link to={{ pathname: `/rule/${rule}/${rule_name}/edit` }}>
+                                <button className="btn btn-warning btn-md">
+                                    <EditOutlined /> Edit
+                                </button>
+                            </Link>
                         </div>
-                        <div className='col-md-4 d-flex me-3 align-items-center justify-content-end'>
-                            <button className="btn btn-warning btn-md">
-                                <ContentCopyOutlined /> Duplicate
-                            </button>
-                        </div>
+                        
                         <div className='col-md-4 d-flex align-items-center justify-content-end'>
-                            <button className="btn btn-danger btn-md">
+                            <button className="btn btn-danger btn-md" onClick={handleShow}>
                                 <DeleteOutline /> Remove
                             </button>
                         </div>
                     </div>
                 </div>
-                <div className="row border border-light border-2 shadow-sm mb-5">
+                {/* <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart />
-                </div>
+                    <ShowRuleTransactionChart /> */}
+                    {/* ^ pass symbol and transactions that are loaded from request */}
+                {/* </div> */}
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
-                        <div><b>Start:</b> {return_data.rule.created_date}</div>
-                        <div><b>Transactions:</b> {return_data.rule.transactions.count}</div>
-                        <div><b>Growth:</b> {return_data.rule.growth}</div>
-                        <div><b>Return:</b> ${return_data.rule.growth}</div>
-                        <div><b>Status:</b> <DisplayStatus data={return_data.rule.status} /></div>
+                        <div><b>Start:</b> {ruleData.record.start_date}</div>
+                        <div><b>Transactions:</b> {Object.keys(transactions).length}</div>
+                        <div><b>Growth:</b> {ruleData.record.growth}</div>
+                        <div><b>Return:</b> ${ruleData.record.growth}</div>
+                        <div><b>Status:</b> <DisplayStatus data={ruleData.record.status} /></div>
                     </div>
                     <div className='col-md-6'>
                         <h4>Sequence</h4>
@@ -255,7 +399,7 @@ export default function SHOW_RULE() {
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='container-fluid'>
-                        <h2>Transactions</h2>
+                        <h2>Last 50 Transactions</h2>
                         <DisplayTransactionColumns />
                         <DisplayTransactions />
                     </div>
@@ -264,3 +408,13 @@ export default function SHOW_RULE() {
       </>
     )
   };
+
+
+export function CREATE_RULE(props){    
+    return (
+        <CreateRuleForm 
+            django_url={props.django_url}
+            get_auth_header={props.get_auth_header}
+        />
+    )
+}

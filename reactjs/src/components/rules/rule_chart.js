@@ -25,6 +25,10 @@ class ShowRuleTransactionChart extends React.Component {
     transactions = 'amzn'
     this.setState({symbol: transactions})
     let url = 'http://localhost:8889/stocks/get_ticker_metrics/?ticker=' + transactions
+
+    //pass data from rule.js via getrule endpoint {{base_url}}/rules/1/
+    //transactions from rule.js passed into here
+
     axios.get(url)
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure
@@ -75,14 +79,14 @@ class ShowRuleTransactionChart extends React.Component {
   render(){
     return (
         <div className="container-fluid">
-          <div className="row pb-3">
+          {/* <div className="row pb-3">
             <form>
               <label className="px-2">Granularity:</label>
               <select>
                 <option>1d</option>
               </select>
             </form>
-          </div>
+          </div> */}
           <div className="row pb-3" id="chartContainer" style={{ height: "400px" }}>
           {this.renderGraph}
           </div>

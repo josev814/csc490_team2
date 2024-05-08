@@ -2,6 +2,7 @@ import json
 from django.test import RequestFactory, TestCase
 
 from stocks.views import StockViewSet
+from datetime import datetime, timedelta
 
 # Create your tests here.
 class StockTestCases(TestCase):
@@ -102,11 +103,13 @@ class StockTestCases(TestCase):
         self.assertIn('Missing required', json_resp['errors'][0])
     
     def test_metric_interval(self):
+        oldest_date = datetime.now() - timedelta(days=30) + timedelta(minutes=10)
+        end_date = oldest_date + timedelta(days=7)
         query_params = {
             'ticker': 'amzn',
             'interval': '5m',
-            'starttime': 1708114200,
-            'endtime': 1709517600
+            'starttime': int(oldest_date.timestamp()),
+            'endtime': int(end_date.timestamp())
         }
         request = self.__mock_get_request(f'/stocks/get_ticker_metrics/', query_params)
         stock_view = StockViewSet()

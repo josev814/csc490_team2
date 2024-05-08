@@ -22,5 +22,7 @@ class TransactionSerializer(serializers.ModelSerializer):
         fields = [
             'rule','id', 'ticker', 
             'action', 'quantity', 'price', 
-            'timestamp'
+            'timestamp', 'total_shares',
+            'balance', 'initial_investment',
+            'current_profit_loss'
         ]

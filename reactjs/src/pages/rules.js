@@ -1,161 +1,215 @@
-import React from 'react';
-import { AddCircleOutlineOutlined, NotificationsNoneOutlined } from '@mui/icons-material';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import Pagination from 'react-bootstrap/Pagination';
-import Form from 'react-bootstrap/Form';
+import axios from 'axios';
+import { Form, Spinner } from 'react-bootstrap';
+import { AddCircleOutlineOutlined } from '@mui/icons-material';
+import Pagination from '../components/Pagination'; // Import the Pagination component
 
-export default function LIST_RULES() {
-    
-    const rules = {
-        'errors': null,
-        'count': 2,
-        'total': 2,
-        'records':
-        [
-            {
-                'id': 1,
-                'name': 'Amazon Buy The Dips',
-                'status': 0,
-                'growth': 0.25,
-                'return': 0.13
-            },
-            {
-                'id': 2,
-                'name': 'Apple Buy The Dips',
-                'status': 1,
-                'growth': 11.78,
-                'return': 11.78
+export default function LIST_RULES(props) {
+    const { get_auth_header, django_url } = props;
+
+    // State variables
+    const [rules, setRules] = useState(null); // State for storing rules data
+    const [links, setLinks] = useState(null); // Sets the prev/next links
+    const [loading, setLoading] = useState(true); // State for loading status
+    const [error, setError] = useState(null); // State for error handling
+    const [totalBalance, setTotalBalance] = useState(null);
+    const [totalUserProfit, setTotalUserProfit] = useState(null);
+
+    // Function to fetch rules data
+    const fetchRules = useCallback(async (link) => {
+        try {
+            if (link === undefined){
+                link = `${django_url}/rules/list/`
             }
-        ]
-    }
+            const headers = get_auth_header();
+            // Fetch rules data from the server based on current page
+            const response = await axios.get(link, { headers });
 
-    function GetPagination(){
-        let active = 2;
-        let max_page = 5;
-        let pagination_items = [];
-        let first_pagination = false
-        for (let number = 1; number <= 5; number++) {
-            if (number !== 1 && first_pagination){
-                pagination_items.push(
-                    <>
-                    <Pagination.First />
-                    <Pagination.Prev />
-                    </>
-                )
-                first_pagination = true
+            // Check response status
+            if (response.status === 200) {
+                setRules(response.data.records); // Set rules data
+                setLinks(response.data.links);
+            } else {
+                setError('Unexpected response status'); // Handle unexpected response status
             }
-            pagination_items.push(
-                <Pagination.Item key={number} active={number === active}>
-                {number}
-                </Pagination.Item>,
-            );
-        }
-        if (active !== max_page){
-            pagination_items.push(
-                <>
-                <Pagination.Next />
-                <Pagination.Last />
-                </>
-            )
-            first_pagination = true
-        }
+        } catch (error) {
+            let errorMessage = 'An error occurred, try again later'; // Default error message
+        
+            if (error.response && error.response.data && error.response.data.errors && error.response.data.errors.length > 0) {
+                // Use the first error message from the response
+                errorMessage = error.response.data.errors[0];
+            }
+        
+            setError(errorMessage); // Set error message
+        } finally {
+            setLoading(false); // Update loading status
+        }               
+    }, [get_auth_header, django_url]);
 
+    // Effect to fetch rules data when currentPage changes
+    useEffect(() => {
+        if (django_url === undefined){
+            setLoading(true);
+        } else {
+            fetchRules();
+        }
+    }, [fetchRules, django_url]);
+
+
+    // Function to handle page change
+    const handlePageChange = (link) => {
+        fetchRules(link); // Update currentPage
+    };
+
+    // Component to render individual rule
+    function GetRuleLinkRoute(props) {
+        // Construct the route for each rule
+        let rule_route = `/rule/${props.rule.id}/${encodeURIComponent(props.rule.name)}`;
         return (
-            <div className='container-fluid'>
-                <Pagination>
-                    {pagination_items}
-                </Pagination>
-            </div>
+            <Link to={rule_route}>{props.rule.name}</Link>
         );
     }
 
-    function GetRuleLinkRoute(rule){
-        let rule_route = '/rule/' + rule.rule.id + '/' + encodeURIComponent(rule.rule.name)
-        return (
-            <Link to={rule_route}>{rule.rule.name}</Link>
-        )
-    }
+    // Component to display rules
+    function DisplayRules({ rules }) {
+        // Check if rules exist or empty
+        if (!rules || rules.length === 0) return <div>No rules found.</div>;
 
-    function DisplayRule(){
         return (
-            rules.records.map(rule => (
-                <div className='row border border-light border-2 shadow-sm mb-5' key={rule.name}>
-                    <div className='col-md-3'>
-                        <h3>
-                            <GetRuleLinkRoute rule={rule} />
-                        </h3>
-                    </div>
-                    <div className='col-md-3'>
-                        Status
-                        <br />
-                        <Form.Check disabled type='switch' checked={rule.status} />
-                    </div>
-                    <div className='col-md-3'>
-                        Growth
-                        <br />
-                        {rule.growth}
-                    </div>
-                    <div className='col-md-3'>
-                        Net Profit
-                        <br />
-                        ${rule.name}
-                    </div>
-                </div> 
-            ))
-        );
-    }
-    return (
-        <>
-            <div className="container-fluid">
-                <div className="row mb-3">
-                    <div className="col-md-8">
-                        <h3>Total Balance:</h3>
-                        <h4 className='text-success'>$0</h4>
-                        <h4 className='text-danger'>-$20</h4>
-                    </div>
-                    <div className='col-md-4 d-flex justify-content-end'>
-                        <div className='col-md-6 d-flex me-3 align-items-center justify-content-end'>
-                            <button className="btn btn-outline-dark btn-lg">
-                                <NotificationsNoneOutlined /> Notifications
-                            </button>
+            <>
+                {rules.map(rule => (
+                    <div className='row border border-light border-2 shadow-sm mb-5' key={rule.id}>
+                        <div className='col-md-3'>
+                            <h3>
+                                <GetRuleLinkRoute rule={rule} />
+                            </h3>
                         </div>
-                        <div className='col-md-6 d-flex align-items-center justify-content-end'>
+                        <div className='col-md-3'>
+                            Status
+                            <br />
+                            {/* Display status switch */}
+                            {rule.status ? (
+                                <Form.Check disabled type='switch' checked={rule.status} />
+                            ) : (
+                                <Form.Check disabled type='switch' /> 
+                            )}
+                        </div>
+                        <div className='col-md-3'>
+                            Growth
+                            <br />
+                            {/* Display growth percentage */}
+                            {rule.growth}%
+                        </div>
+                        <div className='col-md-3'>
+                            Net Profit
+                            <br />
+                            {/* Display net profit */}
+                            $ {rule.profit}
+                        </div>
+                    </div> 
+                ))}
+            </>
+        );
+    }
+
+    //function to fetch total balance of rules
+    const fetchBalance = useCallback(async() => {
+        try {
+            const balanceLink = `${django_url}/users/get_profit_loss/`
+
+            const headers = get_auth_header();
+            // Fetch rules data from the server based on current page
+            const res = await axios.get(balanceLink, { headers });
+
+            // Check response status
+            if (res.status === 200) {
+                setTotalBalance(res.data.record.total_balance)
+                setTotalUserProfit(res.data.record.total_profit)
+
+            } else {
+                setError('Unexpected response status'); // Handle unexpected response status
+            }
+        } catch (error) {
+            let errorMessage = 'An error occurred, try again later'; // Default error message
+        
+            if (error.response && error.response.data && error.response.data.errors && error.response.data.errors.length > 0) {
+                // Use the first error message from the response
+                errorMessage = error.response.data.errors[0];
+            }
+        
+            setError(errorMessage); // Set error message
+        }            
+    }, [get_auth_header, django_url]);
+
+    useEffect(() => {
+        if (django_url === undefined){
+            setLoading(true);
+        } else {
+            fetchBalance();
+        }
+    }, [fetchBalance, django_url]);
+
+    function DisplayBalCreate() {
+        
+        return (
+            <div className="row mb-3">
+                <div className="col-md-8">
+                    <h3>Total Balance:</h3>
+                    {/* Display total balance */}
+                    <h4 className='text-success'>${totalBalance}</h4>
+                    <h3 className='fs-5'>Total User Profit:</h3>
+                    <h4 className='text-success fs-5'>${totalUserProfit}</h4>
+                </div>
+                <div className='col-md-4 d-flex justify-content-end'>
+                    <div className='col-md-6 d-flex align-items-center justify-content-end'>
+                        {/* Link to create new rule */}
+                        <Link to='/rule/create'>
                             <button className="btn btn-info btn-lg">
                                 Create Rule <AddCircleOutlineOutlined />
                             </button>
-                        </div>
+                        </Link>
                     </div>
-                </div>
-                <div className='row mb-5'>
-                    <div className='col-auto'>
-                        <label for='filter' className='col-form-label fw-bold'>Filters:</label>
-                    </div>
-                    <div className='col-auto ps-0'>
-                        <select className='form-select form-control' name='filter' id='filter'>
-                            <option selected value='all'>All</option>
-                            <option value='active'>Active</option>
-                            <option value='inactive'>Paused</option>
-                        </select>
-                    </div>
-                    <div className='col-auto'>
-                        <label for='sort' className='col-form-label fw-bold'>Sort:</label>
-                    </div>
-                    <div className='col-auto ps-0'>
-                        <select name='sort' className='form-select form-control' id='sort'>
-                            <option value={'created_asc'} selected>Created - &#9650;</option>
-                            <option value={'created_desc'}>Created - &#9660;</option>
-                            <option value={'return_asc'}>Return - &#9650;</option>
-                            <option value={'return_desc'}>Return - &#9660;</option>
-                            <option value={'return_asc'}>Growth - &#9650;</option>
-                            <option value={'growth_desc'}>Growth - &#9660;</option>
-                        </select>
-                    </div>
-                </div>
-                <DisplayRule />
-                <div className='row'>
-                    <GetPagination />
                 </div>
             </div>
-      </>
-    )
-  };
+        );
+    }
+
+    if (loading) {
+        return (
+          <div className="container-fluid">
+            <DisplayBalCreate />
+            <div>
+              <Spinner animation="border" variant="primary" />
+            </div>
+          </div>
+        )
+      }
+
+    // Component to render error state
+    if (error) {
+        return (
+          <div className="container-fluid">
+            <DisplayBalCreate />
+            <div>{error}</div>
+          </div>
+        )
+    }
+
+    // Render component
+    return (
+        <>
+            <div className="container-fluid">
+                <DisplayBalCreate />
+                <div id='displayRules'>
+                    <DisplayRules rules={rules} />
+                    <Pagination
+                        onPageChange={handlePageChange} // Pass the handlePageChange function as prop
+                        links={links}
+                        target_element='displayRules'
+                    />
+                </div>
+            </div>
+        </>
+    );
+}
