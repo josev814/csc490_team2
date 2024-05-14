@@ -16,13 +16,13 @@ class TransactionsManager(models.Manager):
     :param models: _description_
     :type models: _type_
     """
-    def add_transaction(self, ticker, rule_id, action, qty, price, trx_timestamp):
+    def add_transaction(self, ticker_obj, rule_obj, action, qty, price, trx_timestamp):
         """Adds a transaction to the database
 
-        :param ticker: 
-        :type ticker: ticker
-        :param rule_id: 
-        :type rule_id: int
+        :param ticker_obj: 
+        :type ticker_obj: Stocks object
+        :param rule_obj: 
+        :type rule_obj: Rules Object
         :param action: Whether we buy or sell a stock
         :type action: str
         :param qty: 
@@ -33,8 +33,8 @@ class TransactionsManager(models.Manager):
         :type trx_timestamp: datetime
         """
         record = {
-            'ticker': ticker,
-            'rule': rule_id,
+            'ticker': ticker_obj,
+            'rule': rule_obj,
             'action': action,
             'quantity': qty,
             'price': price,
@@ -64,6 +64,10 @@ class Transactions(models.Model):
     timestamp = models.DateTimeField()
     quantity = models.IntegerField()
     price = models.FloatField(max_length=28)
+    total_shares = models.IntegerField(default=0)
+    balance = models.FloatField(default=0.0, max_length=28)
+    initial_investment = models.FloatField(default=0.0, max_length=28)
+    current_profit_loss = models.FloatField(default=0.0, max_length=28)
 
     objects = TransactionsManager()
 
@@ -84,4 +88,6 @@ class Transactions(models.Model):
         :return: Returns the ticker, rule, action, quantity, price and timestamp
         :rtype: str
         """
-        return f'{self.ticker, self.rule, self.action, self.quantity, self.price, self.timestamp}'
+        return f'{self.ticker}, {self.rule}, {self.action}, ' + \
+            f'{self.quantity}, {self.price}, {self.timestamp}, ' + \
+            f'{self.total_shares}, {self.current_profit_loss}'
