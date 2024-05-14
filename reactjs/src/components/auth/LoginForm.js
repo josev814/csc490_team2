@@ -11,12 +11,12 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
   };
 
   return (
-    <form className="form shadow" onSubmit={handleSubmit}>
+    <form name="loginForm" className="form shadow" onSubmit={handleSubmit}>
       <div className="card px-5 py-2 rounded border-2 border-light">
         <div className="card-body">
           <h3 className="card-title text-center">Account Login</h3>
           <div className="card-text text-center">
-            <p>Not registered yet? <span className="link-primary" onClick={handleRegisterRedirect}>Register</span></p>
+            <p>Not registered yet? <span role="link" className="link-primary" onClick={handleRegisterRedirect}>Register</span></p>
           </div>
           <div className="form-group mt-3">
             <label htmlFor="email" className="form-label">Email address</label>
@@ -28,6 +28,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
               placeholder="Enter email"
               value={formData.email}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="form-group mt-3">
@@ -41,6 +42,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
               minLength={8}
               value={formData.password}
               onChange={handleChange}
+              required
             />
           </div>
           <div className="d-grid mt-3">
@@ -50,7 +52,7 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
             <a href="/forgot-password">Forgot password?</a>
           </p>
           {errorMessage && (
-            <div className="alert alert-danger mt-3" role="alert">
+            <div id="login_errors" className="alert alert-danger mt-3" role="alert">
               {errorMessage}
             </div>
           )}
