@@ -175,6 +175,7 @@ class StockData(models.Model):
         Getting the Stock's trading times for the exhange
         """
         meta = yahoo_data['meta']
+        trading_periods = {'start': None, 'end': None}
         if 'tradingPeriods' in meta:
             trading_periods = meta['tradingPeriods']['regular'][0][0]
         elif 'currentTradingPeriod' in meta:
