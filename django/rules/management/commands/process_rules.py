@@ -28,7 +28,6 @@ class Command(BaseCommand):
         self.this_job = self.get_job_info()
         # Get the last runtime of this job
         self.LAST_RUNTIME = self.get_last_runtime()
-        
 
     def handle(self, *args: Any, **options: Any):
         """
@@ -87,9 +86,13 @@ class Command(BaseCommand):
         """
         Set the last time this job ran based on the start time
         """
-        self.this_job.set_last_runtime(
-            self.START_TIME
-        )
+        try:
+            self.this_job.set_last_runtime(
+                self.START_TIME
+            )
+        except Exception as e:
+            self.output_error(f'Error occurred {e}')
+            pass
 
     def get_rules(self):
         """
@@ -228,7 +231,7 @@ class Command(BaseCommand):
             self.update_rule_growth(record, record.shares, current_stock_price)
             return
         print('Matching Stock Records: ', stock_records.count())
-        print(stock_records.query)
+        # print(stock_records.query)
 
         action = record.rule['action']
         trigger = record.rule['trigger']
@@ -249,9 +252,11 @@ class Command(BaseCommand):
             stock_records = stock_records.filter(timestamp__gte=trx_wait)
 
     ##### TODO: ######
+        if stock_records.count() == 0:
+            return
 
         for stock_record in stock_records:
-            self.output_info(f'stock_time: {stock_record.timestamp} - trx_wait: {trx_wait}')
+            # self.output_info(f'stock_time: {stock_record.timestamp} - trx_wait: {trx_wait}')
             if trx_wait is not None and stock_record.timestamp <= trx_wait:
                 continue
             pre_trx_balance = balance
@@ -383,9 +388,9 @@ class Command(BaseCommand):
             record.id,
             symbol_id
         )
-        print('Current Stock Price: ', current_stock_price)
-        print('AVG Cost: ', average_cost)
-        print('SHARES: ', number_of_shares)
+        # print('Current Stock Price: ', current_stock_price)
+        # print('AVG Cost: ', average_cost)
+        # print('SHARES: ', number_of_shares)
         total_investment = number_of_shares * average_cost
         current_value = number_of_shares * current_stock_price
         return current_value - total_investment
@@ -432,7 +437,6 @@ class Command(BaseCommand):
                 F('timestamp') - Value(timestamp), function='ABS'
             )
         ).order_by('timestamp_difference')
-        print(qs.query)
         return qs.first().low
     
     def get_rule_growth(

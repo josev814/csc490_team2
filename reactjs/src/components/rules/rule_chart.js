@@ -16,33 +16,97 @@ class ShowRuleTransactionChart extends React.Component {
       symbol: null,
       chartSeries: [],
       chartXaxis: [],
-      loading: true
+      loading: true,
+      processing: false,
     };
   }
 
+  get_strdate_to_date_obj(str_date){
+    const dateParts = str_date.split("-");
+    const year = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]) - 1; // Month is zero-based in JavaScript Date object
+    const day = parseInt(dateParts[2]);
+
+    // Create a Date object with the current date
+    return new Date(year, month, day);
+  }
+
+  get_next_date(current_date) {
+    const currentDate = this.get_strdate_to_date_obj(current_date)
+    // Get the next day by adding 1 to the current day
+    currentDate.setDate(currentDate.getDate() + 1);
+
+    // Format the next day in the desired format (YYYY-MM-DD)
+    return currentDate.toISOString().substring(0, 10);
+  }
+
   componentDidMount() {
-    let { transactions } = this.props.params
-    transactions = 'amzn'
-    this.setState({symbol: transactions})
-    let url = 'http://localhost:8889/stocks/get_ticker_metrics/?ticker=' + transactions
+    if(this.state.processing === true){
+      return;
+    }
+    this.setState( prevState => ({...prevState, 'processing':true }))
+    console.log('props: ', this.props)
+    let rule_id = this.props.params.rule
+    let url = `${this.props.sitedetails.django_url}/transactions/rule/${rule_id}/?limit=50&ordering=pk`
+    console.log(url)
 
-    //pass data from rule.js via getrule endpoint {{base_url}}/rules/1/
-    //transactions from rule.js passed into here
-
-    axios.get(url)
+    axios.get(url, {headers: this.props.get_auth_header()})
       .then(res => {
-          //console.log(res.data); // Log the response data to understand its structure
           const results = res.data
-          //const timestamps = results['timestamp'];
-          const quotes = results['records']
-          const xDates = [];
-          const returned = [];
+          const quotes = results['results'].reverse()
+          let xDates = [];
+          let purchased = [];
+          let sold = [];
+          let profit = [];
+          let last_datetime=undefined
+          let day_purchased_qty = 0
+          let day_sold_qty = 0
+          let next_day = undefined
           quotes.forEach(record => {
-            xDates.push(record.timestamp.substring(0, 10));
-            returned.push(record.high);
+            let entry_date = record.timestamp.substring(0, 10)
+            let entry_date_obj = this.get_strdate_to_date_obj(entry_date)
+            if (next_day !== undefined){ // handles dates where no trx were performed
+              while(entry_date_obj > this.get_strdate_to_date_obj(next_day)){
+                day_purchased_qty = 0
+                day_sold_qty = 0
+                console.log(`Current Day ${entry_date} adding missing date ${next_day}`)
+                xDates.push(next_day);
+                sold.push(day_sold_qty)
+                purchased.push(day_purchased_qty)
+                next_day = this.get_next_date(next_day)
+              }
+            }
+            if (last_datetime === undefined){
+              if (record.action === 'buy'){
+                day_purchased_qty += record.quantity
+              } else if (record.action === 'sold'){
+                day_sold_qty += record.quantity
+              }
+            } else if (last_datetime !== undefined){
+              // Start add to qty if current date
+              if (entry_date === last_datetime){
+                if (record.action === 'buy'){
+                  day_purchased_qty += record.quantity
+                } else if (record.action === 'sold'){
+                  day_sold_qty += record.quantity
+                }
+                // End add to qty if current date
+              } else {
+                xDates.push(last_datetime);
+                sold.push(day_sold_qty)
+                purchased.push(day_purchased_qty)
+                //reset after push
+                day_purchased_qty = 0
+                day_sold_qty = 0
+              }
+            }
+            last_datetime = entry_date
+            next_day = this.get_next_date(entry_date)
           });
           this.setState({ chartSeries: [
-            {name: 'Return', data: returned},
+            {name: 'Return', data: profit},
+            {name: 'Purchased', data: purchased},
+            {name: 'Sold', data: sold},
           ], chartXaxis: xDates,
           loading: false }); // Set loading to false here
         })
