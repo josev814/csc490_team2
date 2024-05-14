@@ -11,6 +11,7 @@ import CreateRuleForm from '../components/rules/CreateRule'
 
 export function SHOW_RULE(props) {
     const django_url = props.sitedetails.django_url
+    const get_auth_header = props.get_auth_header
     const {rule, rule_name} = useParams()
 
     const navigate = useNavigate()
@@ -24,27 +25,6 @@ export function SHOW_RULE(props) {
     const handleShow = () => setShow(true);
     // State to hld the transactions data
     const [transactions, setTransactions] = useState([]);
-
-    // Rule to fetch the rule information
-    async function fetchRuleData(rule) {
-        if (django_url === undefined){
-            return
-        }
-        try {
-            const response = await axios.get(
-                `${props.sitedetails.django_url}/rules/${rule}/`,
-                {
-                    headers: props.get_auth_header(),
-                }
-            );
-            setRuleData(response.data);
-            localStorage.setItem('user_rule', JSON.stringify(response.data));
-            setLoading(false);
-        } catch (err) {
-            setError(err.message); // Handle error appropriately
-            console.log(error);
-        }
-    }
 
     function formatTransactions(transactions){
         let formatted = []
@@ -74,7 +54,7 @@ export function SHOW_RULE(props) {
     useEffect(() => {
         if (loading && django_url !== undefined) {
             // Fetch transaction data
-            axios.get(`${props.sitedetails.django_url}/transactions/rule/${rule}/?limit=50`, { headers: props.get_auth_header() })
+            axios.get(`${django_url}/transactions/rule/${rule}/?limit=50`, { headers: get_auth_header() })
                 .then(response => {
                     if (response.data.count > 0){
                         // Here, you should set the fetched transaction data
@@ -82,64 +62,70 @@ export function SHOW_RULE(props) {
                         setTransactions(trxs);
                     }
                 })
-                .catch(error => {
+                .catch(err => {
                     // Handle any errors that occur during the request
-                    console.error("Error fetching transaction data:", error);
+                    setError("Error fetching transaction data:", err)
                 });
         }
-    }, [loading]);
+    }, [loading, django_url, get_auth_header, rule]);
 
 
     async function handleDelete() {
         const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
         try {
-            const response = await axios.delete(delete_url, { headers: props.get_auth_header() });
+            const response = await axios.delete(delete_url, { headers: get_auth_header() });
             switch (response.status) {
                 case 204:
                     navigate('/rules/')
                     break;
                 case 404:
-                    showToastError('Record not found to delete')
+                    setError('Record not found to delete')
                     break;
                 default:
                     break;
             }
-        } catch(error){
-            showToastError(error)
+        } catch(err){
+            setError(err)
         }
     }
-    const toastContainer = document.getElementById('toastContainer')
 
-    function showToastError(message) {    
-        // Create the toast element
-        const toastElement = document.createElement('div');
-        toastElement.className = 'toast show'; // Set the class name
-        toastElement.setAttribute('role', 'alert');
-        toastElement.setAttribute('aria-live', 'assertive');
-        toastElement.setAttribute('aria-atomic', 'true');
-        toastElement.setAttribute('data-bs-autohide', 'true');
-        toastElement.setAttribute('data-bs-delay', 5000);
-    
-        // Create the inner content of the toast element
-        const toastContent = document.createElement('div');
-        toastContent.className = 'toast-body bg-danger text-white';
-        toastContent.textContent = message;
-    
-        // Construct the inner HTML content
-        const toastHeader = `
-            <div class="toast-header">
-                <strong class="me-auto text-danger">Error</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        `;
-    
-        // Set the inner HTML content of the toast element
-        toastElement.innerHTML = toastHeader;
-        toastElement.appendChild(toastContent);
-    
-        // Append the toast element to the toast container
-        toastContainer.appendChild(toastElement);
-    }
+    useEffect(() => {
+        function showToastError(message) {
+            const toastContainer = document.getElementById('toastContainer')
+            // Create the toast element
+            const toastElement = document.createElement('div');
+            toastElement.className = 'toast show'; // Set the class name
+            toastElement.setAttribute('role', 'alert');
+            toastElement.setAttribute('aria-live', 'assertive');
+            toastElement.setAttribute('aria-atomic', 'true');
+            toastElement.setAttribute('data-bs-autohide', 'true');
+            toastElement.setAttribute('data-bs-delay', 5000);
+        
+            // Create the inner content of the toast element
+            const toastContent = document.createElement('div');
+            toastContent.className = 'toast-body bg-danger text-white';
+            toastContent.textContent = message;
+        
+            // Construct the inner HTML content
+            const toastHeader = `
+                <div class="toast-header">
+                    <strong class="me-auto text-danger">Error</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+        
+            // Set the inner HTML content of the toast element
+            toastElement.innerHTML = toastHeader;
+            toastElement.appendChild(toastContent);
+        
+            // Append the toast element to the toast container
+            toastContainer.appendChild(toastElement);
+        }
+        if (error){
+            console.error('Error: ', error)
+            showToastError(error)
+        }
+    }, [error])
 
     function GetOperator(operator){
                 switch (operator.operator) {
@@ -209,8 +195,8 @@ export function SHOW_RULE(props) {
             )
         } else if (ruleData.errors) {
             <div className='row'>
-                {ruleData.errors.map(error => (
-                    error
+                {ruleData.errors.map(err => (
+                    err
                 ))}
             </div>
         } else {
@@ -300,10 +286,30 @@ export function SHOW_RULE(props) {
 
     useEffect(() => {
         if (loading && django_url !== undefined) {
+            // Rule to fetch the rule information
+            async function fetchRuleData(rule) {
+                if (django_url === undefined){
+                    return
+                }
+                try {
+                    const response = await axios.get(
+                        `${django_url}/rules/${rule}/`,
+                        {
+                            headers: get_auth_header(),
+                        }
+                    );
+                    setRuleData(response.data);
+                    localStorage.setItem('user_rule', JSON.stringify(response.data));
+                    setLoading(false);
+                } catch (err) {
+                    setError(err.message); // Handle error appropriately
+                    console.log(err);
+                }
+            }
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading, django_url]);
+    }, [loading, django_url, get_auth_header, rule]);
 
     useEffect(() => {
         if (django_url === undefined){
@@ -378,11 +384,11 @@ export function SHOW_RULE(props) {
                         </div>
                     </div>
                 </div>
-                {/* <div className="row border border-light border-2 shadow-sm mb-5">
+                <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart /> */}
+                    <ShowRuleTransactionChart sitedetails={props.sitedetails} get_auth_header={get_auth_header} />
                     {/* ^ pass symbol and transactions that are loaded from request */}
-                {/* </div> */}
+                </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <div className='col-md-6'>
                         <h4>Rule Information</h4>
