@@ -1,41 +1,98 @@
-import React from "react";
-import { render, fireEvent } from "@testing-library/react";
-import {LoginRegister} from "./Auth";
+import React from 'react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import App from '../App';
 
+function removeLoginErrors(){
+  // reset invalid creds element
+  const invalidCredentialsElement = screen.queryByText(/Invalid Credentials/i);
+  if (invalidCredentialsElement) {
+    document.getElementById('login_errors').remove()
+  }
+}
 describe("LoginRegister component", () => {
-  test("renders login form by default", () => {
-    const { getByText, getByLabelText } = render(<LoginRegister />);
+  test("go to login form", async () => {
+    render(<App />)
+    const loginLink = screen.getByText(/Login/i);
+    fireEvent.click(loginLink);
     
-    expect(getByText("Account Login")).toBeInTheDocument();
-    expect(getByText("Register")).toBeInTheDocument();
-    expect(getByLabelText("Email address")).toBeInTheDocument();
-    expect(getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByText("Account Login")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
-  test("switches to registration form when 'Register' link is clicked", () => {
-    const { getByText, getByLabelText } = render(<LoginRegister />);
-    const registerLink = getByText("Register");
-
+  test("switches to registration form when 'Register' link is clicked", async () => {
+    render(<App />)
+    
+    const form = screen.getByRole('form')
+    const registerLink = within(form).getByRole('link', {name: /Register/i})
+    
     fireEvent.click(registerLink);
 
-    expect(getByText("Account Registration")).toBeInTheDocument();
-    expect(getByText("Log In")).toBeInTheDocument();
-    expect(getByLabelText("Email address")).toBeInTheDocument();
-    expect(getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByText("Account Registration")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
-  test("switches back to login form when 'Log In' link is clicked", () => {
-    const { getByText, getByLabelText } = render(<LoginRegister />);
-    const registerLink = getByText("Register");
-    fireEvent.click(registerLink);
+  test("switches back to login form when 'Log In' link is clicked", async () => {
+    render(<App />)
 
-    const loginLink = getByText("Log In");
+    const form = screen.getByRole('form')
+    const loginLink = within(form).getByRole('link', {name: /Log In/i})
+    
     fireEvent.click(loginLink);
 
-    expect(getByText("Account Login")).toBeInTheDocument();
-    expect(getByText("Register")).toBeInTheDocument();
-    expect(getByLabelText("Email address")).toBeInTheDocument();
-    expect(getByLabelText("Password")).toBeInTheDocument();
+    expect(screen.getByText("Account Login")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email address")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+  });
+
+  test("test invalid email login form submission failure", async () => {
+    render(<App />)
+
+    const form = screen.getByRole('form')
+  
+    // Fill in the form fields with invalid data
+    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "invalid-email" } });
+    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
+
+    // Submit the form
+    fireEvent.click(within(form).getByText("Login"));
+
+    // Assert that the error message is displayed
+    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
+
+  });
+
+  test("test missing password login form submission failure", async () => {
+    render(<App />)
+    // reset invalid creds element
+    removeLoginErrors()
+    const form = screen.getByRole('form')
+    
+  
+    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
+    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
+
+    // Submit the form
+    fireEvent.click(within(form).getByText("Login"));
+    
+    // Assert that the error message is displayed
+    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
+  });
+
+  test("test short password login form submission failure", async () => {
+    render(<App />)
+    removeLoginErrors()
+    const form = screen.getByRole('form')
+  
+    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
+    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "asdf" } });
+
+    // Submit the form
+    fireEvent.click(within(form).getByText("Login"));  
+    
+    // Assert that the error message is displayed
+    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
   });
 
 //   test("submits login form with correct data", () => {
@@ -50,33 +107,5 @@ describe("LoginRegister component", () => {
 
 //     // Assert that the loading indicator or success message is displayed
 //     expect(getByTestId("loading-indicator")).toBeInTheDocument();
-//   });
-
-//   test("displays error message on login form submission failure", () => {
-//     const { getByLabelText, getByText, getByTestId } = render(<LoginRegister />);
-  
-//     // Fill in the form fields with invalid data
-//     fireEvent.change(getByLabelText("Email address"), { target: { value: "invalid-email" } });
-//     fireEvent.change(getByLabelText("Password"), { target: { value: "" } });
-  
-//     // Submit the form
-//     fireEvent.click(getByText("Log In"));
-
-//     // Assert that the error message is displayed
-//     expect(getByTestId("error-message")).toBeInTheDocument();
-//   });
-
-//   test("prevents login form submission with invalid input", () => {
-//     const { getByLabelText, getByText, queryByTestId } = render(<LoginRegister />);
-  
-//     // Fill in the form fields with invalid data
-//     fireEvent.change(getByLabelText("Email address"), { target: { value: "invalid-email" } });
-//     fireEvent.change(getByLabelText("Password"), { target: { value: "" } });
-  
-//     // Try to submit the form
-//     fireEvent.click(getByText("Log In"));
-
-//     // Assert that the loading indicator or success message is not displayed
-//     expect(queryByTestId("loading-indicator")).toBeNull();
 //   });
 });
