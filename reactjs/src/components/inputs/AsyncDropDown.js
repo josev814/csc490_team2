@@ -61,6 +61,7 @@ export function AsyncDropDown(props) {
                 isClearable
                 placeholder="Type to find a symbol..."
                 required
+                isDisabled ={props.isDisabled ? true : false}
             />
         </>
     )
