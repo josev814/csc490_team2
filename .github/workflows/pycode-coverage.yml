@@ -15,9 +15,6 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [backend,redis_cache,stocksdb]
     steps:
     - name: checkout code
       uses: actions/checkout@v3
@@ -35,10 +32,20 @@ jobs:
         EOF
     - name: Compose docker
       run: |
-        docker compose -f BuildTools/docker-compose.yml build ${{ matrix.service }}
+        build_pids=()
+        for service in backend redis_cache stocksdb
+        do
+          docker compose -f BuildTools/docker-compose.yml build ${service} &
+          build_pids+=($!)
+        done
+
+        for build_pid in "${build_pids[@]}""
+        do
+          wait $build_pid
+        done
     - name: Docker Compose up
       run: |
-        docker compose -f BuildTools/docker-compose.yml up -d --remove-orphans
+        docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans
     - name: Test with coverage
       run: |
         docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage run manage.py test --keepdb'
