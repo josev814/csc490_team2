@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [backend,mysql,redis_cache,stocksdb]
+        service: [backend,redis_cache,stocksdb]
     steps:
     - name: checkout code
       uses: actions/checkout@v3
