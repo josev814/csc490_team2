@@ -39,7 +39,7 @@ jobs:
           build_pids+=($!)
         done
 
-        for build_pid in "${build_pids[@]}""
+        for build_pid in "${build_pids[@]}"
         do
           wait $build_pid
         done
