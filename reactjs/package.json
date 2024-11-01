@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-private-property-in-object": "^7.24.7",
-    "@babel/preset-env": "^7.24.7",
+    "@babel/preset-env": "^7.26.0",
     "@babel/preset-react": "^7.23.3",
     "babel-jest": "^29.7.0",
     "eslint": "^8.57.0",
