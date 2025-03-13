@@ -7,7 +7,7 @@ pytest-cov
 coverage
 mysqlclient
 djangorestframework
-djangorestframework-simplejwt
+djangorestframework-simplejwt <= 5.4.0
 markdown
 django-filter
 django-oauth-toolkit
