@@ -41,7 +41,9 @@ jobs:
     - name: Run EsLint
       shell: bash
       run: |
-        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") --quiet 2>/dev/null' > $ESLOG_FILE
+        set +e
+        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") --quiet' > $ESLOG_FILE
+        cat $ESLOG_FILE
     - name: Output Lint info
       run: |
         cat $ESLOG_FILE
