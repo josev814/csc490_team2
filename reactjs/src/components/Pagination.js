@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from "prop-types";
 
 export default function Pagination(props) {
     // Function to handle clicking on the previous or next page button
@@ -37,3 +38,9 @@ export default function Pagination(props) {
 }
 
 
+
+Pagination.propTypes = {
+    links: PropTypes.object,
+    onPageChange: PropTypes.func,
+    target_element: PropTypes.string,
+}
