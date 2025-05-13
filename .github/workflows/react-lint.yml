@@ -1,20 +1,25 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
 name: React Linting
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-lint.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-lint.yml'
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
+    env:
+      ESLOG_FILE: eslint.results.log
     steps:
     - name: checkout code
       uses: actions/checkout@v3
@@ -33,13 +38,21 @@ jobs:
     - name: Build FrontEnd
       run: |
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
-    - name: EsLint
+    - name: Copy in ESLint Config File
       run: |
-        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js")' > eslint.results.log
-        if [[ $(grep -P '[0-9]+ problems' eslint.results.log | wc -l ) -gt 0 ]]; then
+        docker cp reactjs/eslint.config.mjs stocks_frontend:/react-app/src/
+    - name: Run EsLint
+      shell: bash
+      run: |
+        set +e
+        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") --quiet' > $ESLOG_FILE
+        cat $ESLOG_FILE
+    - name: Output Lint info
+      run: |
+        cat $ESLOG_FILE
+    - name: Throw Lint Error Flag
+      run: |
+        if [[ $(grep -c -P '[0-9]+ problems' $ESLOG_FILE ) -ne 0 ]]; then
           echo "ESLint found errors."
-          cat eslint.results.log
           exit 1
         fi
-        cat eslint.results.log
-        

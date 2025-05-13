@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from 'prop-types';
 
 export default function Footer(props){
     return (
@@ -6,4 +7,8 @@ export default function Footer(props){
             &copy; 2024 - {props.sitename}
         </footer>
     )
+}
+
+Footer.propTypes = {
+    sitename: PropTypes.string,
 }

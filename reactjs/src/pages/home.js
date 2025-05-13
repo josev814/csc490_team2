@@ -14,7 +14,7 @@ export default function Home(){
                             Create Test Trading strategies against the market
                         </h4>
                         <p className='fs-5'>
-                            Our platform allows you to run test strategies against a stocks history and it's ongoing market value.
+                            Our platform allows you to run test strategies against a stocks history and it&apos;s ongoing market value.
                             Create as many strategies against any stock that you like.
                             Once you find a strategy that works for you implement it on your own trading service like E-Trade.
                         </p>

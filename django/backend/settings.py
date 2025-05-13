@@ -151,7 +151,8 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'rules',
     'transactions',
     'corsheaders',
-    'django_extensions'
+    'django_extensions',
+    'rest_framework_simplejwt.token_blacklist'
 ]
 MIDDLEWARE = MIDDLEWARE + [
     'oauth2_provider.middleware.OAuth2TokenMiddleware',

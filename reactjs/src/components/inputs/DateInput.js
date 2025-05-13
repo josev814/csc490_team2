@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react';
+import PropTypes from "prop-types";
 
 export function DateInput(props) {
     // Define state to store the selected date
@@ -42,4 +43,12 @@ export function DateInput(props) {
             />
         </>
     );
+}
+
+DateInput.propTypes = {
+    id: PropTypes.number,
+    name: PropTypes.string,
+    label: PropTypes.string,
+    description: PropTypes.string,
+    handleChange: PropTypes.func,
 }

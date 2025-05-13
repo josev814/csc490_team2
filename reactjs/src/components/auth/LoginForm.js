@@ -1,5 +1,6 @@
 
 import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginForm({ formData, handleChange, handleSubmit, errorMessage }) {
@@ -60,4 +61,11 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
       </div>
     </form>
   );
+}
+
+LoginForm.propTypes = {
+  formData: PropTypes.object,
+  handleChange: PropTypes.func,
+  handleSubmit: PropTypes.func,
+  errorMessage: PropTypes.string,
 }
