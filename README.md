@@ -1,4 +1,5 @@
-# csc490_team2
+# Stock Trading Strategies
+This project started as a senior project from UNCFSU for csc490
 
 # Local Requirements
 - WSL2
@@ -108,3 +109,9 @@ docker exec -it stocks_backend bash
 source /var/local/bin/stocks_venv/bin/activate;
 python3 manage.py show_urls | grep -vP "^/admin"
 ```
+
+# Acknowledgements
+Dr. Jin - UNCFSU Project Advisor
+Jose' Vargas - Lead Dev
+Stathis Jones - Backend Dev
+Caileb Carter - Fronend Dev

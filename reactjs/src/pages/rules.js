@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Form, Spinner } from 'react-bootstrap';
@@ -213,3 +214,10 @@ export default function LIST_RULES(props) {
         </>
     );
 }
+
+LIST_RULES.propTypes = {
+    django_url: PropTypes.string,
+    get_auth_header: PropTypes.func,
+    rule: PropTypes.object,
+    rules: PropTypes.array,
+};

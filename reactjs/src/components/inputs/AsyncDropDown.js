@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
 import AsyncSelect from 'react-select/async';
 
@@ -65,4 +66,12 @@ export function AsyncDropDown(props) {
             />
         </>
     )
+}
+
+AsyncDropDown.propTypes = {
+    django_url: PropTypes.string,
+    handleChange: PropTypes.func,
+    name: PropTypes.string,
+    defaultValue: PropTypes.object,
+    isDisabled: PropTypes.bool,
 }
