@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import axios from 'axios';
@@ -424,3 +425,13 @@ export function CREATE_RULE(props){
         />
     )
 }
+
+SHOW_RULE.propTypes = {
+    sitedetails: PropTypes.object.isRequired,
+    get_auth_header: PropTypes.func.isRequired,
+};
+
+CREATE_RULE.propTypes = {
+    django_url: PropTypes.string.isRequired,
+    get_auth_header: PropTypes.func.isRequired,
+};

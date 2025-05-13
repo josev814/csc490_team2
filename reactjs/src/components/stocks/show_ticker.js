@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner';
 import { useParams } from 'react-router-dom';
@@ -6,7 +7,13 @@ import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 
 function withParams(Component){
-  return props => <Component {...props} params={useParams()} />;
+  const ComponentWithParams = (props) => <Component {...props} params={useParams()} />;
+
+  // Give the component a display name for better debugging
+  const wrappedName = Component.displayName || Component.name || 'Component';
+  ComponentWithParams.displayName = `withParams(${wrappedName})`;
+
+  return ComponentWithParams;
 }
 
 class ShowTickerChart extends React.Component {
@@ -105,3 +112,7 @@ class ShowTickerChart extends React.Component {
 }
 
 export default withParams(ShowTickerChart);
+
+ShowTickerChart.propTypes = {
+  params: PropTypes.object.isRequired,
+}

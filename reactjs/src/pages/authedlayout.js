@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Header from './blocks/header';
@@ -58,4 +59,9 @@ export default function AuthedLayout(props) {
             </div>
         </>
     );
+}
+
+AuthedLayout.propTypes = {
+    sitename: PropTypes.string.isRequired,
+    tagline: PropTypes.string.isRequired,
 }
