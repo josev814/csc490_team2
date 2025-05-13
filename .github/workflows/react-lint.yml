@@ -39,8 +39,8 @@ jobs:
       run: |
         docker cp reactjs/eslint.config.mjs stocks_frontend:/react-app/src/
     - name: Run EsLint
+      shell: bash
       run: |
-        set +e  # Disable "exit on error" behavior
         docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") --quiet 2>/dev/null' > $ESLOG_FILE
     - name: Output Lint info
       run: |
