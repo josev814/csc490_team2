@@ -23,6 +23,12 @@ export default defineConfig([{
         "plugin:react-hooks/recommended",
     )),
 
+    settings: {
+        react: {
+            version: "detect"
+        }
+    },
+
     plugins: {
         react: fixupPluginRules(react),
         "react-hooks": fixupPluginRules(reactHooks),
@@ -33,7 +39,7 @@ export default defineConfig([{
             Object.entries(globals.browser).map(([key, value]) => [key.trim(), value])
         ),
 
-        ecmaVersion: 12,
+        ecmaVersion: 2022,
         sourceType: "module",
 
         parserOptions: {

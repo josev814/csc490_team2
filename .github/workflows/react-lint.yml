@@ -38,11 +38,10 @@ jobs:
         docker cp reactjs/eslint.config.mjs stocks_frontend:/react-app/src/
     - name: EsLint
       run: |
-        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js")' > eslint.results.log
-        if [[ $(grep -P '[0-9]+ problems' eslint.results.log | wc -l ) -gt 0 ]]; then
+        eslog_file='eslint.results.log'
+        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") 2>/dev/null' > $eslog_file
+        cat $eslog_file
+        if [[ $(grep -c -P '[0-9]+ problems' $eslog_file ) -ne 0 ]]; then
           echo "ESLint found errors."
-          cat eslint.results.log
           exit 1
         fi
-        cat eslint.results.log
-        
