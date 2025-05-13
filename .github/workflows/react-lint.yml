@@ -13,8 +13,10 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
+    env:
+      ESLOG_FILE: eslint.results.log
     steps:
     - name: checkout code
       uses: actions/checkout@v3
@@ -33,15 +35,18 @@ jobs:
     - name: Build FrontEnd
       run: |
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
-    - name: Copy in Config File
+    - name: Copy in ESLint Config File
       run: |
         docker cp reactjs/eslint.config.mjs stocks_frontend:/react-app/src/
-    - name: EsLint
+    - name: Run EsLint
       run: |
-        eslog_file='eslint.results.log'
-        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") 2>/dev/null' > $eslog_file
-        cat $eslog_file
-        if [[ $(grep -c -P '[0-9]+ problems' $eslog_file ) -ne 0 ]]; then
+        docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js") --quiet 2>/dev/null' > $ESLOG_FILE
+    - name: Output Lint info
+      run: |
+        cat $ESLOG_FILE
+    - name: Throw Lint Error Flag
+      run: |
+        if [[ $(grep -c -P '[0-9]+ problems' $ESLOG_FILE ) -ne 0 ]]; then
           echo "ESLint found errors."
           exit 1
         fi
