@@ -6,8 +6,14 @@ name: React Linting
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-lint.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-lint.yml'
 
 permissions:
   contents: read
