@@ -1,5 +1,5 @@
 
-import React from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from 'react-router-dom';
 
 export default function RegisterForm({ formData, handleChange, handleSubmit, errorMessage }) {
@@ -57,4 +57,11 @@ export default function RegisterForm({ formData, handleChange, handleSubmit, err
       </div>
     </form>
   );
+}
+
+RegisterForm.propTypes = {
+  formData: PropTypes.object.isRequired,
+  handleChange: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+  errorMessage: PropTypes.string.isRequired,
 }

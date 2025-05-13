@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router";
 import axios from 'axios';
 import Cookies from 'universal-cookie'
@@ -337,13 +338,13 @@ export default function EditRuleForm(props) {
                 </div>
             </div>
             <div className="row mb-3">
+                <label htmlFor="start_date" className="form-label">Start Date</label>
                 <input 
-                    label='Start Date' 
-                    description='The date that the rule should start evaluating from' 
                     id='start_date' 
                     name='start_date' 
                     type='date'
-                    handleChange={handleChange} 
+                    className="form-control"
+                    onChange={handleChange} 
                     defaultValue={inputs.start_date}  // Bind value to state variable
                 />
             </div>
@@ -446,4 +447,22 @@ export default function EditRuleForm(props) {
             <div style={{display: 'None'}}>{JSON.stringify(formData)}</div>
         </div>
     )
+}
+
+EditRuleForm.propTypes = {
+    sitedetails: PropTypes.object.isRequired,
+    get_auth_header: PropTypes.func.isRequired,
+}
+
+AddRowCondition.propTypes = {
+    removeRowCondition: PropTypes.func.isRequired,
+    event: PropTypes.object.isRequired,
+    condition: PropTypes.object.isRequired,
+    handleChange: PropTypes.object.isRequired,
+    sitedetails: PropTypes.object.isRequired,
+}
+
+RemoveRow.propTypes = {
+    event: PropTypes.object.isRequired,
+    removeRowCondition: PropTypes.func.isRequired,
 }

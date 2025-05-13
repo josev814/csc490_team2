@@ -1,10 +1,17 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner';
 import { useParams } from 'react-router-dom';
 
 function withParams(Component){
-  return props => <Component {...props} params={useParams()} />;
+  const ComponentWithParams = (props) => <Component {...props} params={useParams()} />;
+  
+    // Give the component a display name for better debugging
+    const wrappedName = Component.displayName || Component.name || 'Component';
+    ComponentWithParams.displayName = `withParams(${wrappedName})`;
+  
+    return ComponentWithParams;
 }
 class ShowTickerNews extends React.Component {
   constructor(props){
@@ -56,3 +63,7 @@ class ShowTickerNews extends React.Component {
 }
 
 export default withParams(ShowTickerNews);
+
+ShowTickerNews.propTypes = {
+  params: PropTypes.object.isRequired,
+}

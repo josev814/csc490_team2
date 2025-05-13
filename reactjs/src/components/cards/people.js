@@ -4,7 +4,13 @@ import Spinner from 'react-bootstrap/Spinner';
 import { Link, useParams } from 'react-router-dom';
 
 function withParams(Component){
-  return props => <Component {...props} params={useParams()} />;
+  const ComponentWithParams = (props) => <Component {...props} params={useParams()} />;
+  
+    // Give the component a display name for better debugging
+    const wrappedName = Component.displayName || Component.name || 'Component';
+    ComponentWithParams.displayName = `withParams(${wrappedName})`;
+  
+    return ComponentWithParams;
 }
 
 class TeamCards extends React.Component {

@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from "react";
+import PropTypes from "prop-types";
 import { useNavigate } from "react-router";
 import axios from 'axios';
 import Cookies from 'universal-cookie'
@@ -408,4 +409,21 @@ export default function CreateRuleForm(props) {
             <div style={{display: 'None'}}>{JSON.stringify(formData)}</div>
         </div>
     )
+}
+
+RemoveRow.propTypes = {
+    event: PropTypes.object.isRequired,
+    removeRowCondition: PropTypes.func.isRequired,
+}
+
+AddRowCondition.propTypes = {
+    removeRowCondition: PropTypes.func.isRequired,
+    event: PropTypes.object.isRequired,
+    handleChange: PropTypes.object.isRequired,
+    django_url: PropTypes.string.isRequired,
+}
+
+CreateRuleForm.propTypes = {
+    django_url: PropTypes.object.isRequired,
+    get_auth_header: PropTypes.func.isRequired,
 }

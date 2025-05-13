@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 export default function UnAuthedHeader(props){
@@ -10,14 +11,19 @@ export default function UnAuthedHeader(props){
                     <h4 className="text-white">{props.tagline}</h4>
                 </div>
                 <div className="col-md-6 d-flex justify-content-end align-items-center">
-                    <Link role="link" to='/login' className="pe-3">
-                        <button className='bg-warning btn btn-lg'>Login</button>
+                    <Link role="link" to="/login" className="pe-3">
+                        <button className="bg-warning btn btn-lg">Login</button>
                     </Link>
-                    <Link role="link" to='/register'>
-                        <button className='bg-warning btn btn-lg'>Register</button>
+                    <Link role="link" to="/register">
+                        <button className="bg-warning btn btn-lg">Register</button>
                     </Link>
                 </div>
             </div>
         </header>
     )
+}
+
+UnAuthedHeader.propTypes = {
+    sitename: PropTypes.string.isRequired,
+    tagline: PropTypes.string.isRequired,
 }

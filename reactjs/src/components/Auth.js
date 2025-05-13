@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import LoginForm from "./auth/LoginForm";
 import RegisterForm from "./auth/RegisterForm";
 import axios from 'axios';
@@ -101,4 +102,8 @@ export function Logout(){
   }, [navigate])
 
   return null
+}
+
+LoginRegister.propTypes = {
+  mode: PropTypes.string.isRequired,
 }
