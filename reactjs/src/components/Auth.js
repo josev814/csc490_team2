@@ -16,16 +16,16 @@ export function LoginRegister({ mode }) {
   const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
   const navigate = useNavigate(); // Access the history object for navigation
 
-  const base_url = 'http://localhost:8889'; // Define your base URL here
+  const api_url = global.config.sitedetails.django_url; // Define your base URL here
 
   const handleSubmit = async (e, isLoginPage) => {
     e.preventDefault();
     try {
       let url = '';
       if (isLoginPage) {
-        url = `${base_url}/auth/login/`;
+        url = `${api_url}/auth/login/`;
       } else {
-        url = `${base_url}/auth/register/`;
+        url = `${api_url}/auth/register/`;
       }
       const response = await axios.post(url, formData);
       if (response.status === 200 || response.status === 201) {

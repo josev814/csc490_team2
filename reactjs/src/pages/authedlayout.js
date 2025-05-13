@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Header from './blocks/header';
@@ -6,7 +5,7 @@ import Footer from './blocks/footer';
 import LeftNav from './blocks/leftnav';
 import Cookies from 'universal-cookie';
 
-export default function AuthedLayout(props) {
+export default function AuthedLayout() {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(undefined);
     useEffect(() => {
@@ -39,7 +38,7 @@ export default function AuthedLayout(props) {
 
     return (
         <>
-            <Header sitename={props.sitename} tagline={props.tagline} />
+            <Header />
             <div id='toastContainer' className="position-fixed bottom-0 end-0 p-3" style={{ zIndex: 9999 }}>
             </div>
             <div className='container-fluid'>
@@ -54,14 +53,9 @@ export default function AuthedLayout(props) {
                         </div>
                         <Outlet />
                     </main>
-                    <Footer sitename={props.sitename} />
+                    <Footer />
                 </div>
             </div>
         </>
     );
-}
-
-AuthedLayout.propTypes = {
-    sitename: PropTypes.string,
-    tagline: PropTypes.string,
 }

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import PropTypes from "prop-types";
 
 export function DateInput(props) {

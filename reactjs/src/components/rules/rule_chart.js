@@ -54,7 +54,7 @@ class ShowRuleTransactionChart extends React.Component {
     this.setState( prevState => ({...prevState, 'processing':true }))
     console.log('props: ', this.props)
     let rule_id = this.props.params.rule
-    let url = `${this.props.sitedetails.django_url}/transactions/rule/${rule_id}/?limit=50&ordering=pk`
+    let url = `${global.config.sitedetails.django_url}/transactions/rule/${rule_id}/?limit=50&ordering=pk`
     console.log(url)
 
     axios.get(url, {headers: this.props.get_auth_header()})
@@ -170,6 +170,5 @@ export default withParams(ShowRuleTransactionChart);
 
 ShowRuleTransactionChart.propTypes = {
   params: PropTypes.object,
-  sitedetails: PropTypes.object,
   get_auth_header: PropTypes.func,
 }

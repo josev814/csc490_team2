@@ -20,20 +20,10 @@ import EditRuleForm from './components/rules/EditRule';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      sitedetails: {},
-    };
     this.cookies = new Cookies(null, { path: '/' });
   }
 
   componentDidMount() {
-    this.setState({
-      sitedetails: {
-        sitename: 'Stock Strategies',
-        tagline: 'Test Trading Strategies',
-        django_url: 'http://localhost:8889'
-      },
-    });
     this.refresh_session()
   }
 
@@ -79,7 +69,7 @@ class App extends React.Component {
   }
 
   async refresh_token() {
-    const refresh_url = `${this.state.sitedetails.django_url}/auth/refresh/`;
+    const refresh_url = `${global.config.sitedetails.django_url}/auth/refresh/`;
     const data = {'refresh': localStorage.getItem('refreshToken')};
     if(data['refresh'] === undefined){
       return
@@ -108,7 +98,7 @@ class App extends React.Component {
   }
 
   async refresh_session(){
-    if (this.state.sitedetails.django_url === undefined){
+    if (global.config.sitedetails.django_url === undefined){
       return
     }
     let user_url = this.get_user_from_cookie()
@@ -129,7 +119,7 @@ class App extends React.Component {
 
     // Construct user URL based on user ID
     const user_id = userCookie.id;
-    const user_url = `${this.state.sitedetails.django_url}/users/${user_id}/`;
+    const user_url = `${global.config.sitedetails.django_url}/users/${user_id}/`;
     return user_url;
   }
   
@@ -137,42 +127,41 @@ class App extends React.Component {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
+          <Route path="/" element={<UnauthedLayout />} >
             <Route index element={<Home />} />
             <Route path="login" element={<LoginRegister mode="signin" />} />
             <Route path="register" element={<LoginRegister mode="signup" />} />
             <Route path="logout" element={<Logout />} />
           </Route>
 
-          <Route path="/user/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} refresh_session={this.refresh_session} />} >
+          <Route path="/user/" element={<AuthedLayout  refresh_session={this.refresh_session} />} >
             <Route path=":user_id/profile" element={<></>} />
           </Route>
 
-          <Route path="/stocks/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
+          <Route path="/stocks/" element={<AuthedLayout  />} >
             <Route index element={<FIND_STOCK />} />
             <Route path=":ticker" element={<SHOW_TICKER />} />
             <Route path=":ticker/news" element={<SHOW_TICKER_NEWS />} />
           </Route>
 
-          <Route path="/rules/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} django_url={this.state.sitedetails.django_url} />} >
-            <Route index element={<LIST_RULES get_auth_header={this.get_auth_header} django_url={this.state.sitedetails.django_url} />} />
+          <Route path="/rules/" element={<AuthedLayout />} >
+            <Route index element={<LIST_RULES get_auth_header={this.get_auth_header} />} />
             
           </Route>
 
-          <Route path="/rule/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />}>
+          <Route path="/rule/" element={<AuthedLayout  />}>
             <Route path="create" element={
                 <CREATE_RULE 
-                  django_url={this.state.sitedetails.django_url}
                   get_auth_header={this.get_auth_header}
                   get_user_from_cookie={this.get_user_from_cookie}
                 />
               }
             />
-            <Route path=":rule/:rule_name" element={<SHOW_RULE sitedetails={this.state.sitedetails} get_auth_header={this.get_auth_header} />} />
-            <Route path= ":rule/:rule_name/edit" element={<EditRuleForm sitedetails={this.state.sitedetails} get_auth_header={this.get_auth_header} />} />
+            <Route path=":rule/:rule_name" element={<SHOW_RULE get_auth_header={this.get_auth_header} />} />
+            <Route path= ":rule/:rule_name/edit" element={<EditRuleForm get_auth_header={this.get_auth_header} />} />
           </Route>
 
-          <Route path="*" element={<UnauthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
+          <Route path="*" element={<UnauthedLayout  />} >
             <Route index element={<NoPage />} />
             <Route path='*' element={<NoPage />} />
           </Route>

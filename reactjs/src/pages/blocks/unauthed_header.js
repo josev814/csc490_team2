@@ -1,14 +1,12 @@
-import React from "react";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
-export default function UnAuthedHeader(props){
+export default function UnAuthedHeader(){
     return (
         <header className="col-12 bg-dark flex-md-nowrap p-3">
             <div className="row">
                 <div className="col-md-6">
-                    <h1 className="text-white">{props.sitename}</h1>
-                    <h4 className="text-white">{props.tagline}</h4>
+                    <h1 className="text-white">{global.config.sitedetails.sitename}</h1>
+                    <h4 className="text-white">{global.config.sitedetails.tagline}</h4>
                 </div>
                 <div className="col-md-6 d-flex justify-content-end align-items-center">
                     <Link role="link" to="/login" className="pe-3">
@@ -21,9 +19,4 @@ export default function UnAuthedHeader(props){
             </div>
         </header>
     )
-}
-
-UnAuthedHeader.propTypes = {
-    sitename: PropTypes.string,
-    tagline: PropTypes.string,
 }

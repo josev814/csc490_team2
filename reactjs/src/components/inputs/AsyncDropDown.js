@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import {useState, useEffect} from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import AsyncSelect from 'react-select/async';
@@ -7,10 +7,9 @@ export function AsyncDropDown(props) {
     const [selectedOption, setSelectedOption] = useState(null);
 
     const loadOptions = async (inputValue, callback) => {
-        //axios.get(`${django_url}/stocks/find_ticker?ticker=${inputValue}`)
         let records = {}
         await axios.get(
-            `${props.django_url}/stocks/find_ticker/?ticker=${inputValue}`
+            `${global.config.sitedetails.django_url}/stocks/find_ticker/?ticker=${inputValue}`
         ).then(res => {
             records = res.data['records']
         }).catch(error => {
@@ -69,7 +68,6 @@ export function AsyncDropDown(props) {
 }
 
 AsyncDropDown.propTypes = {
-    django_url: PropTypes.string,
     handleChange: PropTypes.func,
     name: PropTypes.string,
     defaultValue: PropTypes.object,

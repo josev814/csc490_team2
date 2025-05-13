@@ -7,7 +7,7 @@ import { AddCircleOutlineOutlined } from '@mui/icons-material';
 import Pagination from '../components/Pagination'; // Import the Pagination component
 
 export default function LIST_RULES(props) {
-    const { get_auth_header, django_url } = props;
+    const { get_auth_header } = props;
 
     // State variables
     const [rules, setRules] = useState(null); // State for storing rules data
@@ -21,7 +21,7 @@ export default function LIST_RULES(props) {
     const fetchRules = useCallback(async (link) => {
         try {
             if (link === undefined){
-                link = `${django_url}/rules/list/`
+                link = `${global.config.sitedetails.django_url}/rules/list/`
             }
             const headers = get_auth_header();
             // Fetch rules data from the server based on current page
@@ -46,16 +46,16 @@ export default function LIST_RULES(props) {
         } finally {
             setLoading(false); // Update loading status
         }               
-    }, [get_auth_header, django_url]);
+    }, [get_auth_header]);
 
     // Effect to fetch rules data when currentPage changes
     useEffect(() => {
-        if (django_url === undefined){
+        if (global.config.sitedetails.django_url === undefined){
             setLoading(true);
         } else {
             fetchRules();
         }
-    }, [fetchRules, django_url]);
+    }, [fetchRules]);
 
 
     // Function to handle page change
@@ -117,7 +117,7 @@ export default function LIST_RULES(props) {
     //function to fetch total balance of rules
     const fetchBalance = useCallback(async() => {
         try {
-            const balanceLink = `${django_url}/users/get_profit_loss/`
+            const balanceLink = `${global.config.sitedetails.django_url}/users/get_profit_loss/`
 
             const headers = get_auth_header();
             // Fetch rules data from the server based on current page
@@ -141,15 +141,15 @@ export default function LIST_RULES(props) {
         
             setError(errorMessage); // Set error message
         }            
-    }, [get_auth_header, django_url]);
+    }, [get_auth_header]);
 
     useEffect(() => {
-        if (django_url === undefined){
+        if (global.config.sitedetails.django_url === undefined){
             setLoading(true);
         } else {
             fetchBalance();
         }
-    }, [fetchBalance, django_url]);
+    }, [fetchBalance]);
 
     function DisplayBalCreate() {
         
@@ -216,7 +216,6 @@ export default function LIST_RULES(props) {
 }
 
 LIST_RULES.propTypes = {
-    django_url: PropTypes.string,
     get_auth_header: PropTypes.func,
     rule: PropTypes.object,
     rules: PropTypes.array,

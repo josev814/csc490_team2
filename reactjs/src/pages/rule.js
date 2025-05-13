@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from "react-router-dom";
@@ -11,7 +11,6 @@ import ShowRuleTransactionChart from '../components/rules/rule_chart';
 import CreateRuleForm from '../components/rules/CreateRule'
 
 export function SHOW_RULE(props) {
-    const django_url = props.sitedetails.django_url
     const get_auth_header = props.get_auth_header
     const {rule, rule_name} = useParams()
 
@@ -53,9 +52,9 @@ export function SHOW_RULE(props) {
     }
 
     useEffect(() => {
-        if (loading && django_url !== undefined) {
+        if (loading && global.config.sitedetails.django_url !== undefined) {
             // Fetch transaction data
-            axios.get(`${django_url}/transactions/rule/${rule}/?limit=50`, { headers: get_auth_header() })
+            axios.get(`${global.config.sitedetails.django_url}/transactions/rule/${rule}/?limit=50`, { headers: get_auth_header() })
                 .then(response => {
                     if (response.data.count > 0){
                         // Here, you should set the fetched transaction data
@@ -68,11 +67,11 @@ export function SHOW_RULE(props) {
                     setError("Error fetching transaction data:", err)
                 });
         }
-    }, [loading, django_url, get_auth_header, rule]);
+    }, [loading, get_auth_header, rule]);
 
 
     async function handleDelete() {
-        const delete_url = `${props.sitedetails.django_url}/rules/delete/${rule}/`
+        const delete_url = `${global.config.sitedetails.django_url}/rules/delete/${rule}/`
         try {
             const response = await axios.delete(delete_url, { headers: get_auth_header() });
             switch (response.status) {
@@ -286,15 +285,15 @@ export function SHOW_RULE(props) {
     }
 
     useEffect(() => {
-        if (loading && django_url !== undefined) {
+        if (loading && global.config.sitedetails.django_url !== undefined) {
             // Rule to fetch the rule information
             async function fetchRuleData(rule) {
-                if (django_url === undefined){
+                if (global.config.sitedetails.django_url === undefined){
                     return
                 }
                 try {
                     const response = await axios.get(
-                        `${django_url}/rules/${rule}/`,
+                        `${global.config.sitedetails.django_url}/rules/${rule}/`,
                         {
                             headers: get_auth_header(),
                         }
@@ -310,13 +309,13 @@ export function SHOW_RULE(props) {
             fetchRuleData(rule);
         }
         return () => {}
-    }, [loading, django_url, get_auth_header, rule]);
+    }, [loading, get_auth_header, rule]);
 
     useEffect(() => {
-        if (django_url === undefined){
+        if (global.config.sitedetails.django_url === undefined){
             setLoading(true);
         }
-    }, [django_url]);
+    }, []);
 
     // use to set loading to true to invoke other effects
     useEffect(() => {
@@ -387,7 +386,7 @@ export function SHOW_RULE(props) {
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
                     <h2>Performance</h2>
-                    <ShowRuleTransactionChart sitedetails={props.sitedetails} get_auth_header={get_auth_header} />
+                    <ShowRuleTransactionChart get_auth_header={get_auth_header} />
                     {/* ^ pass symbol and transactions that are loaded from request */}
                 </div>
                 <div className="row border border-light border-2 shadow-sm mb-5">
@@ -420,18 +419,15 @@ export function SHOW_RULE(props) {
 export function CREATE_RULE(props){    
     return (
         <CreateRuleForm 
-            django_url={props.django_url}
             get_auth_header={props.get_auth_header}
         />
     )
 }
 
 SHOW_RULE.propTypes = {
-    sitedetails: PropTypes.object,
     get_auth_header: PropTypes.func,
 };
 
 CREATE_RULE.propTypes = {
-    django_url: PropTypes.string,
     get_auth_header: PropTypes.func,
 };

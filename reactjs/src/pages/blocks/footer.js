@@ -1,14 +1,7 @@
-import React from "react";
-import PropTypes from 'prop-types';
-
-export default function Footer(props){
+export default function Footer(){
     return (
         <footer className="col-12">
-            &copy; 2024 - {props.sitename}
+            &copy; 2024 - {global.config.sitedetails.sitename}
         </footer>
     )
-}
-
-Footer.propTypes = {
-    sitename: PropTypes.string,
 }
