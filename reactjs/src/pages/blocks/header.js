@@ -11,6 +11,6 @@ export default function Header(props){
 }
 
 Header.propTypes = {
-    sitename: PropTypes.string.isRequired,
-    tagline: PropTypes.string.isRequired,
+    sitename: PropTypes.string,
+    tagline: PropTypes.string,
 };

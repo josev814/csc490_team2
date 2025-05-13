@@ -69,9 +69,9 @@ export function AsyncDropDown(props) {
 }
 
 AsyncDropDown.propTypes = {
-    django_url: PropTypes.string.isRequired,
-    handleChange: PropTypes.func.isRequired,
-    name: PropTypes.string.isRequired,
-    defaultValue: PropTypes.object.isRequired,
-    isDisabled: PropTypes.bool.isRequired,
+    django_url: PropTypes.string,
+    handleChange: PropTypes.func,
+    name: PropTypes.string,
+    defaultValue: PropTypes.object,
+    isDisabled: PropTypes.bool,
 }

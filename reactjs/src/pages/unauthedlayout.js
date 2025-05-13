@@ -18,6 +18,6 @@ export default function UnauthedLayout(props) {
 }
 
 UnauthedLayout.propTypes = {
-  sitename: PropTypes.string.isRequired,
+  sitename: PropTypes.string,
   tagline: PropTypes.string,
 };

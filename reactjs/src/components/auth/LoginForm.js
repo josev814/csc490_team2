@@ -64,8 +64,8 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
 }
 
 LoginForm.propTypes = {
-  formData: PropTypes.object.isRequired,
-  handleChange: PropTypes.func.isRequired,
-  handleSubmit: PropTypes.func.isRequired,
-  errorMessage: PropTypes.string.isRequired,
+  formData: PropTypes.object,
+  handleChange: PropTypes.func,
+  handleSubmit: PropTypes.func,
+  errorMessage: PropTypes.string,
 }

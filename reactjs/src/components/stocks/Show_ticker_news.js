@@ -65,5 +65,5 @@ class ShowTickerNews extends React.Component {
 export default withParams(ShowTickerNews);
 
 ShowTickerNews.propTypes = {
-  params: PropTypes.object.isRequired,
+  params: PropTypes.object,
 }

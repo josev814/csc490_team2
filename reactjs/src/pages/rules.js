@@ -216,8 +216,8 @@ export default function LIST_RULES(props) {
 }
 
 LIST_RULES.propTypes = {
-    django_url: PropTypes.string.isRequired,
-    get_auth_header: PropTypes.func.isRequired,
-    rule: PropTypes.object.isRequired,
-    rules: PropTypes.array.isRequired,
+    django_url: PropTypes.string,
+    get_auth_header: PropTypes.func,
+    rule: PropTypes.object,
+    rules: PropTypes.array,
 };

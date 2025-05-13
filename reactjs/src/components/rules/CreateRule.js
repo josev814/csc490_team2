@@ -412,18 +412,18 @@ export default function CreateRuleForm(props) {
 }
 
 RemoveRow.propTypes = {
-    event: PropTypes.object.isRequired,
-    removeRowCondition: PropTypes.func.isRequired,
+    event: PropTypes.object,
+    removeRowCondition: PropTypes.func,
 }
 
 AddRowCondition.propTypes = {
-    removeRowCondition: PropTypes.func.isRequired,
-    event: PropTypes.object.isRequired,
-    handleChange: PropTypes.object.isRequired,
-    django_url: PropTypes.string.isRequired,
+    removeRowCondition: PropTypes.func,
+    event: PropTypes.object,
+    handleChange: PropTypes.object,
+    django_url: PropTypes.string,
 }
 
 CreateRuleForm.propTypes = {
-    django_url: PropTypes.object.isRequired,
-    get_auth_header: PropTypes.func.isRequired,
+    django_url: PropTypes.object,
+    get_auth_header: PropTypes.func,
 }

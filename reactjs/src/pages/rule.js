@@ -427,11 +427,11 @@ export function CREATE_RULE(props){
 }
 
 SHOW_RULE.propTypes = {
-    sitedetails: PropTypes.object.isRequired,
-    get_auth_header: PropTypes.func.isRequired,
+    sitedetails: PropTypes.object,
+    get_auth_header: PropTypes.func,
 };
 
 CREATE_RULE.propTypes = {
-    django_url: PropTypes.string.isRequired,
-    get_auth_header: PropTypes.func.isRequired,
+    django_url: PropTypes.string,
+    get_auth_header: PropTypes.func,
 };

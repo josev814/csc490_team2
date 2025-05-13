@@ -62,6 +62,6 @@ export default function AuthedLayout(props) {
 }
 
 AuthedLayout.propTypes = {
-    sitename: PropTypes.string.isRequired,
-    tagline: PropTypes.string.isRequired,
+    sitename: PropTypes.string,
+    tagline: PropTypes.string,
 }

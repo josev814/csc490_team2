@@ -169,7 +169,7 @@ class ShowRuleTransactionChart extends React.Component {
 export default withParams(ShowRuleTransactionChart);
 
 ShowRuleTransactionChart.propTypes = {
-  params: PropTypes.object.isRequired,
-  sitedetails: PropTypes.object.isRequired,
-  get_auth_header: PropTypes.func.isRequired,
+  params: PropTypes.object,
+  sitedetails: PropTypes.object,
+  get_auth_header: PropTypes.func,
 }

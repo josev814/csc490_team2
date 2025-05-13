@@ -24,6 +24,6 @@ export default function UnAuthedHeader(props){
 }
 
 UnAuthedHeader.propTypes = {
-    sitename: PropTypes.string.isRequired,
-    tagline: PropTypes.string.isRequired,
+    sitename: PropTypes.string,
+    tagline: PropTypes.string,
 }

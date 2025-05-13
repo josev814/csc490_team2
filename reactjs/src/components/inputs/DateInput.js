@@ -46,9 +46,9 @@ export function DateInput(props) {
 }
 
 DateInput.propTypes = {
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    handleChange: PropTypes.func.isRequired,
+    id: PropTypes.number,
+    name: PropTypes.string,
+    label: PropTypes.string,
+    description: PropTypes.string,
+    handleChange: PropTypes.func,
 }

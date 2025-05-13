@@ -105,5 +105,5 @@ export function Logout(){
 }
 
 LoginRegister.propTypes = {
-  mode: PropTypes.string.isRequired,
+  mode: PropTypes.string,
 }

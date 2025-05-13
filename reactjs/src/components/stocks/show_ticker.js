@@ -114,5 +114,5 @@ class ShowTickerChart extends React.Component {
 export default withParams(ShowTickerChart);
 
 ShowTickerChart.propTypes = {
-  params: PropTypes.object.isRequired,
+  params: PropTypes.object,
 }

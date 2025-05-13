@@ -450,19 +450,19 @@ export default function EditRuleForm(props) {
 }
 
 EditRuleForm.propTypes = {
-    sitedetails: PropTypes.object.isRequired,
-    get_auth_header: PropTypes.func.isRequired,
+    sitedetails: PropTypes.object,
+    get_auth_header: PropTypes.func,
 }
 
 AddRowCondition.propTypes = {
-    removeRowCondition: PropTypes.func.isRequired,
-    event: PropTypes.object.isRequired,
-    condition: PropTypes.object.isRequired,
-    handleChange: PropTypes.object.isRequired,
-    sitedetails: PropTypes.object.isRequired,
+    removeRowCondition: PropTypes.func,
+    event: PropTypes.object,
+    condition: PropTypes.object,
+    handleChange: PropTypes.object,
+    sitedetails: PropTypes.object,
 }
 
 RemoveRow.propTypes = {
-    event: PropTypes.object.isRequired,
-    removeRowCondition: PropTypes.func.isRequired,
+    event: PropTypes.object,
+    removeRowCondition: PropTypes.func,
 }

@@ -10,5 +10,5 @@ export default function Footer(props){
 }
 
 Footer.propTypes = {
-    sitename: PropTypes.string.isRequired,
+    sitename: PropTypes.string,
 }
