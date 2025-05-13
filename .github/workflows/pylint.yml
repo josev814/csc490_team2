@@ -3,8 +3,14 @@ name: Pylint
 on:
   push:
     branches: [ "main" ]
+    paths:
+    - 'django/**'
+    - '.github/workflows/pylint.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+    - 'django/**'
+    - '.github/workflows/pylint.yml'
 
 jobs:
   build:
