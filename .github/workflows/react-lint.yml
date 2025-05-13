@@ -33,6 +33,9 @@ jobs:
     - name: Build FrontEnd
       run: |
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
+    - name: Copy in Config File
+      run: |
+        docker cp reactjs/eslint.config.mjs stocks_frontend:/react-app/src/
     - name: EsLint
       run: |
         docker exec stocks_frontend /bin/bash -c 'cd src; npx eslint $(find ./ -name "*.js" | grep -vP ".test.js")' > eslint.results.log

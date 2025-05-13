@@ -29,9 +29,9 @@ export default defineConfig([{
     },
 
     languageOptions: {
-        globals: {
-            ...globals.browser,
-        },
+        globals: Object.fromEntries(
+            Object.entries(globals.browser).map(([key, value]) => [key.trim(), value])
+        ),
 
         ecmaVersion: 12,
         sourceType: "module",
