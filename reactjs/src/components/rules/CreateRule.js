@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import {useState, useEffect} from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router";
 import axios from 'axios';
@@ -43,7 +43,7 @@ function AddRowCondition(props){
                 </div>
                 <div className="row shadow py-3 px-2">
                     <div className="col-md-3">
-                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} django_url={props.django_url} />
+                        <AsyncDropDown name={'event_symbol_' + props.event} handleChange={props.handleChange} />
                     </div>
                     <div className="col-auto">
                         HAS 
@@ -121,13 +121,13 @@ export default function CreateRuleForm(props) {
     
         // Construct user URL based on user ID
         const user_id = userCookie.id;
-        const user_url = `${props.django_url}/users/${user_id}/`;
+        const user_url = `${global.config.sitedetails.django_url}/users/${user_id}/`;
         return user_url;
     }
     
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = `${props.django_url}/rules/`
+        const url = `${global.config.sitedetails.django_url}/rules/`
 
         const updatedFormData = {
             ...formData,
@@ -319,7 +319,7 @@ export default function CreateRuleForm(props) {
                 </div>
                 <div className="conditions">
                     {Array.from({ length: conditionCount }).map((_, index) => (
-                        <AddRowCondition key={index} event={index + 1} handleChange={handleChange} django_url={props.django_url} removeRowCondition={removeRowCondition} />
+                        <AddRowCondition key={index} event={index + 1} handleChange={handleChange} removeRowCondition={removeRowCondition} />
                     ))}
                 </div>
                 <div className="row mb-3">
@@ -357,7 +357,7 @@ export default function CreateRuleForm(props) {
                                 OF
                             </div>
                             <div className="col-md-3">
-                                <AsyncDropDown name='then_symbol' handleChange={handleChange}  django_url={props.django_url}/>
+                                <AsyncDropDown name='then_symbol' handleChange={handleChange} />
                             </div>
                         </div>
                     </div>
@@ -412,18 +412,16 @@ export default function CreateRuleForm(props) {
 }
 
 RemoveRow.propTypes = {
-    event: PropTypes.object,
+    event: PropTypes.number,
     removeRowCondition: PropTypes.func,
 }
 
 AddRowCondition.propTypes = {
     removeRowCondition: PropTypes.func,
-    event: PropTypes.object,
+    event: PropTypes.number,
     handleChange: PropTypes.object,
-    django_url: PropTypes.string,
 }
 
 CreateRuleForm.propTypes = {
-    django_url: PropTypes.object,
     get_auth_header: PropTypes.func,
 }

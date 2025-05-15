@@ -26,7 +26,7 @@ class ShowTickerNews extends React.Component {
   componentDidMount() {
     let { ticker } = this.props.params
     this.setState({symbol: ticker})
-    let url = 'http://localhost:8889/stocks/get_ticker_news/?ticker=' + ticker    
+    let url = `${global.config.sitedetails.django_url}/stocks/get_ticker_news/?ticker=${ticker}`
     axios.get(url)
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure

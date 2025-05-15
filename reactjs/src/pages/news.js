@@ -1,4 +1,3 @@
-import React from 'react';
 import ShowTickerNews from '../components/stocks/Show_ticker_news';
 //import FindStock from '../components/stocks/findstock';
 

@@ -14,7 +14,7 @@ class FindStock extends React.Component {
   search = async val => {
     this.setState({ loading: true});
     axios.get(
-      'http://localhost:8889/stocks/find_ticker/?ticker=' + val
+      `${global.config.sitedetails.django_url}/stocks/find_ticker/?ticker=${val}`
     ).then(res => {
       this.setState({stocks: res.data['records'], loading: false})
     }).catch(error => {
