@@ -10,6 +10,7 @@ import FIND_STOCK from './pages/stocks';
 import SHOW_TICKER from './pages/show_ticker';
 import SHOW_TICKER_NEWS from './pages/news';
 import LIST_RULES from './pages/rules';
+import Settings from './components/nav/Settings'
 import { SHOW_RULE, CREATE_RULE } from './pages/rule';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -146,6 +147,7 @@ class App extends React.Component {
 
           <Route path="/user/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} refresh_session={this.refresh_session} />} >
             <Route path=":user_id/profile" element={<></>} />
+            <Route path=":user_id/settings" element={<Settings />}></Route>
           </Route>
 
           <Route path="/stocks/" element={<AuthedLayout sitename={this.state.sitedetails.sitename} tagline={this.state.sitedetails.tagline} />} >
@@ -176,7 +178,6 @@ class App extends React.Component {
             <Route index element={<NoPage />} />
             <Route path='*' element={<NoPage />} />
           </Route>
-
         </Routes>
       </BrowserRouter>
     );
