@@ -10,5 +10,11 @@ RUN npm set progress=false \
     && npm install
 
 RUN cp package*.json /
+RUN apt-get update \
+    && apt-get install vim -y
 
-CMD [ "bash", "-c", "npm start && sleep inf" ]
+COPY reactjs/index.html .
+COPY reactjs/vite.config.js .
+
+CMD [ "bash", "-c", "npm run dev && sleep inf" ]
+#CMD [ "bash", "-c", "sleep inf" ]

@@ -85,7 +85,7 @@ services:
       context: ../
       dockerfile: ./reactjs/dockerfile-frontend
     ports:
-      - "8890:80"
+      - "8890:5555"
     expose:
       - 8890
     restart: unless-stopped
