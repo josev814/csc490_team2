@@ -39,7 +39,7 @@ jobs:
         cat jest.results.log
     - name: Trigger Pass Fail
       run: |
-        if [[ $(grep -P '^Tests:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
+        if [[ $(grep -P '^Test Suites:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
           echo 'UnitTests Failed'
           exit 1
         fi
