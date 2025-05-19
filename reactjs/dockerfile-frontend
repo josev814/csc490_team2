@@ -15,8 +15,8 @@ RUN apt-get update \
 
 COPY reactjs/index.html .
 COPY reactjs/jest.config.js .
-COPY reactjs/tsconfig.js .
-COPY reactjs/tsconfig.node.js .
+COPY reactjs/tsconfig.json .
+COPY reactjs/tsconfig.node.json .
 COPY reactjs/vite.config.js .
 
 CMD [ "bash", "-c", "npm run dev && sleep inf" ]
