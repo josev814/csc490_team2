@@ -14,6 +14,9 @@ RUN apt-get update \
     && apt-get install vim -y
 
 COPY reactjs/index.html .
+COPY reactjs/jest.config.js .
+COPY reactjs/tsconfig.js .
+COPY reactjs/tsconfig.node.js .
 COPY reactjs/vite.config.js .
 
 CMD [ "bash", "-c", "npm run dev && sleep inf" ]
