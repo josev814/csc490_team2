@@ -14,7 +14,7 @@ RUN apt-get update \
     && apt-get install vim -y
 
 COPY reactjs/index.html .
-COPY reactjs/jest.config.js .
+COPY reactjs/jest.config.ts .
 COPY reactjs/tsconfig.json .
 COPY reactjs/tsconfig.node.json .
 COPY reactjs/vite.config.js .

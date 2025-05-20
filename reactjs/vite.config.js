@@ -12,8 +12,8 @@ export default defineConfig({
     port: 5556
   },
   esbuild: {
-    loader: 'jsx', // Correctly specify 'jsx' for files with JSX syntax
-    include: /\.jsx?$/, // Include both .js and .jsx files
+    loader: 'tsx', // Correctly specify 'jsx' for files with JSX syntax
+    include: /\.[jt]sx?$/, // Include both .js,.jsx,.ts,.tsx files
   },
   plugins: [
     react(),
