@@ -87,8 +87,8 @@ export default function getRoutes(
                 ),
                 children: [
                 { path: 'create', element: <CREATE_RULE django_url={sitedetails.django_url} get_auth_header={get_auth_header} get_user_from_cookie={get_user_from_cookie} />},
-                { path: ':rule/rule_name', element: <SHOW_RULE sitedetails={sitedetails} get_auth_header={get_auth_header} />},
-                { path: ':rule/rule_name/edit', element: <EditRuleForm sitedetails={sitedetails} get_auth_header={get_auth_header} />},
+                { path: ':rule/:rule_name', element: <SHOW_RULE sitedetails={sitedetails} get_auth_header={get_auth_header} />},
+                { path: ':rule/:rule_name/edit', element: <EditRuleForm sitedetails={sitedetails} get_auth_header={get_auth_header} />},
                 
                 ]
             },{
