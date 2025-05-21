@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router';
+import { createBrowserRouter } from 'react-router-dom';
 import { sitedetails, get_auth_header, get_user_from_cookie, refresh_session } from './utils/appContext';
 import getRoutes from './Routes';
 

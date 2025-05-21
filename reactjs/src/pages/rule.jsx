@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import { Link } from "react-router-dom";
 import axios from 'axios';
 import { EditOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';

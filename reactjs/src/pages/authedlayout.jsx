@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import Header from './blocks/header';
 import Footer from './blocks/footer';

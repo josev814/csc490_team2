@@ -1,4 +1,4 @@
-import { RouteObject } from 'react-router-dom';
+import { RouteObject } from 'react-router';
 import { LoginRegister, Logout } from './components/Auth';
 import AuthedLayout from './pages/authedlayout';
 import UnauthedLayout from './pages/unauthedlayout';

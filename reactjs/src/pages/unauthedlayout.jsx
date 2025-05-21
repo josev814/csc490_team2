@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 import UnAuthedHeader from './blocks/unauthed_header';
 import Footer from './blocks/footer';
 
