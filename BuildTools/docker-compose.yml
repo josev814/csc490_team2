@@ -85,7 +85,7 @@ services:
       context: ../
       dockerfile: ./reactjs/dockerfile-frontend
     ports:
-      - "8890:80"
+      - "8890:5555"
     expose:
       - 8890
     restart: unless-stopped
@@ -95,8 +95,8 @@ services:
     networks:
       - public
     environment:
-      - WATCHPACK_POLLING=true
-      - WDS_SOCKET_PORT=8890
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR INTERVAL=500 # Decrease CPU usage by checking every 500ms
     # depends_on:
     #   backend:
     #     condition: service_healthy
