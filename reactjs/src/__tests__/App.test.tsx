@@ -1,8 +1,20 @@
 import '@testing-library/jest-dom';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router';
+import { createMemoryRouter } from 'react-router-dom';
 import getRoutes from '../Routes';
 import { sitedetails, get_auth_header, get_user_from_cookie, refresh_session } from '../utils/appContext';
+
+// suppressing v7 transition messages
+beforeAll(() => {
+  jest.spyOn(console, 'warn').mockImplementation((msg) => {
+    if (
+      typeof msg === 'string' &&
+      msg.includes('React Router Future Flag Warning')
+    ) return;
+    console.warn(msg);
+  });
+});
 
 const renderWithRoute = async (route: string) => {
   const testRouter = createMemoryRouter(
@@ -11,20 +23,21 @@ const renderWithRoute = async (route: string) => {
       get_auth_header,
       get_user_from_cookie,
       refresh_session,
-    }), {
+    }),
+     {
     initialEntries: [route],
-    future: {
-      v7_relativeSplatPath: true,
-      v7_startTransition: true,
-    },
   })
   render(
     <RouterProvider router={testRouter} />
   );
   await waitFor(() => {
     expect(screen.getByTestId('site-footer')).toBeInTheDocument();
-  });
+  }, { timeout: 5000 });
 };
+
+test('base', () => {
+  expect(true).toBeTruthy();
+})
 
 describe("App", () => {
   test("website initial load", async () => {
@@ -44,9 +57,11 @@ describe("App", () => {
 
   test('navigate to login page from home', async () => {
     await renderWithRoute('/');
-    const loginLink = screen.getByText(/Login/i);
+    const loginLink = await screen.getByText(/Login/i);
     fireEvent.click(loginLink);
-    expect(screen.getByText('Account Login')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Account Login')).toBeInTheDocument()
+    }, { timeout: 3000 });
   });
 
   test('navigate to register page from home', async () => {
@@ -61,6 +76,8 @@ describe("App", () => {
       throw new Error('Registration link was not found')
     }
     fireEvent.click(registerLink);
-    expect(screen.getByText('Account Registration')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Account Registration')).toBeInTheDocument()
+    }, { timeout: 3000 });
   });
 });

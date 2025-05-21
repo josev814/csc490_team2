@@ -1,7 +1,7 @@
 
 import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export default function LoginForm({ formData, handleChange, handleSubmit, errorMessage }) {
   const navigate = useNavigate();

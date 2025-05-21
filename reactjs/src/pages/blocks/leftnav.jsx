@@ -1,7 +1,6 @@
-import React from "react";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import {CandlestickChartOutlined, RuleOutlined, ExitToAppOutlined} from '@mui/icons-material';
 
 export default function LeftNav() {
@@ -92,7 +91,10 @@ export default function LeftNav() {
                 <ul className="nav flex-column pt-3">
                 {links.map(link => (
                     <li key={link.pageName} className="d-flex align-items-center">
-                        <NavLink to={link.path} className={"text-decoration-none"}>
+                        <NavLink to={link.path} className={
+                                ({ isActive, isPending }) => 
+                                `text-decoration-none ${isPending ? "pending" : isActive ? "active": "" }`
+                            }>
                             {link.icon !== undefined && link.icon} {" "}
                             {link.pageName}
                         </NavLink>

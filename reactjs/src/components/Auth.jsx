@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import LoginForm from "./auth/LoginForm";
 import RegisterForm from "./auth/RegisterForm";
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Cookies from 'universal-cookie';
 
 const cookies = new Cookies(null, { path: '/' });

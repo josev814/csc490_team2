@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 
 function withParams(Component){
   const ComponentWithParams = (props) => <Component {...props} params={useParams()} />;
