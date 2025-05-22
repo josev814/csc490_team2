@@ -5,6 +5,9 @@
 import '@testing-library/jest-dom';
 import 'whatwg-fetch';
 
+const originalWarn = console.warn;
+const originalError = console.error;
+
 // suppressing v7 transition messages
 beforeAll(() => {
   jest.spyOn(console, 'warn').mockImplementation((msg) => {
@@ -12,7 +15,7 @@ beforeAll(() => {
       typeof msg === 'string' &&
       msg.includes('React Router Future Flag Warning')
     ) return;
-    console.warn(msg);
+    originalWarn(msg);
   });
   // Suppress ECONNREFUSED errors (e.g., API not running during tests)
   jest.spyOn(console, 'error').mockImplementation((msg) => {
@@ -24,6 +27,6 @@ beforeAll(() => {
       )
     ) return;
     // Otherwise, show error
-    console.error(msg);
+    originalError(msg);
   });
 });
