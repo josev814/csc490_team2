@@ -14,4 +14,16 @@ beforeAll(() => {
     ) return;
     console.warn(msg);
   });
+  // Suppress ECONNREFUSED errors (e.g., API not running during tests)
+  jest.spyOn(console, 'error').mockImplementation((msg) => {
+    if (
+      typeof msg === 'string' &&
+      (
+        msg.includes('connect ECONNREFUSED') || 
+        msg.includes('getaddrinfo ENOTFOUND') // this happens when the backend container isn't up yet
+      )
+    ) return;
+    // Otherwise, show error
+    console.error(msg);
+  });
 });

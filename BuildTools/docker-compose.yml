@@ -71,6 +71,11 @@ services:
       - "8889:80"
     expose:
       - 8889
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:80/health/status"]
+    #   interval: 5s
+    #   timeout: 10s
+    #   retries: 10
     restart: unless-stopped
     volumes:
       - ../django:/app/
