@@ -19,7 +19,8 @@ export default function App() {
   }), {
     future: {
       v7_relativeSplatPath: true,
-    },
+      v7_startTransition: true,
+    } as any,
   });
   
   return <RouterProvider router={router} />;

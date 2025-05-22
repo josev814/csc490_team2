@@ -18,7 +18,8 @@ export const createTestRouter = (route: string) =>
             initialEntries: [route],
             future: {
                 v7_relativeSplatPath: true,
-            }
+                v7_startTransition: true,
+            } as any
         }
     );
 
