@@ -1,39 +1,7 @@
 import '@testing-library/jest-dom';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { RouterProvider } from 'react-router';
-import { createMemoryRouter } from 'react-router-dom';
-import getRoutes from '../Routes';
-import { sitedetails, get_auth_header, get_user_from_cookie, refresh_session } from '../utils/appContext';
-
-// suppressing v7 transition messages
-beforeAll(() => {
-  jest.spyOn(console, 'warn').mockImplementation((msg) => {
-    if (
-      typeof msg === 'string' &&
-      msg.includes('React Router Future Flag Warning')
-    ) return;
-    console.warn(msg);
-  });
-});
-
-const renderWithRoute = async (route: string) => {
-  const testRouter = createMemoryRouter(
-    getRoutes({
-      sitedetails,
-      get_auth_header,
-      get_user_from_cookie,
-      refresh_session,
-    }),
-     {
-    initialEntries: [route],
-  })
-  render(
-    <RouterProvider router={testRouter} />
-  );
-  await waitFor(() => {
-    expect(screen.getByTestId('site-footer')).toBeInTheDocument();
-  }, { timeout: 5000 });
-};
+import { screen, fireEvent, waitFor, within, render } from '@testing-library/react';
+import type {createMemoryRouter} from 'react-router-dom';
+import { renderWithRoute } from './utils/testRouter';
 
 // function removeLoginErrors(){
 //   // reset invalid creds element
@@ -99,49 +67,71 @@ describe("LoginRegister component", () => {
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
-  test("test invalid email login form submission failure", async () => {
-    await renderWithRoute('/login');
+  describe('invalid login tests', () => {
+    let router: ReturnType<typeof createMemoryRouter>;
 
-    const form = screen.getByRole('form')
-  
-    // Fill in the form fields with invalid data
-    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "invalid-email" } });
-    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
+    beforeEach(async() => {
+      router = await renderWithRoute('/login');
+    });
 
-    // Submit the form
-    fireEvent.click(within(form).getByText("Login"));
-
-    // Assert that the error message is displayed
-    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
-  });
-
-  test("test missing password login form submission failure", async () => {
-    await renderWithRoute('/login');
-    const form = screen.getByRole('form')
+    test("invalid email", async () => {
+      const form = screen.getByRole('form')
     
-  
-    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
-    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
+      // Fill in the form fields with invalid data
+      fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "invalid-email@123" } });
+      fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "abcdabcd" } });
 
-    // Submit the form
-    fireEvent.click(within(form).getByText("Login"));
+      // Submit the form
+      fireEvent.click(within(form).getByText("Login"));
+
+      // Submit the form
+      fireEvent.click(within(form).getByText("Login"));
+      
+      // failed login
+      expect(router.state.location.pathname).toBe('/login');
+    });
+
+    test("missing password", async () => {
+      const form = screen.getByRole('form')
+      
     
-    // Assert that the error message is displayed
-    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
-  });
+      fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
+      fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "" } });
 
-  test("test short password login form submission failure", async () => {
-    await renderWithRoute('/login');
-    const form = screen.getByRole('form')
-  
-    fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
-    fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "asdf" } });
+      // Submit the form
+      fireEvent.click(within(form).getByText("Login"));
+      
+      // failed login
+      expect(router.state.location.pathname).toBe('/login');
+    });
 
-    // Submit the form
-    fireEvent.click(within(form).getByText("Login"));  
+    test("short password", async () => {
+      const form = screen.getByRole('form')
     
-    // Assert that the error message is displayed
-    expect(await screen.findByText(/Invalid Credentials/i)).toBeInTheDocument();
+      fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123" } });
+      fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "asdf" } });
+
+      // Submit the form
+      fireEvent.click(within(form).getByText("Login"));
+      
+      // failed login
+      expect(router.state.location.pathname).toBe('/login');
+    });
+
+    test("bad creds", async () => {
+      const form = screen.getByRole('form')
+    
+      fireEvent.change(within(form).getByLabelText("Email address"), { target: { value: "test@abc123.com" } });
+      fireEvent.change(within(form).getByLabelText("Password"), { target: { value: "asdfasdfa" } });
+
+      // Submit the form
+      fireEvent.click(within(form).getByText("Login"));
+      expect(router.state.location.pathname).toBe('/login');
+      
+      // Assert that the error message is displayed
+      const alert = await screen.findByRole('alert', {}, { timeout: 5000});
+      expect(alert).toHaveTextContent(/Invalid Credentials/i);
+    });
   });
 
   // test("submits login form with correct data", async () => {

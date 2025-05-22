@@ -4,3 +4,14 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import 'whatwg-fetch';
+
+// suppressing v7 transition messages
+beforeAll(() => {
+  jest.spyOn(console, 'warn').mockImplementation((msg) => {
+    if (
+      typeof msg === 'string' &&
+      msg.includes('React Router Future Flag Warning')
+    ) return;
+    console.warn(msg);
+  });
+});

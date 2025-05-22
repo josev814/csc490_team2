@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner'
+import { sitedetails } from '../../utils/appContext';
 
 
 class FindStock extends React.Component {
@@ -14,7 +15,7 @@ class FindStock extends React.Component {
   search = async val => {
     this.setState({ loading: true});
     axios.get(
-      'http://localhost:8889/stocks/find_ticker/?ticker=' + val
+      sitedetails.django_url + '/stocks/find_ticker/?ticker=' + val
     ).then(res => {
       this.setState({stocks: res.data['records'], loading: false})
     }).catch(error => {
