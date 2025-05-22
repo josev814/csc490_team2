@@ -6,7 +6,7 @@ const cookies = new Cookies(null, { path: '/' });
 export const sitedetails = {
     sitename: 'Stock Strategies',
     tagline: 'Test Trading Strategies',
-    django_url: 'http://localhost:8889',
+    django_url: 'http://127.0.0.1:8889',
 };
 
 export function get_auth_header() {

@@ -5,6 +5,7 @@ import RegisterForm from "./auth/RegisterForm";
 import axios from 'axios';
 import { useNavigate } from 'react-router';
 import Cookies from 'universal-cookie';
+import { sitedetails } from "../utils/appContext";
 
 const cookies = new Cookies(null, { path: '/' });
 
@@ -16,16 +17,14 @@ export function LoginRegister({ mode }) {
   const [errorMessage, setErrorMessage] = useState(""); // State to manage error message
   const navigate = useNavigate(); // Access the history object for navigation
 
-  const base_url = 'http://localhost:8889'; // Define your base URL here
-
   const handleSubmit = async (e, isLoginPage) => {
     e.preventDefault();
     try {
       let url = '';
       if (isLoginPage) {
-        url = `${base_url}/auth/login/`;
+        url = `${sitedetails.django_url}/auth/login/`;
       } else {
-        url = `${base_url}/auth/register/`;
+        url = `${sitedetails.django_url}/auth/register/`;
       }
       const response = await axios.post(url, formData);
       if (response.status === 200 || response.status === 201) {

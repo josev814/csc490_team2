@@ -32,7 +32,7 @@ jobs:
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
     - name: Test with Jest
       run: |
-        docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --coverage' > jest.results.log 2>&1
+        docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --detectOpenHandles' > jest.results.log 2>&1
       continue-on-error: true
     - name: Output Results
       run: |

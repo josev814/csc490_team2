@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner';
 import { useParams } from 'react-router';
+import { sitedetails } from '../../utils/appContext';
 
 function withParams(Component){
   const ComponentWithParams = (props) => <Component {...props} params={useParams()} />;
@@ -26,7 +27,7 @@ class ShowTickerNews extends React.Component {
   componentDidMount() {
     let { ticker } = this.props.params
     this.setState({symbol: ticker})
-    let url = 'http://localhost:8889/stocks/get_ticker_news/?ticker=' + ticker    
+    let url = sitedetails.django_url + '/stocks/get_ticker_news/?ticker=' + ticker    
     axios.get(url)
       .then(res => {
           //console.log(res.data); // Log the response data to understand its structure
