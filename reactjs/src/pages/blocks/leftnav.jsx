@@ -1,6 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router";
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router';
 import {CandlestickChartOutlined, RuleOutlined, ExitToAppOutlined} from '@mui/icons-material';
 
 export default function LeftNav() {

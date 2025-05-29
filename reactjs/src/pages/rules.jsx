@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import axios from 'axios';
 import { Form, Spinner } from 'react-bootstrap';
 import { AddCircleOutlineOutlined } from '@mui/icons-material';

@@ -5,8 +5,16 @@
 import '@testing-library/jest-dom';
 import 'whatwg-fetch';
 
+
 const originalWarn = console.warn;
 const originalError = console.error;
+
+// jest.setup.js
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
 
 // suppressing v7 transition messages
 beforeAll(() => {
