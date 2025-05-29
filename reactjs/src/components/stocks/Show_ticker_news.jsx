@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner';
-import { useParams } from 'react-router';
+import { useParams, Link } from 'react-router';
 import { sitedetails } from '../../utils/appContext';
 
 function withParams(Component){
@@ -52,9 +52,9 @@ class ShowTickerNews extends React.Component {
           ) : (
           this.state.news.map(news => (
             <div className="row py-3" key={news.uuid}>
-              <a href={news.link} target="_blank" rel='noreferrer'>
+              <Link to={news.link} target='_blank' rel='noreferrer'>
                 <h4>{news.title}</h4>
-              </a>
+              </Link>
             </div>
           )))
         }

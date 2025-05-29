@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import Spinner from 'react-bootstrap/Spinner'
 import { sitedetails } from '../../utils/appContext';
+import { Link } from 'react-router';
 
 
 class FindStock extends React.Component {
@@ -52,7 +53,9 @@ class FindStock extends React.Component {
       if (this.state.stocks) {
         stocks = ( this.state.stocks.map(stocks => (
           <div className='row py-2' key={stocks.ticker}>
-            <a href={'/stocks/' + stocks.ticker}>{stocks.ticker}: {stocks.name}</a>
+            <Link to={'./' + stocks.ticker}>
+              {stocks.ticker}: {stocks.name}
+            </Link>
           </div>
         )))
       }

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, Link } from "react-router";
 import { useEffect, useState } from "react";
 import Header from './blocks/header';
 import Footer from './blocks/footer';
@@ -48,9 +48,9 @@ export default function AuthedLayout(props) {
                     <main role='main' className='col-md-9 ml-sm-auto col-lg-10 pt-3 px-4'>
                         <div className="justify-content-end d-flex container-fluid">
                             User:
-                            <a className="ps-1" href={userData ? '/users/' + userData.id + '/' : '#'}>
+                            <Link className="ps-1" to={userData ? '/users/' + userData.id + '/' : '#'}>
                                 {userData ? userData.email : ''}
-                            </a>
+                            </Link>
                         </div>
                         <Outlet />
                     </main>

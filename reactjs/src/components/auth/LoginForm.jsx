@@ -1,7 +1,6 @@
 
-import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 
 export default function LoginForm({ formData, handleChange, handleSubmit, errorMessage }) {
   const navigate = useNavigate();
@@ -50,7 +49,9 @@ export default function LoginForm({ formData, handleChange, handleSubmit, errorM
             <button type="submit" className="btn btn-primary">Login</button>
           </div>
           <p className="text-center mt-2">
-            <a href="/forgot-password">Forgot password?</a>
+            <Link to="/forgot-password">
+              Forgot password?
+            </Link>
           </p>
           {errorMessage && (
             <div id="login_errors" className="alert alert-danger mt-3" role="alert">
