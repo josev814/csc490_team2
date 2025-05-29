@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { RouterProvider } from 'react-router';
-import { createMemoryRouter } from 'react-router-dom';
+import { createMemoryRouter } from 'react-router';
 import getRoutes from '../../Routes';
 import { sitedetails, get_auth_header, get_user_from_cookie, refresh_session } from '../../utils/appContext';
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate, useParams } from 'react-router';
-import { Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router";
 import axios from 'axios';
 import { EditOutlined, DeleteOutline, ArrowBackIosOutlined } from '@mui/icons-material';
 import Modal from 'react-bootstrap/Modal';

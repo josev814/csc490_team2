@@ -1,7 +1,7 @@
 import React from 'react';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import Spinner from 'react-bootstrap/Spinner';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 
 function withParams(Component){
   const ComponentWithParams = (props) => <Component {...props} params={useParams()} />;

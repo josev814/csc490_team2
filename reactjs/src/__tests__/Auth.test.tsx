@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import { screen, fireEvent, waitFor, within, render } from '@testing-library/react';
-import type {createMemoryRouter} from 'react-router-dom';
+import type {createMemoryRouter} from 'react-router';
 import { renderWithRoute } from './utils/testRouter';
 
 // function removeLoginErrors(){
