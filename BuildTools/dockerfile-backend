@@ -50,6 +50,7 @@ ARG DEBUG=0
 ENV DEBUG=${DEBUG}
 ARG PYTHON_VERSION=3.13
 ARG VENV_PATH=/var/local/bin/stocks_venv
+ENV VENV_PATH=${VENV_PATH}
 
 RUN uv python install ${PYTHON_VERSION} \
     && PYTHON_PATH=$(uv python find ${PYTHON_VERSION}) \
@@ -75,5 +76,6 @@ RUN apt-get update \
 RUN apt-get update \
     && apt-get install vim htop
 
+ENV PYTHONWARNINGS=ignore::UserWarning
 RUN mkdir /var/log/supervisor
 CMD [ "/var/local/bin/stocks_venv/bin/supervisord", "-c", "/etc/supervisord/conf.d/supervisord.conf" ]
