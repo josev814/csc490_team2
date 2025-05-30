@@ -3,9 +3,13 @@ This project started as a senior project from UNCFSU for csc490
 
 # Local Requirements
 - WSL2
-- Docker
-- Terraform
-- Python 3
+- (Docker)[https://www.docker.com/get-started/]
+
+# Optional Requirements
+- (K3d)[https://k3d.io/stable/#requirements]
+- (kubectl)[https://kubernetes.io/docs/tasks/tools/#kubectl]
+- (Terraform)[https://developer.hashicorp.com/terraform/tutorials/docker-get-started/install-cli]
+- (Helm)[https://helm.sh/docs/intro/install/]
 
 
 # Containers
@@ -73,9 +77,13 @@ docker compose -f "BuildTools/docker-compose.yml" down --volumes --remove-orphan
 
 
 # Install Terraform
+
+_This will replace the Docker Compose setup_
+
 ## Windows
+Run Powershell as an administrator
 ```pwsh
-https://releases.hashicorp.com/terraform/1.7.2/terraform_1.7.2_windows_amd64.zip
+choco install terraform
 ```
 
 # Install kubectl and az-cli
@@ -98,16 +106,28 @@ The cluster information should have a Kubernetes control plane and Core DNS with
 
 # Setup Kubernetes Pods
 ```pwsh
-kubectl create naespace csc490-stocks
+kubectl create namespace csc490-stocks
 ```
 
-# Django Endpoints
+# Django
+## Check Program Status
+Run the command below to check the status of program ran by supervisord
+
+```bash
+docker exec -it stocks_backend bash -c '${VENV_PATH}/bin/supervisorctl -c ${SUPERVISOR_CONFIG} status'
+```
+
+Additional command can be ran such as restarting a program and reloading it.
+
+[Supervisorctl Actions](https://supervisord.org/running.html#supervisorctl-actions)
+
+## Endpoints
 Run the commands below to view the endpoints available for React to use
 
 ```bash
 docker exec -it stocks_backend bash
 source /var/local/bin/stocks_venv/bin/activate;
-python3 manage.py show_urls | grep -vP "^/admin"
+python manage.py show_urls | grep -vP "^/admin"
 ```
 
 # Acknowledgements
