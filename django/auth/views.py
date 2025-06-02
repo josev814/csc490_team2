@@ -164,6 +164,7 @@ class RefreshViewSet(ViewSet, TokenRefreshView):
         """
         logging.info(f'RefreshToken create args: {args}')
         logging.info(f'RefreshToken create kwargs: {kwargs}')
+        
         try:
             body = json.loads(request.body.decode(encoding='utf-8'))
         except Exception:
@@ -173,7 +174,7 @@ class RefreshViewSet(ViewSet, TokenRefreshView):
             )
 
         serializer = self.get_serializer(data=body)
-
+        
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError as err:

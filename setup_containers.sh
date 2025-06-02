@@ -22,7 +22,7 @@ function standup(){
 }
 
 function does_image_exist(){
-    docker images ls --filter="reference=$1" | grep -v 'REPOSITORY' | wc -l
+    docker image ls --filter="reference=$1" | grep -v 'REPOSITORY' | wc -l
 }
 
 function cleanup_compose_images(){

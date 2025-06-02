@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: stockapp
 services:
   stocksdb:
@@ -73,11 +71,17 @@ services:
       - "8889:80"
     expose:
       - 8889
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:80/health/status"]
+    #   interval: 5s
+    #   timeout: 10s
+    #   retries: 10
     restart: unless-stopped
     volumes:
       - ../django:/app/
     networks:
       - private
+      - public
   frontend:
     container_name: stocks_frontend
     image: stocks_frontend
@@ -85,7 +89,7 @@ services:
       context: ../
       dockerfile: ./reactjs/dockerfile-frontend
     ports:
-      - "8890:80"
+      - "8890:5555"
     expose:
       - 8890
     restart: unless-stopped
@@ -94,9 +98,10 @@ services:
       - ../reactjs/public:/react-app/public/
     networks:
       - public
+      - private
     environment:
-      - WATCHPACK_POLLING=true
-      - WDS_SOCKET_PORT=8890
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR INTERVAL=500 # Decrease CPU usage by checking every 500ms
     # depends_on:
     #   backend:
     #     condition: service_healthy
