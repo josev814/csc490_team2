@@ -13,3 +13,4 @@ django-filter
 django-oauth-toolkit
 django-cors-headers
 django-extensions
+supervisor

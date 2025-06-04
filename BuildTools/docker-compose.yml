@@ -68,7 +68,7 @@ services:
     env_file:
       - ../.envvars
     ports:
-      - "8889:80"
+      - "8889:8080"
     expose:
       - 8889
     # healthcheck:

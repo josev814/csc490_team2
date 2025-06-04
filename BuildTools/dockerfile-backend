@@ -1,9 +1,11 @@
-FROM debian:bookworm
+FROM debian:stable-slim
 
 SHELL [ "/bin/bash", "-c" ]
 ENV TERM=xterm
 ENV SHELL=bash
 ENV DEBIAN_FRONTEND=noninteractive
+ENV HOME=/opt/uv
+ENV PATH=$HOME/.local/bin:$PATH
 
 RUN echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
     && echo 'exit 101' >> /usr/sbin/policy-rc.d \
@@ -25,16 +27,18 @@ RUN echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup \
     && apt-config dump | grep -we Recommends -e Suggests | sed s/1/0/ | tee /etc/apt/apt.conf.d/999norecommend
 
 RUN apt-get update \
-    && apt-get install default-mysql-client nginx default-libmysqlclient-dev build-essential supervisor pkg-config \
-        postfix mailutils \
+    && apt-get install default-mysql-client default-libmysqlclient-dev build-essential pkg-config \
+        wget ca-certificates libffi-dev postfix mailutils \
     && postconf -e 'inet_interfaces = all' \
     && postconf -e 'mydestination = localhost.localdomain, localhost'
 
 
 WORKDIR /var/local/bin
 
-RUN apt-get update \
-    && apt-get install python3-minimal python3-pip python3-venv python3-virtualenv python3-dev
+RUN wget -qO- https://astral.sh/uv/install.sh | bash \
+    && ln -s $HOME/.local/bin/uv /usr/local/bin/uv \
+    && ln -s $HOME/.local/bin/uvx /usr/local/bin/uvx \
+    && uv --version
 
 WORKDIR /app
 COPY requirements.txt /tmp/
@@ -44,30 +48,34 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ARG DEBUG=0
 ENV DEBUG=${DEBUG}
+ARG PYTHON_VERSION=3.13
+ARG VENV_PATH=/var/local/bin/stocks_venv
+ENV VENV_PATH=${VENV_PATH}
 
-RUN virtualenv /var/local/bin/stocks_venv \
-    && source /var/local/bin/stocks_venv/bin/activate \
-    && python -m pip install -r /tmp/requirements.txt --no-cache \
+RUN uv python install ${PYTHON_VERSION} \
+    && PYTHON_PATH=$(uv python find ${PYTHON_VERSION}) \
+    && uv venv --python ${PYTHON_PATH} ${VENV_PATH} \
+    && source ${VENV_PATH}/bin/activate \
+    && uv pip install -r /tmp/requirements.txt --no-cache --compile-bytecode \
     && rm /tmp/requirements.txt
-
-# RUN source /var/local/bin/stocks_venv/bin/activate \
-#     && django-admin startproject backend . \
-#     && python manage.py startapp pullstocks \
-#     && python manage.py startapp analysts
 
 LABEL project="STOCKS" \
     university="Fayetteville State University"
 
-COPY ./BuildTools/supervisord/supervisord.conf /etc/supervisord/conf.d/supervisord.conf
+ENV SUPERVISOR_CONFIG=/etc/supervisord/conf.d/supervisord.conf
+COPY ./BuildTools/supervisord/supervisord.conf ${SUPERVISOR_CONFIG}
+COPY ./BuildTools/supervisord/run_django.sh /run_django.sh
 
 COPY ./BuildTools/crontab /tmp/crontab
 
 RUN apt-get update \
-    && apt-get install -y cron mydumper \
+    && apt-get install cron mydumper \
     && cat /tmp/crontab | crontab - \
     && rm /tmp/crontab
 
 RUN apt-get update \
-    && apt-get install -y vim
+    && apt-get install vim htop
 
-CMD [ "/usr/bin/supervisord", "-c", "/etc/supervisord/conf.d/supervisord.conf" ]
+ENV PYTHONWARNINGS=ignore::UserWarning
+RUN mkdir /var/log/supervisor
+CMD [ "/var/local/bin/stocks_venv/bin/supervisord", "-c", "/etc/supervisord/conf.d/supervisord.conf" ]
