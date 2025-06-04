@@ -3,14 +3,22 @@ name: React Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-tests.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-tests.yml'
+    types: [opened, ready_for_review, synchronize, reopened]
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  jest_test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
     - name: checkout code
