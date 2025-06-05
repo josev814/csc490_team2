@@ -26,10 +26,13 @@ jobs:
       ESLOG_FILE: eslint.results.log
     steps:
     - name: checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - name: Check if React files changed
       id: file-check
       run: |
+        git fetch origin main
         changed=$(git diff --name-only origin/main...HEAD | grep '^reactjs/' || true)
         if [[ -z "$changed" ]]
         then
