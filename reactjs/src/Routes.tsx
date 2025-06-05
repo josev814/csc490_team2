@@ -8,6 +8,7 @@ import FIND_STOCK from './pages/stocks';
 import SHOW_TICKER from './pages/show_ticker';
 import SHOW_TICKER_NEWS from './pages/news';
 import LIST_RULES from './pages/rules';
+import Settings from './components/nav/Settings'
 import { SHOW_RULE, CREATE_RULE } from './pages/rule';
 import EditRuleForm from './components/rules/EditRule';
 
@@ -49,7 +50,8 @@ export default function getRoutes(
                 />
                 ),
                 children: [
-                { path: ':user_id/profile', element: <> </> }
+                { path: ':user_id/profile', element: <> </> },
+                { path: ":user_id/settings", element: (<Settings />)}
                 ],
             },{
                 path: '/stocks/',
