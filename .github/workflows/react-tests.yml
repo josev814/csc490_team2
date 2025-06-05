@@ -3,19 +3,42 @@ name: React Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-tests.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'reactjs/**'
+      - '.github/workflows/react-tests.yml'
+    types: [opened, ready_for_review, synchronize, reopened]
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  jest_test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
     - name: checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Check if React files changed
+      id: file-check
+      run: |
+        git fetch origin main > /dev/null 2>&1
+        changed=$(git diff --name-only origin/main...HEAD | grep '^reactjs/' || true)
+        if [[ -z "$changed" ]]
+        then
+          echo "No React changes."
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
     - name: Setup Env Vars
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         cat >> .envvars << EOF
             DJANGO_SECRET_KEY='django-insecure-4o3ug_h7f1r6fa2z5@4o3ug_h7f1r6fa2-!x=-n*tfuccxn5n'
@@ -28,16 +51,20 @@ jobs:
             MYSQL_PWD=unittestMysqlP@ssword
         EOF
     - name: Build FrontEnd
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans frontend
     - name: Test with Jest
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         docker exec stocks_frontend /bin/bash -c 'cd src; npm test -- --detectOpenHandles' > jest.results.log 2>&1
       continue-on-error: true
     - name: Output Results
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         cat jest.results.log
     - name: Trigger Pass Fail
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         if [[ $(grep -P '^Test Suites:\s+[0-9]+ failed,' jest.results.log | wc -l) -gt 0 ]]; then
           echo 'UnitTests Failed'

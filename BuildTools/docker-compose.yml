@@ -68,9 +68,7 @@ services:
     env_file:
       - ../.envvars
     ports:
-      - "8889:8080"
-    expose:
-      - 8889
+    - "8088:8088"
     # healthcheck:
     #   test: ["CMD", "curl", "--fail", "http://localhost:80/health/status"]
     #   interval: 5s
@@ -79,6 +77,21 @@ services:
     restart: unless-stopped
     volumes:
       - ../django:/app/
+    networks:
+      - private
+  api_proxy:
+    container_name: stocks_nginx
+    image: stocks_nginx
+    build:
+      context: ../
+      dockerfile: ./BuildTools/dockerfile-backendproxy
+    depends_on:
+      - backend
+    ports:
+    - "8889:80"
+    expose:
+      - 8889
+    restart: unless-stopped
     networks:
       - private
       - public

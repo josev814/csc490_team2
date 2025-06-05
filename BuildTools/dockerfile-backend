@@ -74,8 +74,9 @@ RUN apt-get update \
     && rm /tmp/crontab
 
 RUN apt-get update \
-    && apt-get install vim htop
+    && apt-get install -y vim
 
+ENV UVICORN_RELOAD=true
 ENV PYTHONWARNINGS=ignore::UserWarning
 RUN mkdir /var/log/supervisor
 CMD [ "/var/local/bin/stocks_venv/bin/supervisord", "-c", "/etc/supervisord/conf.d/supervisord.conf" ]

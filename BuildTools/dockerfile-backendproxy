@@ -1,0 +1,28 @@
+FROM nginx:stable-bookworm
+
+SHELL [ "/bin/bash", "-c" ]
+ENV TERM=xterm
+ENV SHELL=bash
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
+    && echo 'exit 101' >> /usr/sbin/policy-rc.d \
+    && chmod +x /usr/sbin/policy-rc.d \
+    && dpkg-divert --local --rename --add /sbin/initctl \
+    && cp -a /usr/sbin/policy-rc.d /sbin/initctl \
+    && sed -i 's/^exit.*/exit 0/' /sbin/initctl
+
+RUN echo 'force-unsafe-io' > /etc/dpkg/dpkg.cfg.d/docker-apt-speedup \
+    && echo 'DPkg::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' > /etc/apt/apt.conf.d/docker-clean \
+    && echo 'APT::Update::Post-Invoke { "rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true"; };' >> /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Dir::Cache::pkgcache ""; Dir::Cache::srcpkgcache "";' >> /etc/apt/apt.conf.d/docker-clean \
+    && echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/docker-no-languages \
+    && echo 'Acquire::GzipIndexes "true"; Acquire::CompressionTypes::Order:: "gz";' > /etc/apt/apt.conf.d/docker-gzip-indexes \
+    && echo 'Apt::AutoRemove::SuggestsImportant "false";' > /etc/apt/apt.conf.d/docker-autoremove-suggests \
+    && echo 'APT::Keep-Downloaded-Packages "false";' > /etc/apt/apt.conf.d/docker-disable-cache \
+    && echo 'APT::Clean-Installed "true";' > /etc/apt/apt.conf.d/docker-clean-installed \
+    && echo 'APT::Get::Assume-Yes "true";' >> /etc/apt/apt.conf.d/90assumeyes \
+    && apt-config dump | grep -we Recommends -e Suggests | sed s/1/0/ | tee /etc/apt/apt.conf.d/999norecommend
+
+COPY ./BuildTools/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./BuildTools/nginx/sites-enabled/default.conf /etc/nginx/conf.d/default.conf
