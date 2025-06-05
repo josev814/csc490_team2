@@ -146,6 +146,7 @@ INSTALLED_APPS = INSTALLED_APPS + [
     'oauth2_provider',
     'rest_framework',
     'django_filters',
+    'jobs',
     'stocks',
     'users',
     'rules',
