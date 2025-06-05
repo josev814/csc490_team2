@@ -30,7 +30,7 @@ jobs:
     - name: Check if Django files changed
       id: file-check
       run: |
-        git fetch origin main
+        git fetch origin main > /dev/null 2>&1
         changed=$(git diff --name-only origin/main...HEAD | grep '^django/' || true)
         if [[ -z "$changed" ]]
         then
