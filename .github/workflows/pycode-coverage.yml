@@ -25,7 +25,19 @@ jobs:
     steps:
     - name: checkout code
       uses: actions/checkout@v3
+    - name: Check if Django files changed
+      id: file-check
+      run: |
+        changed=$(git diff --name-only origin/main...HEAD | grep '^django/' || true)
+        if [[ -z "$changed" ]]
+        then
+          echo "No Django changes."
+          echo "skip=true" >> $GITHUB_OUTPUT
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+        fi
     - name: Setup Env Vars
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         cat >> .envvars << EOF
             DJANGO_SECRET_KEY='django-insecure-4o3ug_h7f1r6fa2z5@4o3ug_h7f1r6fa2-!x=-n*tfuccxn5n'
@@ -38,11 +50,14 @@ jobs:
             MYSQL_PWD=unittestMysqlP@ssword
         EOF
     - name: Compose docker
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         docker compose -f BuildTools/docker-compose.yml up -d --build --remove-orphans
     - name: Test with coverage
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage run manage.py test --keepdb'
     - name: Output results
+      if: steps.file-check.outputs.skip == 'false'
       run: |
         docker exec stocks_backend /bin/bash -c 'source /var/local/bin/stocks_venv/bin/activate; coverage report --omit="*/tests/*" -m'
