@@ -28,7 +28,7 @@ class RuleManager(models.Manager):
     """
     Overriding some of the default manager
     """
-    def get_queryset(self, *args,**kwargs):
+    def get_queryset(self):
         """
         returns a query set for the model
         """
