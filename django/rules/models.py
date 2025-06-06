@@ -104,23 +104,3 @@ class Rules(models.Model):
         """
         self.last_ran_timestamp = last_runtime
         self.save()
-
-class RuleJobs(models.Model):
-    """
-    This class is meant to manage the jobs for rules
-    """
-    last_ran_timestamp = models.DateTimeField(blank=True, null=True)
-    objects = RuleManager()
-
-    def set_last_runtime(self, last_runtime):
-        """
-        Table that keeps track of when this job last ran
-        """
-        job = RuleJobs.objects.first()
-        if job is not None:
-            job.last_ran_timestamp = last_runtime
-            job.save()
-        
-        else:
-            kwargs = {'last_ran_timestamp': last_runtime}
-            RuleJobs.objects.create(**kwargs)
