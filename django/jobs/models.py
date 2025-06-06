@@ -28,8 +28,6 @@ class JobManager(models.Manager):
         """
         returns a query set for the model
         """
-        print(args)
-        print(kwargs)
         return JobQuerySet(self.model, using=self._db)
 
     def search(self, job_name=None, **kwargs):

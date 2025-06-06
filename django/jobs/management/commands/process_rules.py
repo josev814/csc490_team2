@@ -163,7 +163,8 @@ class Command(BaseCommand):
         if delta is not None:
             if trigger['frequency'].lower() == 'days':
                 # ensure we are starting with a new date
-                return trx_time.date() + delta
+                next_date = (trx_time + delta).date()
+                return datetime.combine(next_date, datetime.min.time())
             return trx_time + delta
         return None
 

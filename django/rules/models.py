@@ -32,8 +32,6 @@ class RuleManager(models.Manager):
         """
         returns a query set for the model
         """
-        print(args)
-        print(kwargs)
         return RuleQuerySet(self.model, using=self._db)
 
     def search(self, user=None, **kwargs):
