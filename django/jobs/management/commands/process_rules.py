@@ -7,7 +7,8 @@ from typing import Any
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.db.models import Q, Sum, Func, Value, F
-from rules.models import Rules, RuleJobs
+from jobs.models import Jobs
+from rules.models import Rules
 from stocks.models import StockData, Stocks
 from transactions.models import Transactions
 
@@ -20,12 +21,14 @@ class Command(BaseCommand):
     START_TIME = datetime.now()
     this_job = None
     LAST_RUNTIME = None
+    JOB_NAME = 'Process Rules'
 
     def set_defaults(self):
         """
         Initialize this job
         """
-        self.this_job = self.get_job_info()
+        self.this_job = Jobs().get_job_info(self.JOB_NAME)
+            
         # Get the last runtime of this job
         self.LAST_RUNTIME = self.get_last_runtime()
 
@@ -67,12 +70,6 @@ class Command(BaseCommand):
         if rule is not None and all(key in rule for key in ['conditions', 'action', 'trigger']):
             return True
         return False
-    
-    def get_job_info(self):
-        """
-        Gets the job info from the database
-        """
-        return RuleJobs.objects.first()
     
     def get_last_runtime(self):
         """
@@ -166,7 +163,8 @@ class Command(BaseCommand):
         if delta is not None:
             if trigger['frequency'].lower() == 'days':
                 # ensure we are starting with a new date
-                return trx_time.date() + delta
+                next_date = (trx_time + delta).date()
+                return datetime.combine(next_date, datetime.min.time())
             return trx_time + delta
         return None
 
@@ -421,8 +419,7 @@ class Command(BaseCommand):
         Gets the most recent stock price
         """
         return StockData.objects.filter(
-            ticker_id__exact=stock_id,
-            granularity__exact='1m'
+            ticker_id__exact=stock_id
         ).order_by('-pk', ).first().low
 
     def get_stock_price_from_timestamp(self, stock_id, timestamp):
@@ -430,8 +427,7 @@ class Command(BaseCommand):
         Gets the stock price that's closest to the timestamp given
         """
         qs = StockData.objects.filter(
-            ticker_id__exact=stock_id,
-            granularity__exact='1m'
+            ticker_id__exact=stock_id
         ).annotate(
             timestamp_difference=Func(
                 F('timestamp') - Value(timestamp), function='ABS'
