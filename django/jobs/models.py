@@ -15,7 +15,7 @@ class JobQuerySet(models.QuerySet):
     def search(self, name=None, status=None):
         """A search method so we can filter jobs"""
         qs = self.filter(name=name)
-        if status and status in [0|1]:
+        if status in (0, 1, True, False):
             qs = qs.filter(models.Q(status=status))
         return qs
 
