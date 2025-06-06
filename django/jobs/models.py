@@ -1,3 +1,6 @@
+"""
+Jobs model that allows querying the database
+"""
 from django.db import models
 from django.conf import settings
 

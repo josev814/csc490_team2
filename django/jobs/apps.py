@@ -1,3 +1,6 @@
+"""
+App that is configuring jobs
+"""
 from django.apps import AppConfig
 
 
