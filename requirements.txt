@@ -1,5 +1,6 @@
 django
-gunicorn
+uvicorn
+uvicorn-worker
 redis
 flake8
 pytest
@@ -13,3 +14,4 @@ django-filter
 django-oauth-toolkit
 django-cors-headers
 django-extensions
+supervisor

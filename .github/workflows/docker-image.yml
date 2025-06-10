@@ -5,8 +5,10 @@ on:
     branches: [ "releases/*" ]
   pull_request:
     branches: [ "releases/*" ]
+
+
 jobs:
-  build:
+  docker_deploy_build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
